@@ -16,5 +16,9 @@ to = "https://res.cloudinary.com/netlify/image/upload/c_fit,g_west,h_400,co_rgb:
 status = 200
 
 [[edge_functions]]
+  function = "pain-system"
+  path = "/pain-system"
+
+[[edge_functions]]
   function = "transform"
   path = "/*"
