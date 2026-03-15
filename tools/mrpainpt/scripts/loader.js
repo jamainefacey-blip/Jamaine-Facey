@@ -156,17 +156,18 @@
     loadScript(
       `scripts/data/clients/${client}.js`,
       function onClientLoaded() {
-        // Apply coach portal overrides on top of the static client file.
-        // CoachStore.applyToGlobals() is a no-op if no edits exist.
-        if (typeof CoachStore !== "undefined") {
-          CoachStore.applyToGlobals(client);
-        }
-        loadScript(
-          manifest.appScript,
-          function onAppLoaded() {
+        // Apply coach portal overrides (local or API-sourced) on top of the
+        // static client file. applyToGlobalsAsync is a no-op if no edits exist.
+        function _proceed() {
+          loadScript(manifest.appScript, function onAppLoaded() {
             MrPainPT.boot(moduleId);
-          }
-        );
+          });
+        }
+        if (typeof CoachStore !== "undefined") {
+          CoachStore.applyToGlobalsAsync(client, _proceed);
+        } else {
+          _proceed();
+        }
       }
     );
   }

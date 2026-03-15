@@ -32,7 +32,9 @@
 
   // ── Constants ──────────────────────────────────────────────────────────────
 
-  const KNOWN_CLIENTS = [
+  // Fallback client list used when API is unavailable and local cache is empty.
+  // This is no longer the source of truth — the API or CoachStore cache takes precedence.
+  const FALLBACK_CLIENTS = [
     { slug: "sarah-thompson", label: "Sarah Thompson" },
     { slug: "james-chen",     label: "James Chen"     },
     { slug: "maria-santos",   label: "Maria Santos"   },
@@ -72,37 +74,37 @@
     t._timer = setTimeout(() => t.classList.remove("visible"), 2400);
   }
 
-  // ── Client loading ────────────────────────────────────────────────────────
-  // Loads from CoachStore if cached; otherwise injects the static client
-  // file, captures CLIENT_CONFIG + PROGRAM globals, then caches + restores.
+  // ── Client loading ─────────────────────────────────────────────────────────
+  // Priority: CoachStore.getClientAsync (API or local cache) → static file inject.
 
   function loadClient(slug) {
     return new Promise((resolve) => {
-      const stored = CoachStore.getClient(slug);
-      if (stored) { resolve(stored); return; }
+      CoachStore.getClientAsync(slug, (err, stored) => {
+        if (stored) { resolve(stored); return; }
 
-      const prevCfg = window.CLIENT_CONFIG;
-      const prevPrg = window.PROGRAM;
+        // Not in API or local cache — load from static file as fallback
+        const prevCfg = window.CLIENT_CONFIG;
+        const prevPrg = window.PROGRAM;
 
-      const s   = document.createElement("script");
-      s.src     = `scripts/data/clients/${slug}.js`;
-      s.onload  = () => {
-        const data = {
-          clientConfig: window.CLIENT_CONFIG || {},
-          program:      window.PROGRAM       || {},
+        const s   = document.createElement("script");
+        s.src     = `scripts/data/clients/${slug}.js`;
+        s.onload  = () => {
+          const data = {
+            clientConfig: window.CLIENT_CONFIG || {},
+            program:      window.PROGRAM       || {},
+          };
+          window.CLIENT_CONFIG = prevCfg;
+          window.PROGRAM       = prevPrg;
+          CoachStore.cacheClient(slug, data);
+          resolve(data);
         };
-        // Restore globals so we don't pollute the shell state
-        window.CLIENT_CONFIG = prevCfg;
-        window.PROGRAM       = prevPrg;
-        CoachStore.cacheClient(slug, data);
-        resolve(data);
-      };
-      s.onerror = () => {
-        window.CLIENT_CONFIG = prevCfg;
-        window.PROGRAM       = prevPrg;
-        resolve(null);
-      };
-      document.head.appendChild(s);
+        s.onerror = () => {
+          window.CLIENT_CONFIG = prevCfg;
+          window.PROGRAM       = prevPrg;
+          resolve(null);
+        };
+        document.head.appendChild(s);
+      });
     });
   }
 
@@ -124,7 +126,9 @@
     const main = document.getElementById("app-main");
     if (!main) return;
 
-    if (view === "client" && p1) {
+    if (view === "new-client") {
+      renderNewClientForm();
+    } else if (view === "client" && p1) {
       renderClientView(p1, p2 || "profile");
     } else {
       renderClientList();
@@ -132,54 +136,72 @@
   }
 
   // ── View: Client list ────────────────────────────────────────────────────
+  // Fetches list from CoachStore (API or local cache) and merges with
+  // FALLBACK_CLIENTS so known static clients always appear even before caching.
 
   function renderClientList() {
     const main = document.getElementById("app-main");
+    main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading clients…</span></div>`;
 
-    const cards = KNOWN_CLIENTS.map(c => {
-      const stored       = CoachStore.getClient(c.slug);
-      const hasEdits     = stored?._hasEdits || false;
-      const mode         = stored?.program?.mode || null;
-      const accessStatus = stored?.program?.access?.status || null;
-      const condition    = stored?.clientConfig?.client?.condition || "";
+    CoachStore.listClientsAsync((err, clientList) => {
+      // Merge fallback clients not yet in the live list
+      const slugsKnown = new Set(clientList.map(c => c.slug));
+      FALLBACK_CLIENTS.forEach(c => {
+        if (!slugsKnown.has(c.slug)) clientList.push({ slug: c.slug, name: c.label });
+      });
 
-      return `
-        <div class="coach-client-card" data-slug="${c.slug}" role="button" tabindex="0">
-          <div class="coach-client-avatar">${c.label.split(" ").map(n => n[0]).join("")}</div>
-          <div class="coach-client-info">
-            <div class="coach-client-name">${esc(c.label)}</div>
-            <div class="coach-client-sub">${esc(condition)}</div>
-            <div class="coach-client-badges">
-              ${mode         ? `<span class="coach-badge mode-${mode}">${mode.replace(/_/g, " ")}</span>` : ""}
-              ${accessStatus ? `<span class="coach-badge access-${accessStatus}">${accessStatus}</span>`   : ""}
-              ${hasEdits     ? `<span class="coach-badge edited">edited</span>`                            : ""}
+      const isApi   = CoachStore.getMode() === "api";
+      const connCls = isApi ? "online" : "offline";
+      const connTxt = isApi ? "● API" : "● Local";
+
+      const cards = clientList.map(c => {
+        const name     = c.name || c.slug;
+        const initials = name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
+        return `
+          <div class="coach-client-card" data-slug="${c.slug}" role="button" tabindex="0">
+            <div class="coach-client-avatar">${esc(initials)}</div>
+            <div class="coach-client-info">
+              <div class="coach-client-name">${esc(name)}</div>
+              <div class="coach-client-badges">
+                ${c.accessType   ? `<span class="coach-badge mode-${c.accessType}">${c.accessType.replace(/_/g, " ")}</span>` : ""}
+                ${c.accessStatus ? `<span class="coach-badge access-${c.accessStatus}">${c.accessStatus}</span>`               : ""}
+                ${c._hasEdits    ? `<span class="coach-badge edited">edited</span>`                                            : ""}
+              </div>
+            </div>
+            <svg class="coach-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>`;
+      }).join("") || `<p class="coach-empty" style="padding:24px 16px">No clients yet — add one with the + button.</p>`;
+
+      main.innerHTML = `
+        <div class="coach-view">
+          <div class="coach-view-header">
+            <h1 class="coach-view-title">Clients</h1>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span class="coach-connection-badge ${connCls}">${connTxt}</span>
+              <button class="coach-new-btn" id="coach-new-btn" title="Add new client">+</button>
             </div>
           </div>
-          <svg class="coach-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
+          <div class="coach-client-list">${cards}</div>
+          <p class="coach-hint">${isApi
+            ? "Changes sync to the backend API and apply to clients on next load."
+            : "Running in local mode. Start the backend server for persistent storage."
+          }</p>
         </div>`;
-    }).join("");
 
-    main.innerHTML = `
-      <div class="coach-view">
-        <div class="coach-view-header">
-          <h1 class="coach-view-title">Clients</h1>
-          <span class="coach-count-badge">${KNOWN_CLIENTS.length}</span>
-        </div>
-        <div class="coach-client-list">${cards}</div>
-        <p class="coach-hint">Edits are saved locally and applied when clients load their program. Use Export to write back to the source file.</p>
-      </div>`;
+      main.querySelectorAll(".coach-client-card").forEach(card => {
+        const open = () => navigate(`client/${card.dataset.slug}/profile`);
+        card.addEventListener("click", open);
+        card.addEventListener("keydown", e => { if (e.key === "Enter") open(); });
+      });
 
-    main.querySelectorAll(".coach-client-card").forEach(card => {
-      const open = () => navigate(`client/${card.dataset.slug}/profile`);
-      card.addEventListener("click", open);
-      card.addEventListener("keydown", e => { if (e.key === "Enter") open(); });
-    });
+      document.getElementById("coach-new-btn")?.addEventListener("click", () => navigate("new-client"));
 
-    // Background-cache all clients for snappier subsequent opens
-    KNOWN_CLIENTS.forEach(c => {
-      if (!CoachStore.getClient(c.slug)) loadClient(c.slug);
+      // Background-cache all fallback clients for snappier subsequent opens
+      FALLBACK_CLIENTS.forEach(c => {
+        if (!CoachStore.getClient(c.slug)) loadClient(c.slug);
+      });
     });
   }
 
@@ -643,8 +665,9 @@
       }
     }
 
-    CoachStore.saveClient(slug, data);
-    showToast("Saved ✓");
+    CoachStore.saveClientAsync(slug, data, (saveErr) => {
+      showToast(saveErr ? "Saved locally (API unavailable)" : "Saved ✓");
+    });
   }
 
   // ── Note helpers ──────────────────────────────────────────────────────────
@@ -653,15 +676,129 @@
     const clone = JSON.parse(JSON.stringify(data));
     if (!clone.program.coach_notes) clone.program.coach_notes = [];
     clone.program.coach_notes.push({ date: new Date().toISOString().split("T")[0], text: "" });
-    CoachStore.saveClient(slug, clone);
-    navigate(`client/${slug}/notes`);
+    CoachStore.saveClientAsync(slug, clone, () => navigate(`client/${slug}/notes`));
   }
 
   function deleteNote(slug, data, idx) {
     const clone = JSON.parse(JSON.stringify(data));
     clone.program.coach_notes = (clone.program.coach_notes || []).filter((_, i) => i !== idx);
-    CoachStore.saveClient(slug, clone);
-    navigate(`client/${slug}/notes`);
+    CoachStore.saveClientAsync(slug, clone, () => navigate(`client/${slug}/notes`));
+  }
+
+  // ── View: New client form ─────────────────────────────────────────────────
+
+  function renderNewClientForm() {
+    const main = document.getElementById("app-main");
+    main.innerHTML = `
+      <div class="coach-view">
+        <div class="coach-view-header">
+          <button class="coach-back-btn" id="coach-back" aria-label="Back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h1 class="coach-view-title">New Client</h1>
+        </div>
+        <div class="coach-form">
+          <div class="coach-form-section">
+            <h3 class="coach-section-title">Client Details</h3>
+            <label class="coach-field"><span>First Name *</span>
+              <input type="text" id="nc-first" autocomplete="given-name" />
+            </label>
+            <label class="coach-field"><span>Last Name *</span>
+              <input type="text" id="nc-last" autocomplete="family-name" />
+            </label>
+            <label class="coach-field"><span>Condition</span>
+              <input type="text" id="nc-condition" placeholder="e.g. ACL Reconstruction" />
+            </label>
+            <label class="coach-field"><span>Client ID (slug) *</span>
+              <input type="text" id="nc-slug" placeholder="e.g. john-smith" pattern="[a-z0-9\\-]+" />
+              <span class="coach-field-hint">Lowercase letters, numbers, hyphens. Auto-generated from name.</span>
+            </label>
+          </div>
+          <div class="coach-form-section">
+            <h3 class="coach-section-title">Program</h3>
+            <label class="coach-field"><span>Mode</span>
+              <select id="nc-mode">
+                ${MODES.map(m => `<option value="${m}">${m.replace(/_/g, " ")}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+          <div class="coach-form-section">
+            <h3 class="coach-section-title">Access</h3>
+            <label class="coach-field"><span>Access Type</span>
+              <select id="nc-access-type">
+                ${ACCESS_TYPES.map(t => `<option value="${t}">${t.replace(/_/g, " ")}</option>`).join("")}
+              </select>
+            </label>
+            <label class="coach-field"><span>Access Status</span>
+              <select id="nc-access-status">
+                ${ACCESS_STATUSES.map(s => `<option value="${s}">${s}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+          <div class="coach-form-actions">
+            <button class="coach-save-btn" id="nc-save-btn">Create Client</button>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("coach-back")?.addEventListener("click", () => navigate("clients"));
+
+    // Auto-generate slug from first + last name
+    const syncSlug = () => {
+      const slugEl = document.getElementById("nc-slug");
+      if (slugEl?._userEdited) return;
+      const first = document.getElementById("nc-first")?.value?.trim() || "";
+      const last  = document.getElementById("nc-last")?.value?.trim()  || "";
+      if (slugEl) slugEl.value = `${first} ${last}`.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    };
+    document.getElementById("nc-first")?.addEventListener("input", syncSlug);
+    document.getElementById("nc-last")?.addEventListener("input",  syncSlug);
+    document.getElementById("nc-slug")?.addEventListener("input",  e => { e.target._userEdited = true; });
+
+    document.getElementById("nc-save-btn")?.addEventListener("click", createClient);
+  }
+
+  function createClient() {
+    const firstName    = document.getElementById("nc-first")?.value?.trim()       || "";
+    const lastName     = document.getElementById("nc-last")?.value?.trim()        || "";
+    const condition    = document.getElementById("nc-condition")?.value?.trim()   || "";
+    const slug         = document.getElementById("nc-slug")?.value?.trim()        || "";
+    const mode         = document.getElementById("nc-mode")?.value                || "multi_week";
+    const accessType   = document.getElementById("nc-access-type")?.value         || "subscription";
+    const accessStatus = document.getElementById("nc-access-status")?.value       || "active";
+
+    if (!firstName || !lastName) { showToast("First and last name are required", "error"); return; }
+    if (!slug)                   { showToast("Client ID (slug) is required", "error"); return; }
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      showToast("Slug must be lowercase letters, numbers and hyphens only", "error");
+      return;
+    }
+
+    const data = {
+      clientConfig: { client: { firstName, lastName, condition } },
+      program: {
+        id:           slug,
+        mode,
+        access:       { type: accessType, status: accessStatus },
+        sessions:     [],
+        goals:        [],
+        milestones:   [],
+        coach_notes:  [],
+      },
+    };
+
+    const btn = document.getElementById("nc-save-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "Creating…"; }
+
+    CoachStore.createClientAsync(slug, data, (err) => {
+      if (err) {
+        showToast(err.error || "Failed to create client", "error");
+        if (btn) { btn.disabled = false; btn.textContent = "Create Client"; }
+        return;
+      }
+      showToast(`${firstName} ${lastName} created ✓`);
+      navigate(`client/${slug}/profile`);
+    });
   }
 
   // ── Export ────────────────────────────────────────────────────────────────
@@ -707,8 +844,9 @@
     const nav = document.getElementById("bottom-nav");
     if (!nav) return;
     nav.classList.remove("hidden");
+    const isApi = CoachStore.getMode() === "api";
     nav.innerHTML = `
-      <button class="nav-btn${view === "clients" ? " active" : ""}" data-action="clients">
+      <button class="nav-btn${(view === "clients" || view === "new-client") ? " active" : ""}" data-action="clients">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -725,6 +863,13 @@
           <line x1="3"  y1="21" x2="10" y2="14"/>
         </svg>
         Rehab View
+      </button>
+      <button class="nav-btn" data-action="toggle-api" title="${isApi ? "Connected to API" : "Using local storage"}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/>
+          <path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>
+        </svg>
+        <span style="color:${isApi ? "var(--coach-success,#16a34a)" : "var(--muted)"}">${isApi ? "API" : "Local"}</span>
       </button>`;
 
     nav.querySelectorAll(".nav-btn").forEach(btn => {
@@ -735,6 +880,17 @@
           if (typeof MrPainPT !== "undefined") MrPainPT.switchModule("rehab");
           else location.href = "index.html?module=rehab";
         }
+        if (action === "toggle-api") {
+          if (CoachStore.getMode() === "api") {
+            CoachStore.setMode("local");
+            showToast("Switched to local mode");
+          } else {
+            CoachStore.detectApiAsync("http://localhost:3000", (_err, result) => {
+              showToast(result.mode === "api" ? "Connected to API ✓" : "API unreachable — using local mode");
+            });
+          }
+          updateNav(location.hash.replace(/^#/, "").split("/")[0] || "clients");
+        }
       });
     });
   }
@@ -742,33 +898,34 @@
   // ── Init ──────────────────────────────────────────────────────────────────
 
   function init() {
-    // Override header for coach portal context
     const titleEl = document.getElementById("header-title");
     if (titleEl) titleEl.textContent = "Coach Portal";
 
     if (!location.hash || location.hash === "#") location.hash = "clients";
 
-    doRender();
+    // Auto-detect backend API on startup — silently falls back to local if unreachable
+    CoachStore.detectApiAsync("http://localhost:3000", (_err, result) => {
+      if (result.mode === "api") console.log("[Coach] API connected →", result.apiBase);
+      // Render after detection so the connection badge shows the correct state
+      doRender();
+    });
 
     window.addEventListener("hashchange", () => {
       const parts = location.hash.replace(/^#/, "").split("/");
       const view  = parts[0];
       const p1    = parts[1];
       const p2    = parts[2];
+      const main  = document.getElementById("app-main");
 
       if (view === "session") {
-        // Async — renders directly into app-main (shows loading screen)
-        document.getElementById("app-main").innerHTML =
-          `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading session…</span></div>`;
+        main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading session…</span></div>`;
         renderSessionEditor(p1, p2);
       } else if (view === "client") {
-        document.getElementById("app-main").innerHTML =
-          `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading…</span></div>`;
+        main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading…</span></div>`;
         renderClientView(p1, p2 || "profile");
       } else {
-        const old = document.getElementById("app-main");
-        const neu = old.cloneNode(false);
-        old.parentNode.replaceChild(neu, old);
+        const neu = main.cloneNode(false);
+        main.parentNode.replaceChild(neu, main);
         doRender();
       }
     });
