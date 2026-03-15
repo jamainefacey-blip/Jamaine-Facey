@@ -26,8 +26,9 @@ const express    = require("express");
 const cors       = require("cors");
 const clients    = require("./clients");
 const access     = require("./access");
-const { requireAuth } = require("./auth");
-const webhookRouter   = require("./webhook");
+const { requireAuth }          = require("./auth");
+const webhookRouter            = require("./webhook");
+const { createCheckoutSession } = require("./stripe");
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -124,6 +125,38 @@ app.put("/api/clients/:slug", requireAuth, (req, res) => {
   }
 });
 
+// POST /api/stripe/create-checkout — create a Stripe Checkout Session (protected)
+// Returns { url, sessionId }. The caller redirects the client to `url`.
+//
+// Body (JSON):
+//   clientSlug    string — Mr Pain PT client slug (must exist in DB)
+//   priceId       string — Stripe Price ID (price_...)
+//   mode          string — "payment" (one-off) or "subscription"
+//   successUrl    string — redirect after successful checkout
+//   cancelUrl     string — redirect if customer cancels
+//   expiryDate    string — optional ISO date for fixed-term/trial access
+//   customerEmail string — optional; pre-fills the Stripe checkout form
+app.post("/api/stripe/create-checkout", requireAuth, async (req, res) => {
+  const { clientSlug, priceId, mode, successUrl, cancelUrl, expiryDate, customerEmail } = req.body || {};
+
+  if (!clientSlug || !priceId || !mode || !successUrl || !cancelUrl) {
+    return res.status(400).json({ error: "clientSlug, priceId, mode, successUrl, cancelUrl are required" });
+  }
+  if (mode !== "payment" && mode !== "subscription") {
+    return res.status(400).json({ error: "mode must be 'payment' or 'subscription'" });
+  }
+  if (!clients.exists(clientSlug)) {
+    return res.status(404).json({ error: `Client "${clientSlug}" not found` });
+  }
+
+  try {
+    const session = await createCheckoutSession({ clientSlug, priceId, mode, successUrl, cancelUrl, expiryDate, customerEmail });
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (err) {
+    _error(res, err.status || 500, "Failed to create checkout session", err);
+  }
+});
+
 // DELETE /api/clients/:slug — soft delete (suspend access)
 app.delete("/api/clients/:slug", requireAuth, (req, res) => {
   const { slug } = req.params;
@@ -158,12 +191,14 @@ app.use((err, _req, res, _next) => {
 // ── Start ──────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  const authStatus    = process.env.COACH_API_KEY     ? "✓ configured" : "⚠ not set (dev mode)";
-  const webhookStatus = process.env.STRIPE_WEBHOOK_SECRET ? "✓ configured" : "⚠ not set";
+  const authStatus    = process.env.COACH_API_KEY          ? "✓ configured" : "⚠ not set (dev mode)";
+  const webhookStatus = process.env.STRIPE_WEBHOOK_SECRET  ? "✓ configured" : "⚠ not set";
+  const stripeStatus  = process.env.STRIPE_SECRET_KEY      ? "✓ configured" : "⚠ not set";
   console.log(`\n  Mr Pain PT API  v2.0`);
   console.log(`  ─────────────────────────────────────────`);
   console.log(`  Listening → http://localhost:${PORT}`);
   console.log(`  Auth      → ${authStatus}`);
+  console.log(`  Stripe    → ${stripeStatus}`);
   console.log(`  Webhook   → ${webhookStatus}`);
   console.log(`  Database  → backend/data/mrpainpt.db`);
   console.log(`  ─────────────────────────────────────────\n`);

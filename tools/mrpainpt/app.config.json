@@ -54,5 +54,10 @@
     "note": "Access enforcement is module-level via AccessGuard. Shell-level auth is planned.",
     "supported_types":     ["one_off_purchase", "subscription", "complimentary", "trial"],
     "supported_statuses":  ["active", "expired", "suspended", "pending"]
+  },
+
+  "api": {
+    "baseUrl": "",
+    "note": "Set at runtime by scripts/config.js. Empty = same-origin (production). For cross-domain deployments, set data-api-base on the config.js <script> tag in index.html."
   }
 }

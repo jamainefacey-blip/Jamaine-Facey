@@ -185,7 +185,7 @@ const CoachStore = (function () {
 
     /** Probe the API; if it responds, auto-switch to API mode. */
     detectApiAsync(apiBase, cb) {
-      const base = apiBase || "http://localhost:3000";
+      const base = (apiBase || window.MRPAINPT_API_BASE || "").replace(/\/$/, "");
       fetch(`${base}/api/health`, { signal: AbortSignal.timeout(2000) })
         .then(r => r.json())
         .then(d => {
@@ -230,7 +230,7 @@ const CoachStore = (function () {
 
     /** Verify a token against the API; on success auto-switches to API mode. */
     testAuth(apiBase, token, cb) {
-      const base = (apiBase || "http://localhost:3000").replace(/\/$/, "");
+      const base = (apiBase || window.MRPAINPT_API_BASE || "").replace(/\/$/, "");
       fetch(`${base}/api/clients`, {
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         signal:  AbortSignal.timeout(3000),

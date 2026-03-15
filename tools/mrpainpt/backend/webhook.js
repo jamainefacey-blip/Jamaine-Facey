@@ -20,6 +20,7 @@
 //  customer.subscription.created        active           active
 //  customer.subscription.updated        active|expired   active|past_due
 //  customer.subscription.deleted        expired          cancelled
+//  customer.subscription.trial_will_end (unchanged)      trial_ending   ← 3-day warning
 //  invoice.payment_succeeded            active           active
 //  invoice.payment_failed               (unchanged)      past_due
 //  checkout.session.completed           active           active
@@ -177,6 +178,15 @@ function mapEventToUpdate(event) {
           ...existing.program,
           access: { ...existing.program?.access, status: "active" },
         }),
+      };
+
+    // 3-day advance warning before trial ends — log only; access unchanged.
+    // Use this event to trigger a "trial ending soon" notification to the client.
+    case "customer.subscription.trial_will_end":
+      console.log(`[webhook] trial_will_end for subscription ${obj.id} — ends ${isoDate(obj.trial_end)}`);
+      return {
+        payment: { billingStatus: "trial_ending" },
+        // Access remains "active" until trial_end passes; expiryDate enforcement handles cutoff
       };
 
     case "invoice.payment_failed":

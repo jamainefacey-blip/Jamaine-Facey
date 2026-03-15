@@ -891,7 +891,7 @@
             showToast("Disconnected — using local mode");
             doRender();
           } else {
-            const url = "http://localhost:3000";
+            const url = window.MRPAINPT_API_BASE || "";
             fetch(`${url}/api/health`, { signal: AbortSignal.timeout(2000) })
               .then(r => r.json())
               .then(h => {
@@ -933,7 +933,7 @@
           <div class="coach-login-form">
             <label class="coach-field">
               <span>API URL</span>
-              <input type="url" id="login-api-url" value="http://localhost:3000" autocomplete="off" />
+              <input type="url" id="login-api-url" value="${esc(window.MRPAINPT_API_BASE || "")}" autocomplete="off" />
             </label>
             <label class="coach-field">
               <span>API Key</span>
@@ -961,7 +961,7 @@
     const keyEl = document.getElementById("login-api-key");
     const btn   = document.getElementById("login-submit-btn");
 
-    const url = (urlEl?.value?.trim() || "http://localhost:3000").replace(/\/$/, "");
+    const url = (urlEl?.value?.trim() || window.MRPAINPT_API_BASE || "").replace(/\/$/, "");
     const key = keyEl?.value?.trim() || "";
 
     if (!key) { showToast("API key is required", "error"); return; }
@@ -1030,7 +1030,7 @@
     // Restore previous session if token is saved
     const existingToken = CoachStore.getAuthToken();
     if (existingToken) {
-      CoachStore.testAuth("http://localhost:3000", existingToken, (err) => {
+      CoachStore.testAuth(window.MRPAINPT_API_BASE || "", existingToken, (err) => {
         if (!err) { startApp(); return; }
         CoachStore.clearAuthToken();
         if (err.status === 401 || err.status === 403) {
@@ -1045,11 +1045,12 @@
     }
 
     // No saved token — probe server to decide next step
-    fetch("http://localhost:3000/api/health", { signal: AbortSignal.timeout(2000) })
+    const _apiBase = window.MRPAINPT_API_BASE || "";
+    fetch(`${_apiBase}/api/health`, { signal: AbortSignal.timeout(2000) })
       .then(r => r.json())
       .then(h => {
         if (h.status !== "ok") { startApp(); return; }
-        CoachStore.setMode("api", "http://localhost:3000");
+        CoachStore.setMode("api", _apiBase);
         if (h.auth) {
           renderLoginScreen();  // server requires a key
         } else {

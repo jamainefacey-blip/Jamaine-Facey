@@ -4,8 +4,11 @@
   "description": "Mr Pain PT — Client + Access Management API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start":          "node server.js",
+    "dev":            "node --watch server.js",
+    "seed":           "node seed.js",
+    "seed:overwrite": "node seed.js --overwrite",
+    "seed:dry":       "node seed.js --dry-run"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.3",
