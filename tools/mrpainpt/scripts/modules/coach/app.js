@@ -45,6 +45,10 @@
   const ACCESS_TYPES   = ["subscription", "one_off_purchase", "complimentary", "trial"];
   const ACCESS_STATUSES = ["active", "expired", "suspended", "pending"];
 
+  // ── Module state ───────────────────────────────────────────────────────────
+
+  let _hashchangeAttached = false;
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   function esc(v) {
@@ -882,17 +886,131 @@
         }
         if (action === "toggle-api") {
           if (CoachStore.getMode() === "api") {
+            CoachStore.clearAuthToken();
             CoachStore.setMode("local");
-            showToast("Switched to local mode");
+            showToast("Disconnected — using local mode");
+            doRender();
           } else {
-            CoachStore.detectApiAsync("http://localhost:3000", (_err, result) => {
-              showToast(result.mode === "api" ? "Connected to API ✓" : "API unreachable — using local mode");
-            });
+            const url = "http://localhost:3000";
+            fetch(`${url}/api/health`, { signal: AbortSignal.timeout(2000) })
+              .then(r => r.json())
+              .then(h => {
+                if (h.status !== "ok") { showToast("Server unreachable"); return; }
+                CoachStore.setMode("api", url);
+                if (h.auth) {
+                  renderLoginScreen();
+                } else {
+                  showToast("Connected to API ✓");
+                  doRender();
+                }
+              })
+              .catch(() => showToast("Server unreachable — still in local mode"));
           }
-          updateNav(location.hash.replace(/^#/, "").split("/")[0] || "clients");
         }
       });
     });
+  }
+
+  // ── Login screen ──────────────────────────────────────────────────────────
+
+  function renderLoginScreen(errorMsg) {
+    const main = document.getElementById("app-main");
+    if (!main) return;
+    const nav = document.getElementById("bottom-nav");
+    if (nav) nav.classList.add("hidden");
+
+    main.innerHTML = `
+      <div class="coach-login-wrap">
+        <div class="coach-login-card">
+          <div class="coach-login-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h1 class="coach-login-title">Coach Portal</h1>
+          <p class="coach-login-sub">Enter your API key to connect</p>
+          ${errorMsg ? `<p class="coach-login-error">${esc(errorMsg)}</p>` : ""}
+          <div class="coach-login-form">
+            <label class="coach-field">
+              <span>API URL</span>
+              <input type="url" id="login-api-url" value="http://localhost:3000" autocomplete="off" />
+            </label>
+            <label class="coach-field">
+              <span>API Key</span>
+              <input type="password" id="login-api-key" placeholder="Enter your COACH_API_KEY" autocomplete="current-password" />
+            </label>
+            <button class="coach-save-btn" id="login-submit-btn">Connect</button>
+            <button class="coach-login-local-btn" id="login-local-btn">Use Local Mode Instead</button>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("login-submit-btn")?.addEventListener("click", handleLogin);
+    document.getElementById("login-api-key")?.addEventListener("keydown", e => {
+      if (e.key === "Enter") handleLogin();
+    });
+    document.getElementById("login-local-btn")?.addEventListener("click", () => {
+      CoachStore.setMode("local");
+      showToast("Running in local mode");
+      startApp();
+    });
+  }
+
+  function handleLogin() {
+    const urlEl = document.getElementById("login-api-url");
+    const keyEl = document.getElementById("login-api-key");
+    const btn   = document.getElementById("login-submit-btn");
+
+    const url = (urlEl?.value?.trim() || "http://localhost:3000").replace(/\/$/, "");
+    const key = keyEl?.value?.trim() || "";
+
+    if (!key) { showToast("API key is required", "error"); return; }
+
+    if (btn) { btn.disabled = true; btn.textContent = "Connecting…"; }
+
+    CoachStore.testAuth(url, key, (err) => {
+      if (btn) { btn.disabled = false; btn.textContent = "Connect"; }
+      if (err) {
+        const msg = (err.status === 401 || err.status === 403)
+          ? "Invalid API key — check your COACH_API_KEY"
+          : "Could not reach the server — check the API URL";
+        renderLoginScreen(msg);
+        return;
+      }
+      showToast("Connected to API ✓");
+      startApp();
+    });
+  }
+
+  function _onHashChange() {
+    const parts = location.hash.replace(/^#/, "").split("/");
+    const view  = parts[0];
+    const p1    = parts[1];
+    const p2    = parts[2];
+    const main  = document.getElementById("app-main");
+
+    if (view === "session") {
+      main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading session…</span></div>`;
+      renderSessionEditor(p1, p2);
+    } else if (view === "client") {
+      main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading…</span></div>`;
+      renderClientView(p1, p2 || "profile");
+    } else {
+      const neu = main.cloneNode(false);
+      main.parentNode.replaceChild(neu, main);
+      doRender();
+    }
+  }
+
+  function startApp() {
+    if (!location.hash || location.hash === "#") location.hash = "clients";
+    const nav = document.getElementById("bottom-nav");
+    if (nav) nav.classList.remove("hidden");
+    doRender();
+    if (!_hashchangeAttached) {
+      window.addEventListener("hashchange", _onHashChange);
+      _hashchangeAttached = true;
+    }
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -901,34 +1019,45 @@
     const titleEl = document.getElementById("header-title");
     if (titleEl) titleEl.textContent = "Coach Portal";
 
-    if (!location.hash || location.hash === "#") location.hash = "clients";
-
-    // Auto-detect backend API on startup — silently falls back to local if unreachable
-    CoachStore.detectApiAsync("http://localhost:3000", (_err, result) => {
-      if (result.mode === "api") console.log("[Coach] API connected →", result.apiBase);
-      // Render after detection so the connection badge shows the correct state
-      doRender();
+    // Register unauthorized callback — fires on 401/403 from any API call
+    CoachStore.onUnauthorized(() => {
+      CoachStore.clearAuthToken();
+      CoachStore.setMode("local");
+      showToast("Session expired — please log in again", "error");
+      renderLoginScreen("Your session has expired");
     });
 
-    window.addEventListener("hashchange", () => {
-      const parts = location.hash.replace(/^#/, "").split("/");
-      const view  = parts[0];
-      const p1    = parts[1];
-      const p2    = parts[2];
-      const main  = document.getElementById("app-main");
+    // Restore previous session if token is saved
+    const existingToken = CoachStore.getAuthToken();
+    if (existingToken) {
+      CoachStore.testAuth("http://localhost:3000", existingToken, (err) => {
+        if (!err) { startApp(); return; }
+        CoachStore.clearAuthToken();
+        if (err.status === 401 || err.status === 403) {
+          renderLoginScreen("API key no longer valid — please re-enter");
+        } else {
+          showToast("Server unreachable — using local mode");
+          CoachStore.setMode("local");
+          startApp();
+        }
+      });
+      return;
+    }
 
-      if (view === "session") {
-        main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading session…</span></div>`;
-        renderSessionEditor(p1, p2);
-      } else if (view === "client") {
-        main.innerHTML = `<div class="coach-loading"><div class="coach-spinner"></div><span>Loading…</span></div>`;
-        renderClientView(p1, p2 || "profile");
-      } else {
-        const neu = main.cloneNode(false);
-        main.parentNode.replaceChild(neu, main);
-        doRender();
-      }
-    });
+    // No saved token — probe server to decide next step
+    fetch("http://localhost:3000/api/health", { signal: AbortSignal.timeout(2000) })
+      .then(r => r.json())
+      .then(h => {
+        if (h.status !== "ok") { startApp(); return; }
+        CoachStore.setMode("api", "http://localhost:3000");
+        if (h.auth) {
+          renderLoginScreen();  // server requires a key
+        } else {
+          console.log("[Coach] API connected (dev mode, no auth)");
+          startApp();
+        }
+      })
+      .catch(() => startApp());  // server unreachable — local mode
   }
 
   // ── Shell integration ─────────────────────────────────────────────────────

@@ -146,4 +146,19 @@ function update(slug, body) {
   return get(slug);
 }
 
-module.exports = { listAll, exists, get, create, update };
+/**
+ * Find a client row by a payment column value.
+ * Used by the webhook handler to map Stripe IDs to client slugs.
+ *
+ * @param {"subscription_id"|"purchase_id"} field  — DB column name
+ * @param {string} value
+ * @returns { slug } | null
+ */
+function findByPaymentField(field, value) {
+  const ALLOWED = new Set(["subscription_id", "purchase_id", "payment_provider"]);
+  if (!ALLOWED.has(field)) return null;
+  const row = db.prepare(`SELECT slug FROM clients WHERE ${field} = ? LIMIT 1`).get(value);
+  return row ? { slug: row.slug } : null;
+}
+
+module.exports = { listAll, exists, get, create, update, findByPaymentField };

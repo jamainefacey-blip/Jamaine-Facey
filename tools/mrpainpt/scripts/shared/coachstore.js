@@ -47,9 +47,12 @@ const CoachStore = (function () {
 
   // ── State ────────────────────────────────────────────────────────────────────
 
-  const LOCAL_KEY = "mrpainpt_coach_v1";
-  let _mode    = "local";
-  let _apiBase = null;
+  const LOCAL_KEY  = "mrpainpt_coach_v1";
+  const TOKEN_KEY  = "mrpainpt_coach_token";
+  let _mode         = "local";
+  let _apiBase      = null;
+  let _authToken    = null;       // in-memory; loaded from sessionStorage at setMode
+  let _onUnauth     = null;       // callback(status) invoked on 401/403 responses
 
   // ── localStorage helpers ─────────────────────────────────────────────────────
 
@@ -97,36 +100,72 @@ const CoachStore = (function () {
   }
 
   // ── API fetch helpers ────────────────────────────────────────────────────────
+  // Public routes (GET /health, GET /clients/:slug) — no auth header needed.
+  // Protected routes (list, create, update) — include Authorization: Bearer.
 
-  function _get(path, cb) {
+  function _authHeaders() {
+    const h = { "Content-Type": "application/json" };
+    if (!_authToken) {
+      try { _authToken = sessionStorage.getItem(TOKEN_KEY) || null; } catch (_) {}
+    }
+    if (_authToken) h["Authorization"] = `Bearer ${_authToken}`;
+    return h;
+  }
+
+  function _handleAuthError(status, cb) {
+    if (status === 401 || status === 403) {
+      if (_onUnauth) _onUnauth(status);
+    }
+    cb(new Error(`HTTP ${status}`), null);
+  }
+
+  // Public GET (no auth header — used for client data reads from rehab module)
+  function _getPublic(path, cb) {
     fetch(`${_apiBase}${path}`)
-      .then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
+      .then(r => { if (!r.ok) throw Object.assign(new Error(`${r.status}`), { status: r.status }); return r.json(); })
       .then(d  => cb(null, d))
+      .catch(e => cb(e, null));
+  }
+
+  // Authenticated GET (used for admin list)
+  function _get(path, cb) {
+    fetch(`${_apiBase}${path}`, { headers: _authHeaders() })
+      .then(r => {
+        if (r.status === 401 || r.status === 403) return _handleAuthError(r.status, cb);
+        if (!r.ok) throw Object.assign(new Error(`${r.status}`), { status: r.status });
+        return r.json();
+      })
+      .then(d  => d && cb(null, d))
       .catch(e => cb(e, null));
   }
 
   function _put(path, body, cb) {
     fetch(`${_apiBase}${path}`, {
       method:  "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: _authHeaders(),
       body:    JSON.stringify(body),
     })
-      .then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
-      .then(d  => cb(null, d))
+      .then(r => {
+        if (r.status === 401 || r.status === 403) return _handleAuthError(r.status, cb);
+        if (!r.ok) throw Object.assign(new Error(`${r.status}`), { status: r.status });
+        return r.json();
+      })
+      .then(d  => d && cb(null, d))
       .catch(e => cb(e, null));
   }
 
   function _post(path, body, cb) {
     fetch(`${_apiBase}${path}`, {
       method:  "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: _authHeaders(),
       body:    JSON.stringify(body),
     })
       .then(r => {
+        if (r.status === 401 || r.status === 403) return _handleAuthError(r.status, cb);
         if (!r.ok) return r.json().then(e => { throw e; });
         return r.json();
       })
-      .then(d  => cb(null, d))
+      .then(d  => d && cb(null, d))
       .catch(e => cb(e, null));
   }
 
@@ -161,6 +200,56 @@ const CoachStore = (function () {
         .catch(() => {
           cb(null, { mode: "local", apiBase: null });
         });
+    },
+
+    // ── Auth token management ────────────────────────────────────────────────────
+
+    setAuthToken(token) {
+      _authToken = token || null;
+      try {
+        if (token) sessionStorage.setItem(TOKEN_KEY, token);
+        else        sessionStorage.removeItem(TOKEN_KEY);
+      } catch (_) {}
+    },
+
+    getAuthToken() {
+      if (_authToken) return _authToken;
+      try {
+        const t = sessionStorage.getItem(TOKEN_KEY);
+        if (t) { _authToken = t; return t; }
+      } catch (_) {}
+      return null;
+    },
+
+    clearAuthToken() {
+      _authToken = null;
+      try { sessionStorage.removeItem(TOKEN_KEY); } catch (_) {}
+    },
+
+    onUnauthorized(cb) { _onUnauth = cb; },
+
+    /** Verify a token against the API; on success auto-switches to API mode. */
+    testAuth(apiBase, token, cb) {
+      const base = (apiBase || "http://localhost:3000").replace(/\/$/, "");
+      fetch(`${base}/api/clients`, {
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        signal:  AbortSignal.timeout(3000),
+      })
+        .then(r => {
+          if (r.status === 401 || r.status === 403) {
+            throw Object.assign(new Error("Invalid API key"), { status: r.status });
+          }
+          if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
+          return r.json();
+        })
+        .then(() => {
+          _mode      = "api";
+          _apiBase   = base;
+          _authToken = token;
+          try { sessionStorage.setItem(TOKEN_KEY, token); } catch (_) {}
+          cb(null, { mode: "api", apiBase: base });
+        })
+        .catch(e => cb(e, null));
     },
 
     // ── Sync local API (v1 surface — unchanged) ─────────────────────────────────
@@ -239,7 +328,7 @@ const CoachStore = (function () {
     /** Get a single client with server-resolved access block. */
     getClientAsync(slug, cb) {
       if (_mode === "api" && _apiBase) {
-        _get(`/api/clients/${slug}`, (err, data) => {
+        _getPublic(`/api/clients/${slug}`, (err, data) => {
           if (err) {
             console.warn("[CoachStore] API get failed, using local cache", err.message);
             return cb(null, this.getClient(slug));
@@ -297,7 +386,7 @@ const CoachStore = (function () {
      */
     applyToGlobalsAsync(slug, cb) {
       if (_mode === "api" && _apiBase) {
-        _get(`/api/clients/${slug}`, (err, data) => {
+        _getPublic(`/api/clients/${slug}`, (err, data) => {
           if (err) {
             console.warn("[CoachStore] API applyToGlobals failed, using local", err.message);
             this.applyToGlobals(slug);

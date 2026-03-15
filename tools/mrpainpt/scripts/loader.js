@@ -153,23 +153,51 @@
     }
 
     // 3b. Load client data → apply any coach edits → load module app → boot
-    loadScript(
-      `scripts/data/clients/${client}.js`,
-      function onClientLoaded() {
-        // Apply coach portal overrides (local or API-sourced) on top of the
-        // static client file. applyToGlobalsAsync is a no-op if no edits exist.
-        function _proceed() {
-          loadScript(manifest.appScript, function onAppLoaded() {
-            MrPainPT.boot(moduleId);
-          });
+    //
+    //  DB-first: if CoachStore is in API mode, fetch the client directly from the
+    //  server (which returns server-resolved access). Skip the static file entirely.
+    //  Fall back to static file + applyToGlobalsAsync if the API returns 404/error.
+
+    function _bootApp() {
+      loadScript(manifest.appScript, function onAppLoaded() {
+        MrPainPT.boot(moduleId);
+      });
+    }
+
+    function _loadStaticClient() {
+      loadScript(
+        `scripts/data/clients/${client}.js`,
+        function onClientLoaded() {
+          if (typeof CoachStore !== "undefined") {
+            CoachStore.applyToGlobalsAsync(client, _bootApp);
+          } else {
+            _bootApp();
+          }
         }
-        if (typeof CoachStore !== "undefined") {
-          CoachStore.applyToGlobalsAsync(client, _proceed);
+      );
+    }
+
+    if (typeof CoachStore !== "undefined" && CoachStore.getMode() === "api") {
+      CoachStore.getClientAsync(client, function onApiClient(err, data) {
+        if (!err && data && data.clientConfig) {
+          // Server has this client — set globals from API response
+          window.CLIENT_CONFIG = data.clientConfig;
+          window.PROGRAM       = data.program || {};
+          // Mirror server-resolved access (authoritative — cannot be bypassed client-side)
+          if (data.access) {
+            if (!window.PROGRAM.access) window.PROGRAM.access = {};
+            if (data.access.type)   window.PROGRAM.access.type   = data.access.type;
+            if (data.access.status) window.PROGRAM.access.status = data.access.status;
+          }
+          _bootApp();
         } else {
-          _proceed();
+          // Client not yet in DB (404) or API error — fall back to static file
+          _loadStaticClient();
         }
-      }
-    );
+      });
+    } else {
+      _loadStaticClient();
+    }
   }
 
   boot();

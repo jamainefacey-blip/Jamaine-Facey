@@ -28,18 +28,35 @@ const MESSAGES = {
 };
 
 /**
- * Resolve access entitlement from a program.access block (or payment fields).
+ * Resolve access entitlement from a program.access block + payment fields.
  *
- * @param {object} accessBlock  — program?.access
- * @param {object} [payment]    — payment fields from clients row (future: compare expiryDate)
+ * This runs on the server and is the authoritative access decision.
+ * The frontend AccessGuard reads the resolved block from GET /api/clients/:slug
+ * and cannot independently override it.
+ *
+ * ExpiryDate enforcement:
+ *   If payment.expiryDate is set (trials, fixed-term) and the current date is
+ *   past it, status is forced to "expired" regardless of the stored value.
+ *   This prevents stale "active" records after a trial ends.
+ *
+ * @param {object} accessBlock  — program?.access  { type, status }
+ * @param {object} [payment]    — payment fields from clients row
  * @returns AccessDecision = { type, status, allowed, reason, heading, body, cta }
  */
 function resolve(accessBlock, payment) {
-  const { status, type } = accessBlock || {};
+  let { status, type } = accessBlock || {};
 
-  // Future: if expiryDate is set and has passed, override status to "expired"
-  // const now = new Date().toISOString();
-  // if (payment?.expiryDate && now > payment.expiryDate) status = "expired";
+  // ── ExpiryDate enforcement ────────────────────────────────────────────────
+  // Auto-expire when expiryDate is set and has passed.
+  // This is the key server-side enforcement step that client-side cannot replicate.
+  if (payment?.expiryDate && status === "active") {
+    const now    = new Date().toISOString().split("T")[0];
+    const expiry = payment.expiryDate;
+    if (now > expiry) {
+      console.log(`[access] ${type || "?"} expiry enforced: ${expiry} < ${now}`);
+      status = "expired";
+    }
+  }
 
   if (!status || status === "active") {
     return { type: type || null, status: status || "active", allowed: true, reason: null, heading: null, body: null, cta: null };
