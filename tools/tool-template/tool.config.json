@@ -1,0 +1,6 @@
+{
+  "tool_name": "template-tool",
+  "endpoint": "/tools/template",
+  "version": "1.0",
+  "description": "Template structure for Pain System sandbox tools"
+}

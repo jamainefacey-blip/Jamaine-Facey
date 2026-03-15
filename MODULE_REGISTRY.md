@@ -19,6 +19,20 @@ Notes:
 - It confirms that the Netlify edge execution environment is working.
 - It serves as the first module in the Pain System sandbox module registry.
 ---
+---
+## Example Sandbox Tools
+
+### Hello Pain
+Tool Name: Hello Pain
+Endpoint: /tools/hello-pain
+Location: tools/hello-pain/handler.ts
+Purpose: Confirms that the sandbox tool system is functioning
+Response example:
+{
+  "tool": "hello-pain",
+  "message": "Pain System tool sandbox operational"
+}
+---
 Future modules added to this repository should be documented here with:
 - Module name
 - Endpoint path (if applicable)
