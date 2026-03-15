@@ -1,0 +1,74 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Netlify deployment configuration — Pain System Rehab Client
+#
+# OPTION A — Standalone site from this subfolder (recommended for this module):
+#   In Netlify UI → "Add new site" → connect repo, then set:
+#     Base directory:    tools/rehab-client
+#     Publish directory: (leave blank, or enter ".")
+#     Build command:     (leave blank — no build step required)
+#
+# OPTION B — Drag-and-drop deploy (fastest for a quick preview):
+#   Zip the tools/rehab-client/ folder and drop it onto
+#   app.netlify.com/drop  — live in under 30 seconds.
+#
+# OPTION C — Full-repo deploy from the repository root:
+#   Move or copy this file to the repository root and change publish to:
+#     publish = "tools/rehab-client"
+# ─────────────────────────────────────────────────────────────────────────────
+
+[build]
+  # Relative to this file's location (tools/rehab-client/) or to the
+  # Netlify base directory if set to tools/rehab-client in the UI.
+  publish = "."
+
+  # No build command — the app is pure static HTML/CSS/JS.
+  # Remove the comment below if you later add a build step (e.g. Vite).
+  # command = ""
+
+# ── SPA fallback ──────────────────────────────────────────────────────────────
+# This app uses hash-based routing (#dashboard, #plan, #session/w3-s2, etc.)
+# which the browser resolves entirely client-side — the server never sees the
+# hash fragment, so no redirect is needed for the hash routes themselves.
+#
+# This rule is a safety net for the rare case where a user lands on a bare
+# path without a hash (e.g. a misconfigured link to /dashboard instead of
+# /#dashboard). Netlify serves index.html and the JS router takes over.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# ── Security headers ──────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+    Permissions-Policy     = "camera=(), microphone=(), geolocation=()"
+
+# ── Caching ────────────────────────────────────────────────────────────────────
+# 24-hour cache for MVP. Extend to max-age=31536000 once you add cache-busting
+# hashes to script/style filenames (a Vite/bundler step).
+[[headers]]
+  for = "/styles/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+[[headers]]
+  for = "/scripts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+# ── handler.ts note ───────────────────────────────────────────────────────────
+# handler.ts lives in this folder as a stub for a future Netlify Edge Function.
+# When deployed as a static site it is inert — Netlify Edge Functions must live
+# under netlify/edge-functions/ to be executed.  This file will NOT be served
+# as a page (TypeScript files are not rendered by browsers).
+# To activate it as a real edge function later, move it to:
+#   tools/rehab-client/netlify/edge-functions/rehab-api.ts
+# and update the config below:
+#
+# [[edge_functions]]
+#   path     = "/api/rehab"
+#   function = "rehab-api"
