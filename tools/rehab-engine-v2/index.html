@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="description" content="Pain System Rehab Engine v2 — coach-guided rehabilitation app" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Pain System Rehab</title>
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-logo" id="header-logo">PS</div>
+      <div class="header-title" id="header-title">Pain System Rehab</div>
+      <div class="header-right" id="header-right"></div>
+    </div>
+  </header>
+
+  <!-- ── Main content (rendered by app.js) ─────────────────────── -->
+  <main class="app-main" id="app-main">
+    <div class="loading-screen">
+      <div class="loading-spinner"></div>
+      <span>Loading your program…</span>
+    </div>
+  </main>
+
+  <!-- ── Bottom navigation ──────────────────────────────────────── -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Home
+    </button>
+    <button class="nav-btn" data-view="plan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      Plan
+    </button>
+    <button class="nav-btn" data-view="exercises">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+        <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+      </svg>
+      Exercises
+    </button>
+    <button class="nav-btn" data-view="progress">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6"  y1="20" x2="6"  y2="14"/>
+      </svg>
+      Progress
+    </button>
+    <button class="nav-btn" data-view="notes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      Coach
+    </button>
+  </nav>
+
+</div><!-- #app -->
+
+<!-- ── Modal overlay ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-close" id="modal-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────
+     Scripts — load order matters (all globals, no modules):
+
+     1. Engine layer (pure utility, no DOM, no data)
+     2. Shared exercise library
+     3. Active client data  ← EDIT THIS BLOCK to switch clients
+     4. App controller
+
+     To switch clients: comment out the active client line and
+     uncomment the desired client line.
+     ───────────────────────────────────────────────────────────────── -->
+
+<!-- Engine utilities -->
+<script src="scripts/engine/progress.js"></script>
+<script src="scripts/engine/validate.js"></script>
+
+<!-- Shared exercise library -->
+<script src="scripts/data/exercises.js"></script>
+
+<!-- Active client — uncomment ONE: -->
+<script src="scripts/data/clients/sarah-thompson.js"></script>  <!-- full-program   -->
+<!-- <script src="scripts/data/clients/james-chen.js"></script>     single-instruction -->
+<!-- <script src="scripts/data/clients/maria-santos.js"></script>    short-block        -->
+
+<!-- App controller -->
+<script src="scripts/app.js"></script>
+
+</body>
+</html>

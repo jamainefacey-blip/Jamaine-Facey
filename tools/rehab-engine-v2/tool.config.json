@@ -1,0 +1,28 @@
+{
+  "id": "rehab-engine-v2",
+  "name": "Rehab Engine v2",
+  "version": "2.0.0",
+  "description": "Configurable, mode-aware rehabilitation coaching SPA. Supports single-instruction, short-block, and full-program modes. White-label ready — swap client data files to deploy for a new client.",
+  "type": "web-app",
+  "entryPoint": "index.html",
+  "modes": [
+    "single-instruction",
+    "short-block",
+    "full-program"
+  ],
+  "exampleClients": [
+    { "file": "scripts/data/clients/sarah-thompson.js", "mode": "full-program",         "description": "12-week ACL reconstruction rehab" },
+    { "file": "scripts/data/clients/james-chen.js",     "mode": "single-instruction",   "description": "Post-op day-3 home session" },
+    { "file": "scripts/data/clients/maria-santos.js",   "mode": "short-block",          "description": "4-week shoulder mobility block" }
+  ],
+  "dependencies": {
+    "runtime": "none",
+    "buildTool": "none"
+  },
+  "deploy": {
+    "netlify": "netlify.toml",
+    "publishDir": ".",
+    "buildCommand": null
+  },
+  "upgradesFrom": "rehab-client"
+}
