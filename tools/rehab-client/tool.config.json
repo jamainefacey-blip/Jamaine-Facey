@@ -1,0 +1,9 @@
+{
+  "tool_name": "rehab-client",
+  "endpoint": "/tools/rehab-client",
+  "version": "1.0",
+  "description": "Mobile-first rehab / PT client web app — white-label template for Pain System coaching tools",
+  "type": "web-app",
+  "template": "tool-template",
+  "phase": "MVP"
+}
