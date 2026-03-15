@@ -33,6 +33,23 @@ Response example:
   "message": "Pain System tool sandbox operational"
 }
 ---
+## Rehab Client App
+
+Tool Name: Rehab Client
+Endpoint: /tools/rehab-client
+Location: tools/rehab-client/
+Type: Static Web App (SPA)
+Purpose: Mobile-first rehab / PT coaching app for individual clients. Displays a personalised rehab program, session schedule, exercise library with coaching cues, progress tracking, and coach notes. Built as a white-label template reusable for any PT or rehab client by editing the data files only.
+Key files:
+- index.html — app shell
+- styles/app.css — mobile-first styles
+- scripts/app.js — SPA router and all view logic
+- scripts/data/client.js — client profile, goals, coach, branding (edit to white-label)
+- scripts/data/exercises.js — exercise library with sets, reps, tempo, cues
+- scripts/data/plan.js — 12-week session schedule
+Demo client: Sarah Thompson — Post-ACL reconstruction, 12-week program
+Phase: MVP — static data, no login required
+---
 Future modules added to this repository should be documented here with:
 - Module name
 - Endpoint path (if applicable)
