@@ -113,6 +113,7 @@
        index.html?module=rehab&client=maria-santos → rehab multi_week (4-wk)
        index.html?module=rehab&client=david-park   → rehab ongoing_coaching
        index.html?module=rehab&client=sarah-thompson → rehab multi_week (12-wk ACL)
+       index.html?module=coach                     → coach portal (admin)
 
      Adding a new module (when ready to build):
        1. Create scripts/modules/<id>/<id>.js  — calls MrPainPT.registerModule()
@@ -130,11 +131,12 @@
 <script src="scripts/shared/progress.js"></script>
 <script src="scripts/shared/validate.js"></script>
 <script src="scripts/shared/access.js"></script>
+<script src="scripts/shared/coachstore.js"></script>
 
 <!-- 3. Module registration files (one per module) -->
 <script src="scripts/modules/rehab/rehab.js"></script>
+<script src="scripts/modules/coach/coach.js"></script>
 <!-- future: <script src="scripts/modules/training/training.js"></script> -->
-<!-- future: <script src="scripts/modules/coaching/coaching.js"></script> -->
 
 <!-- 4. Shared exercise library -->
 <script src="scripts/data/exercises.js"></script>

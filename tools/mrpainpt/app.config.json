@@ -10,13 +10,24 @@
 
   "modules": [
     {
-      "id":          "rehab",
-      "name":        "Rehabilitation",
-      "status":      "live",
-      "version":     "2.0.0",
-      "description": "Coach-prescribed rehab programs. Supports one_off, multi_week, and ongoing_coaching delivery modes.",
-      "appScript":   "scripts/modules/rehab/app.js",
-      "styles":      ["styles/rehab.css"]
+      "id":             "rehab",
+      "name":           "Rehabilitation",
+      "status":         "live",
+      "version":        "2.0.0",
+      "description":    "Coach-prescribed rehab programs. Supports one_off, multi_week, and ongoing_coaching delivery modes.",
+      "appScript":      "scripts/modules/rehab/app.js",
+      "styles":         ["styles/rehab.css"],
+      "requiresClient": true
+    },
+    {
+      "id":             "coach",
+      "name":           "Coach Portal",
+      "status":         "live",
+      "version":        "1.0.0",
+      "description":    "Admin panel for managing clients, programs, access, and coach notes without editing source files.",
+      "appScript":      "scripts/modules/coach/app.js",
+      "styles":         ["styles/coach.css"],
+      "requiresClient": false
     }
   ],
 

@@ -143,10 +143,24 @@
     // 2. Inject module styles
     (manifest.styles || []).forEach(href => loadStyle(href));
 
-    // 3. Load client data → then load module app script → then boot shell
+    // 3a. Modules that manage their own client data skip client file loading.
+    //     Set requiresClient: false in the module manifest to enable this.
+    if (manifest.requiresClient === false) {
+      loadScript(manifest.appScript, function onAppLoaded() {
+        MrPainPT.boot(moduleId);
+      });
+      return;
+    }
+
+    // 3b. Load client data → apply any coach edits → load module app → boot
     loadScript(
       `scripts/data/clients/${client}.js`,
       function onClientLoaded() {
+        // Apply coach portal overrides on top of the static client file.
+        // CoachStore.applyToGlobals() is a no-op if no edits exist.
+        if (typeof CoachStore !== "undefined") {
+          CoachStore.applyToGlobals(client);
+        }
         loadScript(
           manifest.appScript,
           function onAppLoaded() {
