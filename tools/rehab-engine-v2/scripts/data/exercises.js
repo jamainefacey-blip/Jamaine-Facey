@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// EXERCISE LIBRARY  —  Shared across all clients
+// EXERCISE LIBRARY  —  Shared across all clients  (v2 — 28 exercises)
 //
 // Schema per exercise:
 //   id               string       — unique slug, referenced in session.exercises[]
@@ -7,16 +7,17 @@
 //   category         string       — "Activation" | "Strength" | "Functional Strength" |
 //                                   "Stability" | "Range of Motion" | "Circulation" |
 //                                   "Hip & Glute" | "Mobility" | "Flexibility" | "Balance"
-//   bodyRegion       string       — "knee" | "hip" | "ankle" | "shoulder" | "spine" | "full-body"
+//   bodyRegion       string       — "knee" | "hip" | "ankle" | "shoulder" | "spine" |
+//                                   "full-body" | "calf" | "neck"
 //   movementPattern  string       — "isometric" | "isotonic" | "plyometric" | "stretch" |
-//                                   "balance" | "gait" | "rotational"
-//   equipment        string|null  — null = bodyweight; otherwise "resistance band" | "foam roller" |
-//                                   "step" | "wall" | "chair" | "theraband" | ...
-//   contraindications string[]    — conditions / precautions where this exercise should be avoided
-//   phase            number|null  — 1=early, 2=mid, 3=late/functional; null = appropriate for all
+//                                   "balance" | "gait" | "rotational" | "core-stability"
+//   equipment        string|null  — null = bodyweight; otherwise "resistance band" |
+//                                   "foam roller" | "step" | "wall" | "chair" | "theraband"
+//   contraindications string[]    — conditions where this exercise should be avoided
+//   phase            number|null  — 1=early, 2=mid, 3=late/functional; null = all phases
 //   imageSrc         string|null  — URL to image asset; null = show placeholder
-//   videoSrc         string|null  — URL to video asset; null = no video
-//   imageAlt         string       — accessible alt text / placeholder label
+//   videoSrc         string|null  — URL to video asset; null = no video link
+//   imageAlt         string       — accessible alt text / placeholder description
 //   description      string       — plain-language movement description
 //   sets             number|null
 //   reps             number|string|null
@@ -29,7 +30,7 @@
 
 const EXERCISE_LIBRARY = [
 
-  // ── KNEE / LOWER LIMB ─────────────────────────────────────────────────────
+  // ══ KNEE / LOWER LIMB ═════════════════════════════════════════════════════
 
   {
     id:              "quad-sets",
@@ -52,6 +53,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Think about pushing the back of your knee into the floor without moving your leg. You should feel the front of the thigh engage.",
     painNote:        "Mild muscle fatigue is normal. Stop if you feel pain in the joint.",
   },
+
   {
     id:              "heel-slides",
     name:            "Heel Slides",
@@ -73,6 +75,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Move only as far as your current range allows. Do not force the knee. Breathe out as you bend, breathe in as you straighten.",
     painNote:        "Gentle pulling or stretch sensation is expected. Sharp or stabbing pain: stop immediately.",
   },
+
   {
     id:              "ankle-pumps",
     name:            "Ankle Pumps",
@@ -94,6 +97,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Keep the movement smooth and rhythmic. Do this especially first thing in the morning and after sitting for long periods.",
     painNote:        "Should feel no pain — gentle movement only.",
   },
+
   {
     id:              "straight-leg-raise",
     name:            "Straight Leg Raise",
@@ -106,7 +110,7 @@ const EXERCISE_LIBRARY = [
     imageSrc:        null,
     videoSrc:        null,
     imageAlt:        "Lying on back with one knee bent, lifting straight leg to match the height of the opposite knee",
-    description:     "Lie on your back with the uninvolved knee bent. Tighten the quad of the surgical leg, then lift the straight leg to the height of the opposite knee.",
+    description:     "Lie on your back with the uninvolved knee bent. Tighten the quad of the working leg, then lift the straight leg to the height of the opposite knee.",
     sets:            3,
     reps:            10,
     hold:            "2 s at top",
@@ -115,6 +119,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Lock the knee straight BEFORE lifting. If you see the knee sag as you lift, reset and try again. Quality over quantity.",
     painNote:        "Muscle fatigue in front of the thigh is expected. Groin or hip pain: stop and report to your coach.",
   },
+
   {
     id:              "mini-squat",
     name:            "Mini Squat (0–45°)",
@@ -136,6 +141,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Keep your knee tracking over the second toe — do not let it cave inward. Look straight ahead, chest up, weight through the whole foot.",
     painNote:        "Mild quad burn is expected. Any sharp knee pain or clicking: stop and contact your coach.",
   },
+
   {
     id:              "step-up",
     name:            "Step-Up (4-inch step)",
@@ -157,6 +163,7 @@ const EXERCISE_LIBRARY = [
     cue:             "The lowering phase is the most important part. Go slow and controlled on the way down. Avoid pushing off with the trailing leg.",
     painNote:        "Some front-of-knee discomfort on the way down is common early on. If pain is greater than 4/10, reduce step height or stop.",
   },
+
   {
     id:              "terminal-knee-ext",
     name:            "Terminal Knee Extension (TKE)",
@@ -178,6 +185,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Focus on the last 20° of straightening. This targets the VMO (inner quad) which is critical for knee stability. Keep the movement smooth — no snapping.",
     painNote:        "Reduce resistance if knee pain > 3/10 during the exercise.",
   },
+
   {
     id:              "single-leg-balance",
     name:            "Single-Leg Balance",
@@ -199,6 +207,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Find a focal point on the wall. Soften the knee — never lock it out. Wobbling is the nervous system adapting. Stay with it.",
     painNote:        "Balance fatigue and mild muscular shaking are normal. Joint pain or a giving-way sensation: stop.",
   },
+
   {
     id:              "wall-squat",
     name:            "Wall Squat (60°)",
@@ -220,6 +229,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Do not let the knees go past the toes. Keep your lower back pressed into the wall. Breathe steadily — do not hold your breath.",
     painNote:        "Quad burning is expected and is a sign of the muscles working. Any sharp joint pain: stop.",
   },
+
   {
     id:              "lateral-band-walk",
     name:            "Lateral Band Walk",
@@ -242,7 +252,51 @@ const EXERCISE_LIBRARY = [
     painNote:        "Hip and glute fatigue is normal. Knee pain or snapping sensation: reduce band resistance.",
   },
 
-  // ── SHOULDER / UPPER LIMB ─────────────────────────────────────────────────
+  {
+    id:              "standing-calf-raise",
+    name:            "Standing Calf Raise",
+    category:        "Strength",
+    bodyRegion:      "ankle",
+    movementPattern: "isotonic",
+    equipment:       "wall",
+    contraindications: ["acute Achilles tendon rupture", "plantar fasciitis (acute flare)"],
+    phase:           2,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Standing on both feet with hands on wall for balance, rising up onto the balls of the feet and lowering slowly",
+    description:     "Stand with your feet hip-width apart, fingertips on the wall for balance. Rise up onto the balls of your feet, hold briefly, then lower slowly.",
+    sets:            3,
+    reps:            15,
+    hold:            "1 s at top",
+    tempo:           "1 s up — 1 s hold — 3 s down (slow eccentric)",
+    rest:            "45 s between sets",
+    cue:             "Go through the full range — push all the way up onto your toes and lower all the way back down. The slow lowering phase builds the most strength.",
+    painNote:        "Calf fatigue is normal. Achilles or heel pain: stop and contact your coach.",
+  },
+
+  {
+    id:              "nordic-hamstring-curl",
+    name:            "Nordic Hamstring Curl (Eccentric)",
+    category:        "Strength",
+    bodyRegion:      "knee",
+    movementPattern: "isotonic",
+    equipment:       null,
+    contraindications: ["acute hamstring strain (grade 2–3)", "ACL reconstruction < 12 weeks"],
+    phase:           3,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Kneeling with feet anchored, lowering the body toward the floor slowly using hamstring control, catching with the hands",
+    description:     "Kneel with feet firmly anchored under a sofa, bench, or held by a partner. Keeping the body straight from knees to shoulders, slowly lower yourself toward the floor as far as you can control, then push back up with the hands.",
+    sets:            3,
+    reps:            6,
+    hold:            null,
+    tempo:           "4–6 s lowering phase — push back up with hands",
+    rest:            "90 s between sets",
+    cue:             "This is all about the slow lower. The slower you can go, the better. Your hamstrings will fatigue quickly — that is expected. Catch yourself with the hands before hitting the floor.",
+    painNote:        "Hamstring fatigue and mild DOMS the next day are expected. Sharp pain behind the knee during the exercise: stop immediately.",
+  },
+
+  // ══ SHOULDER / UPPER LIMB ═════════════════════════════════════════════════
 
   {
     id:              "shoulder-pendulum",
@@ -265,6 +319,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Let gravity do the work. Your arm should feel heavy and relaxed. Keep the circles small and pain-free. Do not actively swing with the shoulder muscles.",
     painNote:        "This exercise should be pain-free. Any sharp pain: stop and reduce circle size.",
   },
+
   {
     id:              "shoulder-isometric-abduction",
     name:            "Isometric Shoulder Abduction",
@@ -286,6 +341,29 @@ const EXERCISE_LIBRARY = [
     cue:             "Start at about 30% of your maximum effort. Think about activating the middle deltoid without shrugging. Your shoulder should not move.",
     painNote:        "This should feel like mild muscle engagement only. Pain at the shoulder joint or top of the arm: reduce pressure.",
   },
+
+  {
+    id:              "shoulder-scapular-squeeze",
+    name:            "Scapular Squeeze",
+    category:        "Activation",
+    bodyRegion:      "shoulder",
+    movementPattern: "isometric",
+    equipment:       null,
+    contraindications: ["acute scapular fracture", "thoracic outlet syndrome (acute)"],
+    phase:           1,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Sitting or standing upright, gently squeezing the shoulder blades together and holding the contraction",
+    description:     "Sit or stand with your arms relaxed at your sides. Gently draw your shoulder blades together and downward as if you are trying to hold a pencil between them. Hold, then release.",
+    sets:            3,
+    reps:            10,
+    hold:            "5 s",
+    tempo:           "Squeeze 2 s — hold 5 s — release 2 s",
+    rest:            "30 s between sets",
+    cue:             "Think 'back and down' with the shoulder blades — avoid shrugging. You should feel the muscles between and below the shoulder blades working.",
+    painNote:        "Mild tension between the shoulder blades is expected. Sharp or shooting pain: stop immediately.",
+  },
+
   {
     id:              "shoulder-wall-slides",
     name:            "Shoulder Wall Slides",
@@ -307,6 +385,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Keep light contact with the wall throughout. As you slide up, gently engage the muscles between your shoulder blades. Do not shrug your shoulders toward your ears.",
     painNote:        "A mild stretch at the front of the shoulder is normal. Sharp pain or significant stiffness: stop at current range and report.",
   },
+
   {
     id:              "shoulder-doorway-stretch",
     name:            "Doorway Chest Stretch",
@@ -328,6 +407,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Breathe out as you lean in. Do not force the stretch. Both elbows should be at or just below shoulder height.",
     painNote:        "A pulling sensation across the chest and front shoulders is expected. Pain or numbness radiating down the arm: stop immediately.",
   },
+
   {
     id:              "shoulder-external-rotation",
     name:            "Shoulder External Rotation (Band)",
@@ -349,6 +429,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Keep your elbow pinned against your side throughout. The movement is in the shoulder, not the wrist or elbow. Use a folded towel under the arm for cuing if needed.",
     painNote:        "Mild rotator cuff fatigue is normal. Any sharp or catching pain at the shoulder joint: stop immediately.",
   },
+
   {
     id:              "shoulder-theraband-row",
     name:            "Seated Resistance Band Row",
@@ -371,7 +452,7 @@ const EXERCISE_LIBRARY = [
     painNote:        "Mild fatigue in the upper back and rear shoulder is normal. Pain at the front of the shoulder or neck: stop and report.",
   },
 
-  // ── HIP / GLUTE (standalone — used in ongoing coaching programs) ──────────
+  // ══ HIP / GLUTE ═══════════════════════════════════════════════════════════
 
   {
     id:              "glute-bridge",
@@ -394,6 +475,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Drive through the heels — your toes should be able to lift slightly. Squeeze your glutes hard at the top. Avoid over-arching the lower back.",
     painNote:        "Mild glute fatigue is expected. Lower back pain or sacral discomfort: stop and report.",
   },
+
   {
     id:              "clamshell",
     name:            "Clamshell",
@@ -415,6 +497,7 @@ const EXERCISE_LIBRARY = [
     cue:             "Make sure your pelvis stays still — you should only feel movement at the hip, not a roll in the torso. If you can place a water bottle on your hip, it should not fall.",
     painNote:        "Deep hip fatigue is normal. Groin pinching or clicking: stop and report.",
   },
+
   {
     id:              "hip-flexor-stretch",
     name:            "Kneeling Hip Flexor Stretch",
@@ -436,25 +519,143 @@ const EXERCISE_LIBRARY = [
     cue:             "Tuck your tailbone slightly under as you shift forward — this increases the stretch through the hip flexor. Keep your torso upright.",
     painNote:        "A stretch sensation through the front of the hip is expected. Sharp pain at the knee on the floor: place a cushion under the knee.",
   },
+
   {
-    id:              "nordic-hamstring-curl",
-    name:            "Nordic Hamstring Curl (Eccentric)",
-    category:        "Strength",
-    bodyRegion:      "knee",
+    id:              "prone-hip-extension",
+    name:            "Prone Hip Extension",
+    category:        "Hip & Glute",
+    bodyRegion:      "hip",
     movementPattern: "isotonic",
     equipment:       null,
-    contraindications: ["acute hamstring strain (grade 2–3)", "ACL reconstruction < 12 weeks"],
-    phase:           3,
+    contraindications: ["acute lumbar disc herniation", "hip flexor strain (acute)"],
+    phase:           1,
     imageSrc:        null,
     videoSrc:        null,
-    imageAlt:        "Kneeling with feet anchored, lowering the body toward the floor slowly using hamstring control, catching with the hands",
-    description:     "Kneel with feet firmly anchored under a sofa, bench, or held by a partner. Keeping the body straight from knees to shoulders, slowly lower yourself toward the floor as far as you can control, then push back up with the hands.",
+    imageAlt:        "Lying face down, lifting one straight leg a few inches off the ground while keeping the pelvis flat",
+    description:     "Lie face down with your forehead on your hands. Squeeze your glutes, then lift one straight leg a few inches off the ground. Hold briefly and lower with control. Keep your pelvis pressed into the floor throughout.",
     sets:            3,
-    reps:            6,
-    hold:            null,
-    tempo:           "4–6 s lowering phase — push back up with hands",
-    rest:            "90 s between sets",
-    cue:             "This is all about the slow lower. The slower you can go, the better. Your hamstrings will fatigue quickly — that is expected. Catch yourself with the hands before hitting the floor.",
-    painNote:        "Hamstring fatigue and mild DOMS the next day are expected. Sharp pain behind the knee during the exercise: stop immediately.",
+    reps:            12,
+    hold:            "2 s at top",
+    tempo:           "2 s up — 2 s hold — 2 s down",
+    rest:            "30 s between sets",
+    cue:             "Keep the pelvis flat on the floor — if your lower back arches, you have lifted too high. The movement is small but the glute contraction should be strong.",
+    painNote:        "Mild glute and lower back fatigue is normal. Sharp lower back pain: stop immediately.",
   },
+
+  // ══ CORE / SPINE ══════════════════════════════════════════════════════════
+
+  {
+    id:              "dead-bug",
+    name:            "Dead Bug",
+    category:        "Stability",
+    bodyRegion:      "spine",
+    movementPattern: "core-stability",
+    equipment:       null,
+    contraindications: ["acute lumbar instability (unbraced)", "diastasis recti (unmanaged)"],
+    phase:           null,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Lying on back with arms pointing to ceiling and knees at 90 degrees, slowly lowering opposite arm and leg toward the floor",
+    description:     "Lie on your back with arms pointing to the ceiling and hips and knees at 90°. Press your lower back gently into the floor. Slowly lower one arm overhead and the opposite leg toward the floor. Return and repeat on the other side.",
+    sets:            3,
+    reps:            "8 each side",
+    hold:            null,
+    tempo:           "4 s out — 4 s return",
+    rest:            "45 s between sets",
+    cue:             "Keep your lower back in contact with the floor the entire time — this is the key. Breathe out as you extend. If your back arches, reduce the range of movement.",
+    painNote:        "This is a controlled stability exercise — no pain should occur. Any lower back pain: stop and consult your coach.",
+  },
+
+  {
+    id:              "bird-dog",
+    name:            "Bird Dog",
+    category:        "Stability",
+    bodyRegion:      "spine",
+    movementPattern: "core-stability",
+    equipment:       null,
+    contraindications: ["acute lumbar disc herniation with significant radiculopathy"],
+    phase:           null,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "On hands and knees, extending the opposite arm and leg out parallel to the floor while keeping the spine neutral",
+    description:     "Start on hands and knees with a neutral spine. Brace your core gently. Extend one arm forward and the opposite leg back, keeping both parallel to the floor. Hold, then return and switch sides.",
+    sets:            3,
+    reps:            "8 each side",
+    hold:            "3 s",
+    tempo:           "2 s out — 3 s hold — 2 s return",
+    rest:            "30 s between sets",
+    cue:             "Imagine balancing a glass of water on your lower back — do not let the hips rotate. Reach long through the arm and leg. Keep the neck in line with the spine.",
+    painNote:        "Mild core fatigue is expected. Lower back or shoulder pain: stop and check your form with your coach.",
+  },
+
+  // ══ LOWER LIMB: FLEXIBILITY ═══════════════════════════════════════════════
+
+  {
+    id:              "seated-hamstring-stretch",
+    name:            "Seated Hamstring Stretch",
+    category:        "Flexibility",
+    bodyRegion:      "knee",
+    movementPattern: "stretch",
+    equipment:       "chair",
+    contraindications: ["acute hamstring tear (grade 2–3)", "sciatic nerve irritation (acute)"],
+    phase:           1,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Sitting on the edge of a chair with one leg extended straight, hinging forward from the hips to feel a stretch along the back of the thigh",
+    description:     "Sit on the edge of a chair. Extend one leg straight in front, heel on the floor, toes pointing up. Sit tall and hinge forward gently from the hips until you feel a stretch along the back of the thigh.",
+    sets:            2,
+    reps:            null,
+    hold:            "30 s each leg",
+    tempo:           "Static hold — breathe steadily",
+    rest:            "15 s between sides",
+    cue:             "Hinge forward from the hips — do not round your lower back. You should feel the stretch in the back of the thigh, not the back. Keep the knee straight but not locked.",
+    painNote:        "A pulling sensation along the back of the thigh is expected. Sharp pain, tingling, or numbness down the leg: stop immediately.",
+  },
+
+  {
+    id:              "knee-to-chest-stretch",
+    name:            "Knee-to-Chest Stretch",
+    category:        "Flexibility",
+    bodyRegion:      "hip",
+    movementPattern: "stretch",
+    equipment:       null,
+    contraindications: ["acute hip labral repair < 6 weeks", "hip replacement precautions (check with surgeon)"],
+    phase:           1,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Lying on back, pulling one knee gently toward the chest with both hands to feel a stretch in the gluteal and lower back area",
+    description:     "Lie on your back with both knees bent. Grasp one knee with both hands and gently pull it toward your chest until you feel a comfortable stretch in the glute and lower back. Hold, then switch sides.",
+    sets:            2,
+    reps:            null,
+    hold:            "30 s each side",
+    tempo:           "Static hold — breathe steadily",
+    rest:            "10 s between sides",
+    cue:             "Keep the opposite foot flat on the floor. Do not pull so hard that your lower back lifts off the surface. Breathe out as you draw the knee in.",
+    painNote:        "A gentle stretching sensation in the glute and lower back is normal. Hip joint pain or groin pinching: stop and report.",
+  },
+
+  // ══ NECK / CERVICAL ═══════════════════════════════════════════════════════
+
+  {
+    id:              "cervical-rotation",
+    name:            "Cervical Rotation",
+    category:        "Range of Motion",
+    bodyRegion:      "neck",
+    movementPattern: "isotonic",
+    equipment:       null,
+    contraindications: ["acute cervical disc herniation", "upper cervical instability", "vertebrobasilar insufficiency (suspected)"],
+    phase:           1,
+    imageSrc:        null,
+    videoSrc:        null,
+    imageAlt:        "Sitting upright, slowly rotating the head to look over the left shoulder, then to the right, within a pain-free range",
+    description:     "Sit upright with your chin level. Slowly rotate your head to look over one shoulder as far as is comfortable, return to centre, then rotate to the other side. Move smoothly and within a pain-free range only.",
+    sets:            2,
+    reps:            "5 each direction",
+    hold:            "3 s at end range",
+    tempo:           "3 s turn — 3 s hold — 3 s return",
+    rest:            "30 s between sets",
+    cue:             "Keep your shoulders still and relaxed. Your chin should stay level — do not tilt. Move only within a comfortable range and never force the movement.",
+    painNote:        "Mild stiffness or tension is expected. Dizziness, sharp pain, or symptoms into the arm: stop immediately and contact your healthcare provider.",
+  },
+
 ];

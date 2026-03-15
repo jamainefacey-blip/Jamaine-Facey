@@ -87,37 +87,37 @@
 </div>
 
 <!-- ─────────────────────────────────────────────────────────────────
-     Scripts — load order matters (all globals, no modules):
+     Script load order (all globals, no module bundler required):
 
-     1. Engine layer (pure utility, no DOM, no data)
-     2. Shared exercise library
-     3. Active client data  ← EDIT THIS BLOCK to switch clients
-     4. App controller
+       1. Engine utilities   — progress, validate, access
+       2. Shared data        — exercise library
+       3. Dynamic loader     — reads ?client= URL param, then loads:
+            a) client data file   (CLIENT_CONFIG + PROGRAM globals)
+            b) app controller     (app.js)
 
-     Program modes:
-       one_off          — single prescribed session; no nav, no history
-       multi_week       — fixed block (2–N weeks); progress ring; optional phases
-       ongoing_coaching — open-ended coaching; streak + pain trend; rolling plan window
+     Client routing:
+       index.html                          → default (sarah-thompson)
+       index.html?client=james-chen        → one_off mode
+       index.html?client=maria-santos      → multi_week (4-week)
+       index.html?client=david-park        → ongoing_coaching
+       index.html?client=sarah-thompson    → multi_week (12-week ACL)
 
-     To switch clients: comment out the active client line and
-     uncomment the desired client line.
+     Adding a new client:
+       1. Create scripts/data/clients/<slug>.js
+       2. Add the slug to KNOWN_CLIENTS in engine/loader.js
+       3. Load via ?client=<slug>
      ───────────────────────────────────────────────────────────────── -->
 
-<!-- Engine utilities -->
+<!-- Engine layer (no DOM, no data — pure utility) -->
 <script src="scripts/engine/progress.js"></script>
 <script src="scripts/engine/validate.js"></script>
+<script src="scripts/engine/access.js"></script>
 
-<!-- Shared exercise library -->
+<!-- Shared exercise library (used by all clients) -->
 <script src="scripts/data/exercises.js"></script>
 
-<!-- Active client — uncomment ONE: -->
-<script src="scripts/data/clients/sarah-thompson.js"></script>  <!-- multi_week       — 12-week ACL rehab           -->
-<!-- <script src="scripts/data/clients/james-chen.js"></script>     one_off          — post-op day 3 single session -->
-<!-- <script src="scripts/data/clients/maria-santos.js"></script>    multi_week       — 4-week shoulder block        -->
-<!-- <script src="scripts/data/clients/david-park.js"></script>      ongoing_coaching — chronic knee pain coaching   -->
-
-<!-- App controller -->
-<script src="scripts/app.js"></script>
+<!-- Dynamic loader: selects client from ?client= param, then boots app.js -->
+<script src="scripts/engine/loader.js"></script>
 
 </body>
 </html>
