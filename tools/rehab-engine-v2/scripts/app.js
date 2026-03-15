@@ -221,6 +221,66 @@
     return { icon: "", label: "Not enough data", cls: "trend-insufficient" };
   }
 
+  // ── Pain sparkline ─────────────────────────────────────────────────────────
+  // Generates an inline SVG sparkline from the pain history of completed sessions.
+  // Returns empty string if fewer than 2 rated sessions (not enough to plot).
+  function renderPainSparkline(sessions) {
+    const hist = ProgressStore.getPainHistory(sessions);
+    if (hist.length < 2) return "";
+
+    const W = 220, H = 48, PAD = 10;
+    const plotW = W - PAD * 2;
+    const plotH = H - PAD * 2;
+    const xStep = hist.length > 1 ? plotW / (hist.length - 1) : plotW;
+
+    const pts = hist.map((d, i) => ({
+      x: PAD + i * xStep,
+      y: PAD + (1 - d.pain / 10) * plotH,
+      pain: d.pain,
+    }));
+
+    const polyline = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const trend    = ProgressStore.getPainTrend(sessions);
+    const stroke   = trend === "improving" ? "var(--success)"
+                   : trend === "worsening" ? "var(--danger)"
+                   : "var(--accent)";
+
+    // Light fill under the line
+    const fillPath = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)} `
+      + pts.slice(1).map(p => `L${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")
+      + ` L${pts[pts.length - 1].x.toFixed(1)},${(PAD + plotH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD + plotH).toFixed(1)} Z`;
+
+    const dots = pts.map(p =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${stroke}" stroke="var(--bg-card)" stroke-width="1.5"/>`
+    ).join("");
+
+    const first = hist[0].pain;
+    const last  = hist[hist.length - 1].pain;
+    const delta = last - first;
+    const deltaLabel = delta === 0 ? "no change"
+      : delta < 0 ? `↓ ${Math.abs(delta).toFixed(1)} pts`
+      : `↑ ${delta.toFixed(1)} pts`;
+
+    return `
+    <div class="pain-sparkline-wrap">
+      <div class="pain-sparkline-labels">
+        <span>${first}/10</span>
+        <span class="pain-sparkline-label-mid">Pain history &nbsp;${deltaLabel}</span>
+        <span>${last}/10</span>
+      </div>
+      <svg class="pain-sparkline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+        <path d="${fillPath}" fill="${stroke}" opacity=".08"/>
+        <polyline points="${polyline}" fill="none" stroke="${stroke}" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}
+      </svg>
+      <div class="pain-sparkline-axis">
+        <span>Session 1</span>
+        <span>Session ${hist.length}</span>
+      </div>
+    </div>`;
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // VIEW: WELCOME
   // ─────────────────────────────────────────────────────────────────────────
@@ -772,6 +832,12 @@
                     <span class="ex-image-sub">${ex.imageAlt}</span>
                   </div>
                 </div>`}
+
+            ${ex.videoSrc
+              ? `<a href="${ex.videoSrc}" target="_blank" rel="noopener noreferrer" class="ex-video-link">
+                  ${ICONS.play} Watch exercise video
+                </a>`
+              : ""}
           </div>
         </div>
       </div>`;
@@ -901,7 +967,8 @@
       <div class="trend-card ${td.cls}" style="margin-bottom:0">
         <div class="trend-icon">${td.icon}</div>
         <div><div class="trend-label">Pain trend</div><div class="trend-value">${td.label}</div></div>
-      </div>`;
+      </div>
+      ${renderPainSparkline(sessions)}`;
     } else {
       const pct = stats.pct;
       html += `
@@ -932,6 +999,9 @@
           </div>`;
         });
       }
+
+      // Pain sparkline — shown for multi_week when there's enough history
+      html += renderPainSparkline(sessions);
     }
 
     html += `</div>
@@ -1006,7 +1076,9 @@
         <tbody>`;
 
     sessions.forEach(s => {
-      if (s.weekNumber && s.weekNumber > curWk + 1) return; // only show up to next week
+      // ongoing_coaching: show all sessions (history can be long)
+      // multi_week / one_off: clip at current week + 1 (hides far-future sessions)
+      if (MODE !== COACHING && s.weekNumber && s.weekNumber > curWk + 1) return;
       const st     = ProgressStore.getSession(s.id);
       const isDone = ProgressStore.isSessionDone(s.id);
       html += `<tr>
@@ -1188,7 +1260,8 @@
           </div>
           <div class="ex-cue"><span class="ex-cue-label">Coaching cue</span>${ex.cue}</div>
           ${ex.painNote ? `<div class="ex-pain-note" style="margin-top:8px"><span class="ex-pain-label">&#9888; Pain note</span>${ex.painNote}</div>` : ""}
-          ${ex.contraindications?.length ? `<div class="ex-contraindications" style="margin-top:8px"><span class="ex-contra-label">Not suitable if: </span>${ex.contraindications.join(" · ")}</div>` : ""}`;
+          ${ex.contraindications?.length ? `<div class="ex-contraindications" style="margin-top:8px"><span class="ex-contra-label">Not suitable if: </span>${ex.contraindications.join(" · ")}</div>` : ""}
+          ${ex.videoSrc ? `<a href="${ex.videoSrc}" target="_blank" rel="noopener noreferrer" class="ex-video-link" style="margin-top:14px">${ICONS.play} Watch exercise video</a>` : ""}`;
         document.getElementById("modal-overlay").hidden = false;
         break;
       }

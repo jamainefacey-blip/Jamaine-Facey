@@ -650,9 +650,9 @@ body {
   text-transform: uppercase; letter-spacing: .5px;
 }
 
-.mode-full-program       { background: #dbeafe; color: #1e40af; }
-.mode-short-block        { background: #f3e8ff; color: #6b21a8; }
-.mode-single-instruction { background: #dcfce7; color: #15803d; }
+.mode-multi_week         { background: #dbeafe; color: #1e40af; }
+.mode-ongoing_coaching   { background: #fef3c7; color: #92400e; }
+.mode-one_off            { background: #dcfce7; color: #15803d; }
 
 /* ── MODAL ──────────────────────────────────────────────────────────────────── */
 .modal-overlay {
@@ -983,4 +983,47 @@ body {
    EXERCISE LIBRARY: Balance category badge (new)
    ───────────────────────────────────────────────────────────────────────────── */
 .cat-Balance { background: #ede9fe; color: #5b21b6; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EXERCISE: Video link button
+   ───────────────────────────────────────────────────────────────────────────── */
+.ex-video-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 10px; padding: 8px 14px;
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 20px; font-size: 13px; font-weight: 600;
+  text-decoration: none; border: 1.5px solid var(--accent);
+  transition: background .15s;
+}
+.ex-video-link:active { background: var(--accent); color: #fff; }
+.ex-video-link svg    { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PROGRESS: Pain sparkline chart
+   ───────────────────────────────────────────────────────────────────────────── */
+.pain-sparkline-wrap {
+  margin: 14px 0 4px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px 8px;
+  border: 1px solid var(--border);
+}
+.pain-sparkline {
+  display: block; width: 100%; height: auto;
+  overflow: visible;
+}
+.pain-sparkline-labels {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--text-muted); font-weight: 600;
+  margin-bottom: 4px;
+}
+.pain-sparkline-label-mid {
+  font-size: 11px; color: var(--text-muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.pain-sparkline-axis {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 4px;
+}
 
