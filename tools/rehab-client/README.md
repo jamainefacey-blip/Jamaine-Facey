@@ -1,14 +1,199 @@
 # Pain System — Rehab Client App
 
-A mobile-first, white-label rehab coaching web app built as a reusable Pain System module.
+**Version:** 1.1 (MVP Complete)
+**Status:** Client-test ready — open `index.html` in any browser to run
+
+A mobile-first, zero-dependency rehab coaching web app built as a reusable Pain System sandbox module.
 
 ---
 
-## What this is
+## Quick start — how to open the app
 
-A self-contained single-page app (SPA) designed for PT / rehab clients. No login, no backend dependencies, no build step required. Open `index.html` in any browser to run.
+### Option 1 — Direct file (simplest)
+```
+Open tools/rehab-client/index.html in Chrome, Safari, or Firefox.
+```
+Works without a server. All data is local. No internet required.
 
-**Demo client:** Sarah Thompson — Post-ACL reconstruction, Week 3 of a 12-week program.
+### Option 2 — Local static server (recommended for testing)
+```bash
+# From the tools/rehab-client/ directory:
+python3 -m http.server 8080
+# Then open: http://localhost:8080
+
+# Or with Node:
+npx serve .
+# Then open the URL shown in the terminal
+```
+
+### Option 3 — Netlify (deployment)
+Deploy the `tools/rehab-client/` folder as a static site. No build step required. Point the publish directory to `tools/rehab-client`.
+
+---
+
+## What is MVP complete
+
+The following is fully built and testable end-to-end:
+
+| Feature | Status |
+|---------|--------|
+| Welcome / landing screen | ✅ |
+| Dashboard with progress ring, stats, milestones | ✅ |
+| Client overview (profile, goals, coach, phases) | ✅ |
+| 12-week plan with week cards and session rows | ✅ |
+| Session view with exercise cards | ✅ |
+| Exercise check-off (tap circle to mark done) | ✅ |
+| Session unlock when all exercises complete | ✅ |
+| Session check-in: pain scale (0–10) + effort scale (1–5) | ✅ |
+| Session state saved to localStorage | ✅ |
+| Progress reflected after check-in (dashboard, progress page) | ✅ |
+| Exercise library with phase filter | ✅ |
+| Exercise detail modal (sets/reps/tempo/cue/pain note) | ✅ |
+| Progress page (phase bars, history table) | ✅ |
+| Coach notes | ✅ |
+| Safety disclaimer on every screen | ✅ |
+| Mobile-first layout with bottom navigation | ✅ |
+| Tablet / desktop responsive layout | ✅ |
+| Returning user skips welcome screen (localStorage flag) | ✅ |
+
+---
+
+## How to edit client details
+
+### 1. Change the client — `scripts/data/client.js`
+
+```js
+client: {
+  firstName: "Sarah",       // ← client first name
+  lastName:  "Thompson",    // ← client last name
+  age: 42,
+  condition: "Post-surgical knee rehabilitation",
+  conditionDetail: "ACL reconstruction — 8 weeks post-operative",
+  startDate: "2026-01-27",  // ← ISO date (YYYY-MM-DD)
+  programWeeks: 12,
+  currentWeek: 3,           // ← update each week
+},
+```
+
+### 2. Change branding — `scripts/data/client.js`
+
+```js
+appName:     "Pain System Rehab",   // ← shown in header
+accentColor: "#0d9488",             // ← any CSS hex color; theme updates automatically
+logoText:    "PS",                  // ← 2-3 letter initials shown in header
+```
+
+### 3. Change coach details — `scripts/data/client.js`
+
+```js
+coach: {
+  name:        "Marcus Reid",
+  credentials: "DPT, CSCS",
+  contactNote: "Message your coach through the clinic portal...",
+},
+```
+
+### 4. Update goals — `scripts/data/client.js`
+
+```js
+goals: [
+  "First goal",
+  "Second goal",
+  // ...
+],
+```
+
+### 5. Update milestones — `scripts/data/client.js`
+
+```js
+milestones: [
+  { week: 2,  label: "Milestone description", achieved: true  },
+  { week: 6,  label: "Another milestone",     achieved: false },
+],
+```
+
+### 6. Add or edit coach notes — `scripts/data/client.js`
+
+```js
+coachNotes: [
+  {
+    date:  "2026-03-15",       // ISO date
+    title: "Week 4 check-in",
+    body:  "Note text here...",
+  },
+],
+```
+
+---
+
+## How to edit exercises
+
+Open `scripts/data/exercises.js`. Each exercise is an object:
+
+```js
+{
+  id:          "quad-sets",      // unique slug — referenced in the plan
+  phase:       1,                // 1, 2, or 3
+  category:    "Activation",     // shown as a badge
+  name:        "Quad Sets",      // display name
+  description: "...",            // shown in card and library
+  sets:        3,                // or null
+  reps:        15,               // or null
+  hold:        "5 s",            // or null
+  tempo:       "Squeeze–hold–release",
+  rest:        "30 s between sets",
+  cue:         "...",            // coaching cue — highlighted in green
+  painNote:    "...",            // safety note — highlighted in amber; or null
+  imageAlt:    "...",            // alt text for future image
+}
+```
+
+Add new exercises to the array and reference them by `id` in `plan.js`.
+
+---
+
+## How to edit the weekly plan
+
+Open `scripts/data/plan.js`. Each week has a `sessions` array:
+
+```js
+{
+  id:           "w3-s2",         // unique ID — used by session state
+  day:          "Wednesday",
+  label:        "Session 2",
+  duration:     "30 min",
+  completed:    false,           // set true for pre-populated historical data
+  painRating:   null,            // pre-populated if completed: true; else null
+  effortRating: null,
+  exercises:    ["exercise-id-1", "exercise-id-2"],   // ← IDs from exercises.js
+}
+```
+
+To add a week:
+1. Add a new object to the `weeks` array in `REHAB_PLAN`
+2. Reference valid exercise IDs from `exercises.js`
+3. Update `CLIENT_CONFIG.client.programWeeks` if total weeks changes
+
+---
+
+## Session state and progress data
+
+Session check-ins (pain rating, effort rating, exercise completions) are stored in `localStorage` under the key `ps_rehab_session_state`.
+
+To reset progress during testing: open browser DevTools → Application → Local Storage → delete `ps_rehab_session_state`.
+
+To pre-populate historical session data (for a demo): set `completed: true`, `painRating: <number>`, `effortRating: <number>` directly in `plan.js` sessions.
+
+---
+
+## White-labeling for a new client
+
+1. Duplicate this folder: `cp -r tools/rehab-client tools/rehab-[client-slug]`
+2. Edit `scripts/data/client.js` — name, condition, goals, coach, branding
+3. Edit `scripts/data/exercises.js` — their specific exercises
+4. Edit `scripts/data/plan.js` — their weekly schedule
+5. Update `tool.config.json` — new tool name and endpoint
+6. Register in root `MODULE_REGISTRY.md`
 
 ---
 
@@ -16,155 +201,38 @@ A self-contained single-page app (SPA) designed for PT / rehab clients. No login
 
 ```
 tools/rehab-client/
-├── index.html                  App shell (loads all scripts)
-├── tool.config.json            Pain System module config
+├── index.html                  App shell (loads all scripts and styles)
+├── tool.config.json            Pain System module metadata
 ├── handler.ts                  Netlify edge function entry point
+├── README.md                   This file
 │
 ├── styles/
-│   └── app.css                 All styles (mobile-first, CSS custom properties)
+│   └── app.css                 All styles — mobile-first, CSS custom properties
 │
 └── scripts/
     ├── app.js                  SPA router + all view renderers + event logic
     └── data/
-        ├── client.js           ← EDIT THIS to change the client
-        ├── exercises.js        ← EDIT THIS to add / change exercises
-        └── plan.js             ← EDIT THIS to change the rehab schedule
+        ├── client.js           ← EDIT to change client / white-label
+        ├── exercises.js        ← EDIT to add/change exercises
+        └── plan.js             ← EDIT to change the weekly schedule
 ```
 
 ---
 
-## Screens / sections
+## Sandbox preview path
 
-| Route | Section |
-|-------|---------|
-| `#dashboard` | Home — progress ring, next session, milestones |
-| `#overview` | Client profile, goals, phase breakdown |
-| `#plan` | 12-week weekly schedule, session rows |
-| `#session/<id>` | Daily session — exercise cards, check-off, check-in |
-| `#exercises` | Exercise library with phase filter |
-| `#progress` | Progress bars, pain averages, session history table |
-| `#notes` | Coach notes / messages |
+When running locally at `http://localhost:8080`:
 
----
-
-## How to edit client details
-
-### 1. Change the client
-
-Open `scripts/data/client.js` and edit the `CLIENT_CONFIG` object:
-
-```js
-client: {
-  firstName: "Sarah",       // ← change name
-  lastName: "Thompson",
-  age: 42,
-  condition: "Post-surgical knee rehabilitation",
-  conditionDetail: "ACL reconstruction — 8 weeks post-operative",
-  startDate: "2026-01-27",
-  programWeeks: 12,
-  currentWeek: 3,           // ← update each week
-},
-coach: {
-  name: "Marcus Reid",      // ← change coach name
-  credentials: "DPT, CSCS",
-  contactNote: "...",
-},
-```
-
-### 2. Change the brand color
-
-In `client.js`:
-```js
-accentColor: "#0d9488",   // ← any CSS hex color
-logoText: "PS",           // ← 2-3 letter initials shown in header
-appName: "Pain System Rehab",
-```
-
-### 3. Update program goals
-
-Edit the `goals` array in `client.js`.
-
-### 4. Add or edit exercises
-
-Open `scripts/data/exercises.js`. Each exercise object looks like:
-
-```js
-{
-  id: "quad-sets",          // unique slug — used in the plan
-  phase: 1,                 // 1, 2, or 3
-  category: "Activation",
-  name: "Quad Sets",
-  description: "...",
-  sets: 3,
-  reps: 15,
-  hold: "5 s",              // or null
-  tempo: "...",
-  rest: "30 s between sets",
-  cue: "...",               // coaching cue shown highlighted
-  painNote: "...",          // safety note shown in amber
-  imageAlt: "...",          // alt text for future image/video
-}
-```
-
-### 5. Update the rehab schedule
-
-Open `scripts/data/plan.js`. Each week has a `sessions` array. Each session has an `exercises` array of exercise IDs (matching `id` values in `exercises.js`):
-
-```js
-{
-  id: "w3-s1",
-  day: "Monday",
-  label: "Session 1",
-  duration: "30 min",
-  completed: false,
-  painRating: null,
-  effortRating: null,
-  exercises: ["quad-sets", "straight-leg-raise", "terminal-knee-ext"],
-}
-```
-
-### 6. Add coach notes
-
-Edit the `coachNotes` array in `client.js`:
-
-```js
-{
-  date: "2026-03-17",
-  title: "Week 4 check-in",
-  body: "Your progress this week...",
-}
-```
-
----
-
-## Session state & progress persistence
-
-Session check-ins (pain rating, effort rating, exercise completions) are saved to `localStorage` under the key `ps_rehab_session_state`. Clearing browser data or switching devices resets progress. For multi-device sync, a backend would be needed in Phase 2.
-
----
-
-## Running locally
-
-No build step required. Open `index.html` directly in a browser, or serve with any static file server:
-
-```bash
-# Python
-python3 -m http.server 8080
-
-# Node (npx)
-npx serve .
-```
-
----
-
-## White-labeling for a new client
-
-1. Duplicate the `tools/rehab-client/` folder and rename it (e.g. `tools/rehab-john-doe/`).
-2. Edit `scripts/data/client.js` with the new client's details, goals, and coach.
-3. Edit `scripts/data/exercises.js` with their specific exercise program.
-4. Edit `scripts/data/plan.js` with their weekly schedule.
-5. Update `tool.config.json` with the new tool name and endpoint.
-6. Register the new tool in the root `MODULE_REGISTRY.md`.
+| Route | Screen |
+|-------|--------|
+| `http://localhost:8080/` | Welcome screen (first visit) |
+| `http://localhost:8080/#dashboard` | Dashboard |
+| `http://localhost:8080/#overview` | Client profile |
+| `http://localhost:8080/#plan` | Weekly plan |
+| `http://localhost:8080/#session/w3-s2` | A specific session (Week 3, Session 2) |
+| `http://localhost:8080/#exercises` | Exercise library |
+| `http://localhost:8080/#progress` | Progress tracker |
+| `http://localhost:8080/#notes` | Coach notes |
 
 ---
 
@@ -172,19 +240,31 @@ npx serve .
 
 | Priority | Feature |
 |----------|---------|
-| High | Real image / video support for each exercise card |
-| High | PDF export of the session summary / weekly report |
-| High | Multi-client support with a simple login or PIN |
-| Medium | Backend persistence (Supabase / PlanetScale) to replace localStorage |
-| Medium | Push notification reminders for session days |
-| Medium | Coach dashboard — view all client progress in one place |
-| Medium | Automated program progression (unlock Phase 2 after Phase 1 complete) |
-| Low | Dark mode theme |
-| Low | Animated exercise demonstrations (GIF / short video) |
-| Low | Two-way messaging between client and coach |
+| High | Real exercise images / short video loops per exercise card |
+| High | PDF export of session summary or weekly progress report |
+| High | Coach-assigned PIN or simple login for multi-client use |
+| Medium | Backend persistence (Supabase / PlanetScale / Firebase) |
+| Medium | Push notification / reminder for session days |
+| Medium | Coach dashboard — view all client progress |
+| Medium | Automated program progression (auto-unlock phases on completion criteria) |
+| Medium | Offline PWA support (service worker + manifest) |
+| Low | Dark mode |
+| Low | Animated exercise demonstration GIFs |
+| Low | Two-way coach–client messaging |
+| Low | Multi-language support |
 
 ---
 
-## Safety
+## Safety and compliance
 
-This app does not provide medical advice, diagnosis, or treatment. See the disclaimer rendered at the bottom of every screen. Edit `CLIENT_CONFIG.disclaimer` in `client.js` to update the text (do not remove the disclaimer entirely).
+A safety disclaimer is embedded at the bottom of every screen. It states:
+
+- This is **not medical advice**
+- Always follow your licensed healthcare provider's guidance
+- **Stop immediately** if you experience unusual pain, swelling, numbness
+- This supports **coach-led rehab guidance only**
+- No diagnosis or cure claims are made
+- No specific recovery outcome is guaranteed
+
+To update the disclaimer text, edit `CLIENT_CONFIG.disclaimer` in `scripts/data/client.js`.
+**Do not remove the disclaimer entirely.**
