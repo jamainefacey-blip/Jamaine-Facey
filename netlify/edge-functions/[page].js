@@ -83,5 +83,7 @@ export default (request, context) => {
 };
 
 export const config = {
-  path: ["/", "/example/:page"],
+  // "/" is now served by the static rehab-client app (tools/rehab-client/index.html).
+  // Demo examples remain accessible at /example/:page.
+  path: ["/example/:page"],
 };

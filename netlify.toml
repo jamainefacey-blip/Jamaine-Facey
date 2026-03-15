@@ -3,7 +3,7 @@ framework = "#static"
 
 [build]
 command = "echo No build for this site, we are living on the edge"
-publish = "public"
+publish = "tools/rehab-client"
 ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF ."
 
 [context.production]
@@ -15,10 +15,13 @@ from = "/img/og/:text"
 to = "https://res.cloudinary.com/netlify/image/upload/c_fit,g_west,h_400,co_rgb:FFFFFFFF,l_text:netlify.com:Pacaembu-Bold.ttf_57::text,w_1053,x_46/v1619123320/netlify.com/default-og-background-learn-more.png"
 status = 200
 
+# SPA fallback — hash routing is client-side, but this ensures any bare
+# path (e.g. a mis-typed /dashboard instead of /#dashboard) loads the app.
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
 [[edge_functions]]
   function = "pain-system"
   path = "/pain-system"
-
-[[edge_functions]]
-  function = "transform"
-  path = "/*"
