@@ -1,77 +1,69 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// PROGRESS STORE  —  Isolated session-state layer (v2)
+// PROGRESS STORE  —  Isolated session-state + outcome layer
 //
-// This module owns all reads and writes to localStorage.
-// To swap for a backend: replace the internal _load/_save/_persist functions
-// with async fetch calls. The public API surface stays identical.
+// Owns all reads / writes to localStorage.
+// To swap for a backend: replace _load / _persist with async fetch.
+// The public API surface stays identical.
+//
+// Storage keys:
+//   ps_progress_v2         — session completion state
+//   ps_outcomes_v2         — coach-recorded outcome checkpoints
+//   ps_visited_v2          — welcome screen skip flag
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ProgressStore = (function () {
-  const STATE_KEY   = "ps_rehab_v2_progress";
-  const VISITED_KEY = "ps_rehab_v2_visited";
 
-  // Raw object keyed by session ID
-  let _state = _load();
+  const SESSIONS_KEY  = "ps_progress_v2";
+  const OUTCOMES_KEY  = "ps_outcomes_v2";
+  const VISITED_KEY   = "ps_visited_v2";
 
-  function _load() {
-    try {
-      const raw = localStorage.getItem(STATE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch (_) {
-      return {};
-    }
+  // ── Internal state ──────────────────────────────────────────────────────────
+  let _sessions  = _loadKey(SESSIONS_KEY);   // { [sessionId]: SessionState }
+  let _outcomes  = _loadKey(OUTCOMES_KEY);   // { painHistory, romHistory, etc. }
+
+  function _loadKey(key) {
+    try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : {}; }
+    catch (_) { return {}; }
   }
 
-  function _persist() {
-    try {
-      localStorage.setItem(STATE_KEY, JSON.stringify(_state));
-    } catch (_) {}
+  function _persistSessions() {
+    try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(_sessions)); } catch (_) {}
   }
 
-  // Ensure a session entry exists and return it
+  function _persistOutcomes() {
+    try { localStorage.setItem(OUTCOMES_KEY, JSON.stringify(_outcomes)); } catch (_) {}
+  }
+
   function _ensureSession(sid) {
-    if (!_state[sid]) {
-      _state[sid] = {
-        completed:    false,
-        painRating:   null,
-        effortRating: null,
-        exercises:    {},
-      };
+    if (!_sessions[sid]) {
+      _sessions[sid] = { completed: false, painRating: null, effortRating: null, exercises: {} };
     }
-    return _state[sid];
+    return _sessions[sid];
   }
+
+  // ── Session API ─────────────────────────────────────────────────────────────
 
   return {
-    // ── Read ──────────────────────────────────────────────────────────────────
 
-    getSession(sid) {
-      return { ..._ensureSession(sid) };   // return a copy so caller can't mutate directly
-    },
-
-    isSessionDone(sid) {
-      return !!_state[sid]?.completed;
-    },
+    // Read
+    getSession(sid)     { return { ..._ensureSession(sid) }; },
+    isSessionDone(sid)  { return !!_sessions[sid]?.completed; },
+    getAll()            { return JSON.parse(JSON.stringify(_sessions)); },
 
     hasVisited() {
       try { return !!localStorage.getItem(VISITED_KEY); } catch (_) { return false; }
     },
 
-    getAll() {
-      return JSON.parse(JSON.stringify(_state));  // deep copy
-    },
-
-    // ── Write ─────────────────────────────────────────────────────────────────
-
+    // Write
     saveSession(sid, updates) {
-      const s = _ensureSession(sid);
-      Object.assign(s, updates);
-      _persist();
+      Object.assign(_ensureSession(sid), updates);
+      _persistSessions();
     },
 
     toggleExercise(sid, eid) {
       const s = _ensureSession(sid);
       s.exercises[eid] = !s.exercises[eid];
-      _persist();
+      _persistSessions();
       return s.exercises[eid];
     },
 
@@ -79,31 +71,82 @@ const ProgressStore = (function () {
       try { localStorage.setItem(VISITED_KEY, "1"); } catch (_) {}
     },
 
-    clear() {
-      _state = {};
-      try { localStorage.removeItem(STATE_KEY); } catch (_) {}
+    clearSessions() {
+      _sessions = {};
+      try { localStorage.removeItem(SESSIONS_KEY); } catch (_) {}
     },
 
-    // ── Seed ──────────────────────────────────────────────────────────────────
-    // Call once at init. Seeds pre-completed sessions from program data only if
-    // no progress has been recorded yet (fresh device / cleared storage).
-
+    // Seed pre-completed history from program _seed fields.
+    // Applied once per device — skips any session that already has recorded data.
     seedFromProgram(sessions) {
-      let seeded = false;
+      let dirty = false;
       sessions.forEach(s => {
-        if (!s._seed) return;
-        if (_state[s.id]) return;   // already have data for this session — skip
+        if (!s._seed || _sessions[s.id]) return;
         if (s._seed.completed) {
           _ensureSession(s.id);
-          _state[s.id].completed    = true;
-          _state[s.id].painRating   = s._seed.painRating  ?? null;
-          _state[s.id].effortRating = s._seed.effortRating ?? null;
-          // Mark all exercises as done for seeded completed sessions
-          (s.exercises || []).forEach(eid => { _state[s.id].exercises[eid] = true; });
-          seeded = true;
+          _sessions[s.id].completed    = true;
+          _sessions[s.id].painRating   = s._seed.painRating   ?? null;
+          _sessions[s.id].effortRating = s._seed.effortRating ?? null;
+          (s.exercises || []).forEach(eid => { _sessions[s.id].exercises[eid] = true; });
+          dirty = true;
         }
       });
-      if (seeded) _persist();
+      if (dirty) _persistSessions();
+    },
+
+    // ── Outcome / trend API ──────────────────────────────────────────────────
+    // Used to record reassessment checkpoints and compute pain trends.
+
+    // Return pain ratings from completed sessions in chronological order (by session index).
+    getPainHistory(sessions) {
+      return sessions
+        .filter(s => _sessions[s.id]?.completed && _sessions[s.id]?.painRating != null)
+        .map(s => ({ sessionId: s.id, weekNumber: s.weekNumber || null, pain: _sessions[s.id].painRating }));
+    },
+
+    // Trend: compare avg of first 3 recorded sessions vs last 3.
+    // Returns "improving" | "stable" | "worsening" | "insufficient"
+    getPainTrend(sessions) {
+      const hist = this.getPainHistory(sessions);
+      if (hist.length < 3) return "insufficient";
+      const early = hist.slice(0, Math.ceil(hist.length / 2));
+      const late  = hist.slice(-Math.ceil(hist.length / 2));
+      const avgEarly = early.reduce((a, b) => a + b.pain, 0) / early.length;
+      const avgLate  = late.reduce((a, b)  => a + b.pain, 0) / late.length;
+      const delta    = avgLate - avgEarly;
+      if (delta <= -1) return "improving";
+      if (delta >= 1)  return "worsening";
+      return "stable";
+    },
+
+    // Streak: consecutive weeks (by weekNumber) with at least one completed session.
+    getWeekStreak(sessions) {
+      const completedWeeks = new Set(
+        sessions
+          .filter(s => _sessions[s.id]?.completed && s.weekNumber)
+          .map(s => s.weekNumber)
+      );
+      if (!completedWeeks.size) return 0;
+      const maxWk = Math.max(...completedWeeks);
+      let streak = 0;
+      for (let w = maxWk; w >= 1; w--) {
+        if (completedWeeks.has(w)) streak++;
+        else break;
+      }
+      return streak;
+    },
+
+    // Save a manual outcome checkpoint (coach-entered reassessment data).
+    // Merges into stored outcomes rather than replacing the whole object.
+    saveOutcomeCheckpoint(checkpoint) {
+      if (!_outcomes.checkpoints) _outcomes.checkpoints = [];
+      _outcomes.checkpoints.push({ ...checkpoint, recordedAt: new Date().toISOString() });
+      _persistOutcomes();
+    },
+
+    getOutcomeCheckpoints() {
+      return (_outcomes.checkpoints || []).slice().reverse(); // newest first
     },
   };
+
 })();

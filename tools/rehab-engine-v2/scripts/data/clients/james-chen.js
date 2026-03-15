@@ -1,18 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// CLIENT: James Chen  —  mode: "single-instruction"
+// CLIENT: James Chen  —  mode: "one_off"
 // Day-3 post-op home exercise session (meniscus repair)
 //
-// single-instruction mode: One session only. No plan view, no progress history.
+// one_off mode: A single prescribed session. No plan, no progress history.
 // The client opens the app and sees exactly what to do today.
 //
-// To activate this client, ensure this file is loaded in index.html (uncomment
-// the corresponding <script> tag and comment out the others).
+// Activate in index.html: uncomment this <script> tag, comment out others.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CLIENT_CONFIG = {
-  appName:     "Pain System Rehab",
-  accentColor: "#0891b2",   // teal-blue
-  logoText:    "PS",
+  appName:     "Mr Pain PT",
+  accentColor: "#0891b2",
+  logoText:    "MP",
 
   client: {
     firstName:       "James",
@@ -33,13 +32,15 @@ const CLIENT_CONFIG = {
     "These exercises have been prescribed specifically for your post-operative recovery. This app supports your therapist's instructions and does not replace medical advice. Stop all exercise immediately and contact your surgeon if you experience excessive swelling, increasing pain, fever, redness, warmth around the incision, or any other concern. Follow all post-operative precautions provided by your surgical team.",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PROGRAM
-// ─────────────────────────────────────────────────────────────────────────────
-
 const PROGRAM = {
   id:   "james-day3-home",
-  mode: "single-instruction",   // single session — no plan, no progress views
+  mode: "one_off",     // "one_off" | "multi_week" | "ongoing_coaching"
+
+  // access
+  access: {
+    type:   "one_off_purchase",
+    status: "active",
+  },
 
   // The one session to display
   session: {
@@ -50,7 +51,10 @@ const PROGRAM = {
     exercises: ["ankle-pumps", "quad-sets", "heel-slides"],
   },
 
-  // Brief notes visible on welcome / session screens
+  // outcomes — not used in one_off mode but keeps schema consistent
+  outcomes: null,
+  assessments: [],
+
   coachNotes: [
     {
       date:  "2026-03-13",

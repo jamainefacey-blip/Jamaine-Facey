@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0d9488" />
-  <meta name="description" content="Pain System Rehab Engine v2 — coach-guided rehabilitation app" />
+  <meta name="description" content="Mr Pain PT — coach-guided rehabilitation app" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Pain System Rehab</title>
+  <title>Mr Pain PT</title>
   <link rel="stylesheet" href="styles/app.css" />
 </head>
 <body>
@@ -18,8 +18,8 @@
   <!-- ── Header ─────────────────────────────────────────────────── -->
   <header class="app-header">
     <div class="header-inner">
-      <div class="header-logo" id="header-logo">PS</div>
-      <div class="header-title" id="header-title">Pain System Rehab</div>
+      <div class="header-logo" id="header-logo">MP</div>
+      <div class="header-title" id="header-title">Mr Pain PT</div>
       <div class="header-right" id="header-right"></div>
     </div>
   </header>
@@ -94,6 +94,11 @@
      3. Active client data  ← EDIT THIS BLOCK to switch clients
      4. App controller
 
+     Program modes:
+       one_off          — single prescribed session; no nav, no history
+       multi_week       — fixed block (2–N weeks); progress ring; optional phases
+       ongoing_coaching — open-ended coaching; streak + pain trend; rolling plan window
+
      To switch clients: comment out the active client line and
      uncomment the desired client line.
      ───────────────────────────────────────────────────────────────── -->
@@ -106,9 +111,10 @@
 <script src="scripts/data/exercises.js"></script>
 
 <!-- Active client — uncomment ONE: -->
-<script src="scripts/data/clients/sarah-thompson.js"></script>  <!-- full-program   -->
-<!-- <script src="scripts/data/clients/james-chen.js"></script>     single-instruction -->
-<!-- <script src="scripts/data/clients/maria-santos.js"></script>    short-block        -->
+<script src="scripts/data/clients/sarah-thompson.js"></script>  <!-- multi_week       — 12-week ACL rehab           -->
+<!-- <script src="scripts/data/clients/james-chen.js"></script>     one_off          — post-op day 3 single session -->
+<!-- <script src="scripts/data/clients/maria-santos.js"></script>    multi_week       — 4-week shoulder block        -->
+<!-- <script src="scripts/data/clients/david-park.js"></script>      ongoing_coaching — chronic knee pain coaching   -->
 
 <!-- App controller -->
 <script src="scripts/app.js"></script>
