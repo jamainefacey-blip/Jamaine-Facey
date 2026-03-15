@@ -1,0 +1,47 @@
+{
+  "id":       "mrpainpt",
+  "version":  "1.0.0",
+  "name":     "Mr Pain PT",
+  "tagline":  "Coach-led rehabilitation and performance coaching",
+  "branding": {
+    "logoText":     "MP",
+    "primaryColor": "#0d9488"
+  },
+
+  "modules": [
+    {
+      "id":          "rehab",
+      "name":        "Rehabilitation",
+      "status":      "live",
+      "version":     "2.0.0",
+      "description": "Coach-prescribed rehab programs. Supports one_off, multi_week, and ongoing_coaching delivery modes.",
+      "appScript":   "scripts/modules/rehab/app.js",
+      "styles":      ["styles/rehab.css"]
+    }
+  ],
+
+  "planned_modules": [
+    { "id": "training",  "name": "Training Programs",      "status": "planned" },
+    { "id": "coaching",  "name": "Performance Coaching",   "status": "planned" },
+    { "id": "clients",   "name": "Client Management",      "status": "planned" },
+    { "id": "payments",  "name": "Payments & Access",      "status": "planned" },
+    { "id": "messaging", "name": "Check-ins & Messaging",  "status": "planned" },
+    { "id": "nutrition", "name": "Nutrition & Mobility",   "status": "planned" }
+  ],
+
+  "clients": {
+    "note": "Clients are loaded dynamically via ?client= URL param. See loader.js.",
+    "known_clients": [
+      "sarah-thompson",
+      "james-chen",
+      "maria-santos",
+      "david-park"
+    ]
+  },
+
+  "access": {
+    "note": "Access enforcement is module-level via AccessGuard. Shell-level auth is planned.",
+    "supported_types":     ["one_off_purchase", "subscription", "complimentary", "trial"],
+    "supported_statuses":  ["active", "expired", "suspended", "pending"]
+  }
+}

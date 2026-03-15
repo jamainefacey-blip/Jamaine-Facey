@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="description" content="Mr Pain PT — coach-guided rehabilitation and performance coaching" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Mr Pain PT</title>
+
+  <!-- Shell chrome styles (header, module pill indicator) -->
+  <link rel="stylesheet" href="styles/shell.css" />
+  <!--
+    Module styles are injected dynamically by loader.js based on the active module.
+    e.g. styles/rehab.css is loaded when ?module=rehab
+  -->
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-logo" id="header-logo">MP</div>
+      <div class="header-title" id="header-title">Mr Pain PT</div>
+      <div class="header-right" id="header-right"></div>
+    </div>
+  </header>
+
+  <!-- ── Main content (rendered by active module's app.js) ──────── -->
+  <main class="app-main" id="app-main">
+    <div class="loading-screen">
+      <div class="loading-spinner"></div>
+      <span>Loading your program…</span>
+    </div>
+  </main>
+
+  <!-- ── Bottom navigation ──────────────────────────────────────── -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Home
+    </button>
+    <button class="nav-btn" data-view="plan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      Plan
+    </button>
+    <button class="nav-btn" data-view="exercises">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+        <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+      </svg>
+      Exercises
+    </button>
+    <button class="nav-btn" data-view="progress">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6"  y1="20" x2="6"  y2="14"/>
+      </svg>
+      Progress
+    </button>
+    <button class="nav-btn" data-view="notes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      Coach
+    </button>
+  </nav>
+
+</div><!-- #app -->
+
+<!-- ── Modal overlay ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-close" id="modal-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────
+     Mr Pain PT — Script load order
+     ─────────────────────────────────────────────────────────────────
+
+     All scripts are globals — no module bundler required.
+     Static scripts load synchronously in declaration order.
+     Dynamic scripts (client data + module app.js) are loaded by loader.js.
+
+       1. shell.js              — MrPainPT namespace + module registry
+       2. scripts/shared/       — progress.js, validate.js, access.js
+       3. Module reg files      — each calls MrPainPT.registerModule(...)
+       4. data/exercises.js     — shared exercise library (all modules)
+       5. loader.js             — reads ?module=&client=, chains dynamic loads,
+                                  calls MrPainPT.boot(moduleId)
+
+     URL routing:
+       index.html                                  → rehab / sarah-thompson
+       index.html?module=rehab&client=james-chen   → rehab one_off
+       index.html?module=rehab&client=maria-santos → rehab multi_week (4-wk)
+       index.html?module=rehab&client=david-park   → rehab ongoing_coaching
+       index.html?module=rehab&client=sarah-thompson → rehab multi_week (12-wk ACL)
+
+     Adding a new module (when ready to build):
+       1. Create scripts/modules/<id>/<id>.js  — calls MrPainPT.registerModule()
+       2. Add <script> below for the new module's registration file
+       3. Create scripts/modules/<id>/app.js   — the module's SPA controller
+       4. Add styles/  <id>.css               — module styles
+       5. Add to app.config.json modules[]
+       6. URL: ?module=<id>&client=<slug>
+     ───────────────────────────────────────────────────────────────── -->
+
+<!-- 1. Shell -->
+<script src="scripts/shell.js"></script>
+
+<!-- 2. Shared utilities -->
+<script src="scripts/shared/progress.js"></script>
+<script src="scripts/shared/validate.js"></script>
+<script src="scripts/shared/access.js"></script>
+
+<!-- 3. Module registration files (one per module) -->
+<script src="scripts/modules/rehab/rehab.js"></script>
+<!-- future: <script src="scripts/modules/training/training.js"></script> -->
+<!-- future: <script src="scripts/modules/coaching/coaching.js"></script> -->
+
+<!-- 4. Shared exercise library -->
+<script src="scripts/data/exercises.js"></script>
+
+<!-- 5. Shell loader — reads params, loads client + app, boots -->
+<script src="scripts/loader.js"></script>
+
+</body>
+</html>

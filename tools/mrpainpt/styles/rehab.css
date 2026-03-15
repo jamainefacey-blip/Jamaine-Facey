@@ -1,0 +1,1053 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mr Pain PT — Rehabilitation Module Styles
+   ─────────────────────────────────────────────────────────────────────────────
+
+   Module-specific component styles for the Rehabilitation module (Module 1).
+   Loaded dynamically by loader.js when ?module=rehab.
+
+   Base layout (reset, header, nav, modal, loading) lives in styles/shell.css
+   which is always loaded. This file extends the shell with rehab-specific UI.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+
+.card-sm { padding: 14px; }
+.card-flush { padding: 0; overflow: hidden; }
+
+/* ── Section headings ──────────────────────────────────────────────────────── */
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-muted);
+  margin: 20px 0 10px;
+}
+
+.section-label:first-child { margin-top: 4px; }
+
+/* ── DASHBOARD ──────────────────────────────────────────────────────────────── */
+.greeting     { font-size: 24px; font-weight: 700; letter-spacing: -.4px; margin-bottom: 4px; }
+.greeting-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 20px; }
+
+.progress-summary { display: flex; align-items: center; gap: 20px; }
+
+.progress-ring-wrap { position: relative; flex-shrink: 0; }
+
+.progress-ring-label {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.progress-ring-pct { font-size: 22px; font-weight: 800; color: var(--accent); }
+.progress-ring-sub { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+.progress-ring-info { flex: 1; }
+.progress-ring-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+
+.stat-row { display: flex; gap: 10px; margin-bottom: 0; }
+
+.stat-card {
+  flex: 1; background: var(--bg-card);
+  border-radius: var(--radius); padding: 14px 12px;
+  box-shadow: var(--shadow); text-align: center;
+}
+
+.stat-value { font-size: 26px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600;
+              text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+.next-session-card {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff; border-radius: var(--radius); padding: 20px;
+  box-shadow: 0 4px 20px rgba(13,148,136,.3); margin-bottom: 14px;
+}
+
+.next-session-tag   { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                      letter-spacing: .8px; opacity: .8; margin-bottom: 8px; }
+.next-session-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.next-session-meta  { font-size: 14px; opacity: .85; margin-bottom: 16px; }
+
+.btn-start {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff; color: var(--accent);
+  font-size: 15px; font-weight: 700;
+  padding: 12px 22px; border-radius: 40px;
+  border: none; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  transition: transform .1s, box-shadow .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-start:active { transform: scale(.97); }
+.btn-start svg    { width: 18px; height: 18px; }
+
+.phase-pill { display: inline-flex; align-items: center; gap: 6px;
+              font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px;
+              background: var(--accent-light); color: var(--accent); }
+.phase-dot  { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.milestone-list { list-style: none; }
+
+.milestone-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+}
+
+.milestone-item:last-child { border-bottom: none; }
+
+.milestone-check {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+
+.milestone-check.done { background: var(--success); color: #fff; }
+.milestone-check.todo { background: var(--border);  color: var(--text-muted); }
+.milestone-week { margin-left: auto; font-size: 11px; color: var(--text-muted);
+                  font-weight: 600; white-space: nowrap; }
+
+/* ── PLAN VIEW ──────────────────────────────────────────────────────────────── */
+.week-card {
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); margin-bottom: 14px; background: var(--bg-card);
+}
+
+.week-header {
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.week-num   { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; }
+.week-focus { font-size: 13px; color: var(--text-muted); flex: 1; }
+
+.week-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.week-badge.current  { background: var(--accent-light); color: var(--accent); }
+.week-badge.complete { background: #dcfce7; color: #16a34a; }
+.week-badge.upcoming { background: var(--bg); color: var(--text-muted); }
+
+.session-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; cursor: pointer;
+  border-bottom: 1px solid var(--border); transition: background .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.session-row:last-child { border-bottom: none; }
+.session-row:active     { background: var(--bg); }
+
+.session-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+
+.session-dot.done     { background: #dcfce7; }
+.session-dot.upcoming { background: var(--bg); }
+.session-dot.next     { background: var(--accent-light); }
+
+.session-info { flex: 1; }
+.session-day  { font-size: 15px; font-weight: 600; }
+.session-dur  { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+.session-pain { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); }
+.session-pain-dot { width: 8px; height: 8px; border-radius: 50%; }
+.session-chevron { width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0; }
+
+.phase-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 10px; }
+.phase-divider-line  { flex: 1; height: 1px; background: var(--border); }
+.phase-divider-label { font-size: 12px; font-weight: 700; text-transform: uppercase;
+                       letter-spacing: .7px; padding: 0 4px; }
+
+/* ── SESSION VIEW ───────────────────────────────────────────────────────────── */
+.session-header-card {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border-radius: var(--radius); padding: 20px;
+  color: #fff; box-shadow: 0 4px 20px rgba(13,148,136,.25); margin-bottom: 16px;
+}
+
+.session-header-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.session-header-meta  { font-size: 14px; opacity: .85; }
+
+.session-progress-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+
+.session-progress-track {
+  flex: 1; height: 6px; background: rgba(255,255,255,.25); border-radius: 6px; overflow: hidden;
+}
+
+.session-progress-fill {
+  height: 100%; background: #fff; border-radius: 6px;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+
+.session-progress-label { font-size: 13px; font-weight: 700; color: #fff; opacity: .9; white-space: nowrap; }
+
+.session-instructions {
+  background: var(--accent-light); color: var(--accent);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 13px; line-height: 1.55; margin-bottom: 14px;
+}
+
+/* ── v2: Validation error cards ──────────────────────────────────────────────
+   Shown when a session references exercise IDs not found in the library.    */
+
+.validation-error-card {
+  background: #fffbeb;
+  border: 1.5px solid #f59e0b;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.validation-error-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 8px;
+}
+
+.validation-error-title svg { flex-shrink: 0; }
+
+.validation-error-list {
+  padding-left: 16px; list-style: disc;
+  font-size: 13px; color: #78350f; line-height: 1.6;
+}
+
+.validation-error-list li { margin-bottom: 3px; }
+.validation-error-list code {
+  background: rgba(0,0,0,.07); padding: 1px 5px; border-radius: 4px;
+  font-size: 12px; font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ── v2: Missing exercise inline card ──────────────────────────────────────── */
+.exercise-missing-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #fef2f2; border: 1.5px solid #fca5a5;
+  border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px;
+}
+
+.exercise-missing-card svg    { width: 20px; height: 20px; color: var(--danger); flex-shrink: 0; margin-top: 1px; }
+.exercise-missing-id          { font-size: 14px; font-weight: 700; color: #991b1b; margin-bottom: 3px; }
+.exercise-missing-id code     { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 13px; }
+.exercise-missing-msg         { font-size: 13px; color: #7f1d1d; line-height: 1.5; }
+
+/* ── Exercise session cards ─────────────────────────────────────────────────── */
+.exercise-session-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px;
+  transition: opacity .2s;
+}
+
+.exercise-session-card.done { opacity: .55; }
+
+.ex-top { display: flex; align-items: flex-start; gap: 12px; }
+
+.ex-check {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2.5px solid var(--border); background: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; margin-top: 2px;
+  transition: border-color .15s, background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ex-check.checked { background: var(--success); border-color: var(--success); }
+.ex-check svg     { width: 14px; height: 14px; color: #fff; }
+
+.ex-body { flex: 1; }
+.ex-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.ex-desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+
+/* ── v2: Meta chips for bodyRegion and movementType ────────────────────────── */
+.ex-meta-chip {
+  display: inline-block;
+  font-size: 11px; font-weight: 600;
+  padding: 2px 7px; border-radius: 20px;
+  background: var(--bg); color: var(--text-muted);
+  border: 1px solid var(--border);
+  text-transform: capitalize;
+}
+
+.ex-specs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+.spec-chip {
+  background: var(--bg); border-radius: 8px;
+  padding: 5px 10px; font-size: 12px; font-weight: 600; color: var(--text);
+}
+
+.spec-chip span   { color: var(--text-muted); font-weight: 400; }
+.spec-chip-wide   { flex: none; max-width: none; white-space: normal; }
+
+.ex-cue {
+  background: #f0fdf9; border-left: 3px solid var(--accent);
+  padding: 10px 12px; border-radius: 0 8px 8px 0;
+  font-size: 13px; color: var(--text); line-height: 1.55; margin-bottom: 8px;
+}
+
+.ex-cue-label {
+  display: block; font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .7px;
+  color: var(--accent); margin-bottom: 4px;
+}
+
+.ex-pain-note {
+  background: #fffbeb; border-left: 3px solid var(--warning);
+  padding: 8px 12px; border-radius: 0 8px 8px 0;
+  font-size: 12px; color: #92400e; line-height: 1.55;
+}
+
+.ex-pain-label {
+  display: block; font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .7px;
+  color: #b45309; margin-bottom: 3px;
+}
+
+/* ── v2: Real exercise image ────────────────────────────────────────────────── */
+.ex-image {
+  width: 100%; border-radius: 10px; margin-top: 14px;
+  display: block; object-fit: cover;
+}
+
+/* Exercise image placeholder — shown until imageSrc is provided */
+.ex-image-placeholder {
+  margin-top: 14px; border-radius: 10px;
+  background: linear-gradient(135deg, #f8fafc, #f0f4f8);
+  min-height: 110px;
+  display: flex; align-items: center;
+  gap: 14px; padding: 14px 16px;
+  border: 1.5px dashed var(--border);
+}
+
+.ex-image-icon     { flex-shrink: 0; color: var(--text-muted); opacity: .45; }
+.ex-image-icon svg { width: 32px; height: 32px; }
+.ex-image-text     { display: flex; flex-direction: column; gap: 4px; }
+.ex-image-name     { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.ex-image-sub      { font-size: 12px; color: var(--text-muted); opacity: .75; }
+
+/* Complete / log session */
+.btn-complete {
+  width: 100%; padding: 16px;
+  background: var(--accent); color: #fff;
+  font-size: 16px; font-weight: 700;
+  border: none; border-radius: var(--radius);
+  cursor: pointer; margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(13,148,136,.3);
+  transition: opacity .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-complete:active   { opacity: .85; }
+.btn-complete:disabled { opacity: .5; cursor: default; }
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  color: var(--accent); font-size: 14px; font-weight: 600;
+  padding: 0; margin-bottom: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-btn svg { width: 18px; height: 18px; }
+
+.session-complete-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 28px 20px; box-shadow: var(--shadow);
+  text-align: center; margin-top: 8px;
+}
+
+.session-complete-title { font-size: 20px; font-weight: 800; color: var(--success); margin-bottom: 8px; }
+.session-complete-meta  { font-size: 14px; color: var(--text-muted); }
+.inline-pill            { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+.complete-btn-wrap      { margin-top: 8px; }
+.complete-hint          { text-align: center; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+
+/* ── EXERCISE LIBRARY ───────────────────────────────────────────────────────── */
+.filter-row {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 4px; margin-bottom: 16px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+
+.filter-row::-webkit-scrollbar { display: none; }
+
+.filter-chip {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 7px 14px;
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  white-space: nowrap; cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+.exercise-lib-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px;
+  cursor: pointer; transition: transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.exercise-lib-card:active { transform: scale(.99); }
+
+.ex-lib-top     { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.ex-lib-name    { font-size: 16px; font-weight: 700; }
+.ex-lib-desc    { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+.ex-lib-chevron { margin-left: auto; color: var(--text-muted); }
+
+.ex-lib-phase-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 8px;
+  border-radius: 20px; background: var(--bg); color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+
+.ex-lib-specs {
+  display: flex; gap: 10px; margin-top: 8px;
+  font-size: 12px; color: var(--text-muted); font-weight: 600;
+}
+
+.ex-lib-specs span::before       { content: "·"; margin-right: 6px; }
+.ex-lib-specs span:first-child::before { content: ""; margin-right: 0; }
+
+/* ── Category badges ─────────────────────────────────────────────────────────
+   Knee / lower-limb                                                          */
+.ex-category-badge { font-size: 11px; font-weight: 700; padding: 3px 8px;
+                     border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+
+.cat-Activation              { background: #fef3c7; color: #92400e; }
+.cat-Strength                { background: #dbeafe; color: #1e40af; }
+.cat-Functional-Strength,
+.cat-Functional              { background: #fce7f3; color: #9d174d; }
+.cat-Stability               { background: #f3e8ff; color: #6b21a8; }
+.cat-ROM,
+.cat-Range-of-Motion         { background: #dcfce7; color: #15803d; }
+.cat-Circulation             { background: #e0f2fe; color: #075985; }
+.cat-Hip---Glute,
+.cat-Hip-Glute,
+.cat-Hip                     { background: #fdf4ff; color: #701a75; }
+
+/* Shoulder / upper-limb categories (v2) */
+.cat-Mobility                { background: #f0fdf4; color: #166534; }
+.cat-Flexibility             { background: #f0fdfa; color: #0f766e; }
+
+/* ── PROGRESS VIEW ──────────────────────────────────────────────────────────── */
+.progress-bar-wrap  { margin-bottom: 6px; }
+.progress-bar-label { display: flex; justify-content: space-between; align-items: center;
+                      font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.progress-bar-track { height: 10px; background: var(--bg); border-radius: 10px; overflow: hidden; }
+.progress-bar-fill  { height: 100%; background: var(--accent); border-radius: 10px;
+                      transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+.history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.history-table th {
+  text-align: left; padding: 8px 10px;
+  background: var(--bg); font-weight: 700;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted);
+}
+
+.history-table th:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.history-table th:last-child  { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.history-table td             { padding: 10px 10px; border-bottom: 1px solid var(--border); }
+.history-table tr:last-child td { border-bottom: none; }
+
+.pain-pill   { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.pain-low    { background: #dcfce7; color: #15803d; }
+.pain-mid    { background: #fef3c7; color: #92400e; }
+.pain-high   { background: #fee2e2; color: #991b1b; }
+
+/* ── COACH NOTES VIEW ───────────────────────────────────────────────────────── */
+.note-card  { background: var(--bg-card); border-radius: var(--radius);
+              padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+.note-date  { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+.note-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+.note-body  { font-size: 15px; color: var(--text); line-height: 1.65; }
+
+.coach-card  { background: var(--accent); color: #fff;
+               border-radius: var(--radius); padding: 20px;
+               box-shadow: 0 4px 20px rgba(13,148,136,.25); margin-bottom: 20px; }
+.coach-name  { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.coach-creds { font-size: 14px; opacity: .85; margin-bottom: 10px; }
+.coach-note  { font-size: 13px; opacity: .9; line-height: 1.55; }
+
+/* ── OVERVIEW VIEW ──────────────────────────────────────────────────────────── */
+.overview-hero {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border-radius: var(--radius); padding: 22px 20px;
+  color: #fff; box-shadow: 0 4px 20px rgba(13,148,136,.25); margin-bottom: 16px;
+}
+
+.overview-client-name { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+.overview-condition   { font-size: 15px; opacity: .9; margin-bottom: 2px; }
+.overview-detail      { font-size: 13px; opacity: .75; }
+
+.goals-list { list-style: none; }
+.goal-item  { display: flex; align-items: flex-start; gap: 10px;
+              padding: 11px 0; border-bottom: 1px solid var(--border);
+              font-size: 14px; line-height: 1.5; }
+.goal-item:last-child { border-bottom: none; }
+
+.goal-bullet { width: 20px; height: 20px; border-radius: 50%;
+               background: var(--accent-light); color: var(--accent);
+               flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+               font-size: 11px; font-weight: 800; margin-top: 1px; }
+
+/* ── v2: Mode badge ──────────────────────────────────────────────────────────
+   Shown in the overview to make the active mode visible to coaches/testers.  */
+.mode-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+
+.mode-multi_week         { background: #dbeafe; color: #1e40af; }
+.mode-ongoing_coaching   { background: #fef3c7; color: #92400e; }
+.mode-one_off            { background: #dcfce7; color: #15803d; }
+
+/* ── MODAL ──────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end;
+  animation: fadein .2s ease;
+}
+
+.modal-overlay[hidden] { display: none; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg-card);
+  border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%; max-width: 480px; margin: 0 auto;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  position: relative;
+  animation: slideup .25s cubic-bezier(.4,0,.2,1);
+  max-height: 85dvh; overflow-y: auto;
+}
+
+@keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: var(--text-muted);
+}
+
+.modal-close svg { width: 16px; height: 16px; }
+.modal-title     { font-size: 19px; font-weight: 700; margin-bottom: 16px; padding-right: 40px; }
+
+/* Pain / effort scale grid — tap-friendly */
+.scale-grid    { display: grid; gap: 6px; margin: 10px 0 4px; }
+.scale-grid-11 { grid-template-columns: repeat(6, 1fr); }
+.scale-grid-5  { grid-template-columns: repeat(5, 1fr); }
+
+.scale-btn {
+  aspect-ratio: 1; min-height: 40px;
+  border-radius: 10px; border: 2px solid var(--border);
+  background: none; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: border-color .15s, background .15s;
+  -webkit-tap-highlight-color: transparent;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.scale-btn.selected            { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+.scale-btn.scale-low           { border-color: #bbf7d0; }
+.scale-btn.scale-low.selected  { background: #dcfce7; border-color: var(--success); color: #15803d; }
+.scale-btn.scale-mid           { border-color: #fde68a; }
+.scale-btn.scale-mid.selected  { background: #fef3c7; border-color: var(--warning); color: #92400e; }
+.scale-btn.scale-high          { border-color: #fecaca; }
+.scale-btn.scale-high.selected { background: #fee2e2; border-color: var(--danger);  color: #991b1b; }
+.scale-btn:active              { transform: scale(.92); }
+
+.scale-label    { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.scale-sublabel { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+
+.btn-secondary {
+  width: 100%; padding: 14px;
+  background: var(--bg); color: var(--text);
+  font-size: 15px; font-weight: 600;
+  border: none; border-radius: var(--radius);
+  cursor: pointer; margin-top: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── WELCOME SCREEN ─────────────────────────────────────────────────────────── */
+.welcome-screen {
+  display: flex; flex-direction: column;
+  align-items: center; text-align: center;
+  padding: 20px 0 40px;
+  min-height: calc(100dvh - var(--header-height) - 20px);
+}
+
+.welcome-logo {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: var(--accent); color: #fff;
+  font-size: 22px; font-weight: 900; letter-spacing: .5px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(13,148,136,.3);
+}
+
+.welcome-app-name { font-size: 26px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 6px; }
+.welcome-tagline  { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
+
+.welcome-hero-card {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border-radius: var(--radius); padding: 24px 20px;
+  color: #fff; text-align: left; margin-bottom: 16px;
+  box-shadow: 0 6px 24px rgba(13,148,136,.3);
+}
+
+.welcome-client-name { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.welcome-condition   { font-size: 15px; opacity: .9; margin-bottom: 2px; }
+.welcome-detail      { font-size: 13px; opacity: .75; margin-bottom: 18px; }
+.welcome-meta-row    { display: flex; align-items: center; gap: 16px; }
+.welcome-meta-item   { display: flex; flex-direction: column; gap: 2px; }
+.welcome-meta-val    { font-size: 17px; font-weight: 800; }
+.welcome-meta-label  { font-size: 12px; opacity: .8; }
+.welcome-meta-divider{ width: 1px; height: 36px; background: rgba(255,255,255,.3); }
+
+.welcome-next-hint {
+  width: 100%; background: var(--bg-card); border-radius: var(--radius-sm);
+  padding: 12px 16px; font-size: 13px; text-align: left; margin-bottom: 24px;
+  border: 1px solid var(--border);
+}
+
+.welcome-next-hint span { color: var(--text-muted); margin-right: 6px; }
+
+.btn-welcome-enter {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--accent); color: #fff;
+  font-size: 17px; font-weight: 700;
+  padding: 16px 32px; border-radius: 40px;
+  border: none; cursor: pointer; margin-bottom: 24px;
+  box-shadow: 0 6px 20px rgba(13,148,136,.35);
+  transition: transform .1s, box-shadow .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-welcome-enter:active { transform: scale(.97); }
+.btn-welcome-enter svg    { width: 20px; height: 20px; }
+
+.welcome-disclaimer-mini { font-size: 12px; color: var(--text-muted); line-height: 1.6; max-width: 300px; }
+
+/* ── PROFILE SHORTCUT CARD ──────────────────────────────────────────────────── */
+.profile-shortcut-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 14px;
+  cursor: pointer; transition: background .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-shortcut-card:active  { background: var(--bg); }
+.profile-shortcut-left         { display: flex; align-items: center; gap: 14px; flex: 1; }
+.profile-avatar                { width: 42px; height: 42px; border-radius: 50%;
+                                  background: var(--accent-light); color: var(--accent);
+                                  font-size: 15px; font-weight: 800;
+                                  display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.profile-shortcut-right        { color: var(--text-muted); }
+.profile-shortcut-right svg    { width: 18px; height: 18px; display: block; }
+
+/* ── DISCLAIMER ─────────────────────────────────────────────────────────────── */
+.disclaimer-footer {
+  margin-top: 24px; background: #fffbeb;
+  border: 1px solid #fde68a; border-radius: var(--radius-sm);
+  padding: 14px 16px; font-size: 12px; color: #78350f; line-height: 1.6;
+}
+
+.disclaimer-title { font-weight: 700; font-size: 12px; text-transform: uppercase;
+                    letter-spacing: .5px; margin-bottom: 6px; color: #92400e; }
+.disclaimer-footer p { margin-bottom: 8px; }
+.disclaimer-list  { padding-left: 16px; margin-top: 8px; list-style: disc;
+                    font-size: 12px; color: #78350f; line-height: 1.65; }
+.disclaimer-list li { margin-bottom: 4px; }
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────────── */
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+.empty-state svg { width: 48px; height: 48px; opacity: .3; margin-bottom: 12px; }
+.empty-state p   { font-size: 15px; }
+
+/* ── CHECK-IN SAFETY NOTE ────────────────────────────────────────────────────── */
+.checkin-safety-note {
+  background: #fffbeb; border-left: 3px solid var(--warning);
+  padding: 10px 12px; border-radius: 0 8px 8px 0;
+  font-size: 12px; color: #92400e; line-height: 1.55; margin-top: 12px;
+}
+
+/* ── UTILITIES ──────────────────────────────────────────────────────────────── */
+.text-accent { color: var(--accent); }
+.text-muted  { color: var(--text-muted); }
+.font-bold   { font-weight: 700; }
+
+/* ── Tablet / desktop enhancement ─────────────────────────────────────────── */
+@media (min-width: 520px) {
+  #app  { box-shadow: var(--shadow-lg); min-height: 100dvh; }
+  body  { background: #d1d9e0; display: flex; align-items: flex-start; justify-content: center; padding: 0; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ONGOING COACHING MODE  —  stats, trend, plan notes
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Coaching stats row — replaces the progress ring for ongoing_coaching */
+.coaching-stats-row {
+  display: flex; gap: 10px; margin-bottom: 14px;
+}
+
+.coaching-stat-card {
+  flex: 1; background: var(--bg-card); border-radius: var(--radius);
+  padding: 14px 10px; box-shadow: var(--shadow); text-align: center;
+}
+
+.coaching-stat-icon  { margin-bottom: 4px; color: var(--accent); }
+.coaching-stat-icon svg { width: 18px; height: 18px; display: inline-block; }
+.coaching-stat-value { font-size: 26px; font-weight: 800; color: var(--accent); }
+.coaching-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600;
+                       text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+
+/* Pain trend card */
+.trend-card {
+  display: flex; align-items: center; gap: 12px;
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  margin-bottom: 14px; border: 1.5px solid;
+}
+
+.trend-card.trend-improving    { background: #f0fdf4; border-color: #86efac; }
+.trend-card.trend-worsening    { background: #fef2f2; border-color: #fca5a5; }
+.trend-card.trend-stable       { background: var(--bg); border-color: var(--border); }
+.trend-card.trend-insufficient { background: var(--bg); border-color: var(--border); }
+
+.trend-icon       { flex-shrink: 0; }
+.trend-icon svg   { display: block; }
+.trend-improving .trend-icon svg { color: var(--success); }
+.trend-worsening .trend-icon svg { color: var(--danger); }
+.trend-stable    .trend-icon svg { color: var(--text-muted); }
+
+.trend-label  { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: .6px; color: var(--text-muted); margin-bottom: 2px; }
+.trend-value  { font-size: 15px; font-weight: 700; }
+.trend-improving .trend-value { color: #15803d; }
+.trend-worsening .trend-value { color: var(--danger); }
+
+/* Plan rolling-window note */
+.plan-history-note {
+  font-size: 12px; color: var(--text-muted); text-align: center;
+  padding: 8px 12px; margin-bottom: 8px;
+  background: var(--bg); border-radius: var(--radius-sm);
+}
+
+/* Coaching extend note at bottom of plan */
+.coaching-extend-note {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--text-muted);
+  padding: 14px 16px; text-align: left;
+  background: var(--bg-card); border-radius: var(--radius);
+  border: 1.5px dashed var(--border); margin-top: 4px;
+}
+
+.coaching-extend-note svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--accent); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   OUTCOME ROWS  —  used in Overview and Progress views
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.outcome-row {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.outcome-row-last { border-bottom: none; }
+
+.outcome-label {
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
+}
+
+.outcome-values { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.outcome-chip {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  padding: 3px 9px; border-radius: 20px;
+}
+
+.outcome-chip.baseline { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+.outcome-chip.target   { background: var(--accent-light); color: var(--accent); }
+.outcome-chip.cleared  { background: #dcfce7; color: #15803d; }
+.outcome-chip.pending  { background: #fef3c7; color: #92400e; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ASSESSMENT CARDS  —  reassessment checkpoints in Progress view
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.assessment-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px;
+  border-left: 3px solid var(--accent);
+}
+
+.assessment-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+
+.assessment-week  { font-size: 13px; font-weight: 800; }
+.assessment-date  { font-size: 12px; color: var(--text-muted); }
+
+.assessment-grid {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;
+}
+
+.assessment-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.assessment-key  { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                   letter-spacing: .5px; color: var(--text-muted); }
+
+.assessment-notes {
+  font-size: 13px; color: var(--text); line-height: 1.55;
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 10px 12px; margin-top: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EXERCISE: EQUIPMENT CHIP + CONTRAINDICATIONS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Equipment chip — amber tint to distinguish from category/region chips */
+.ex-meta-chip.equip {
+  background: #fef3c7; color: #92400e; border-color: #fde68a;
+}
+
+/* Contraindications strip */
+.ex-contraindications {
+  margin-top: 8px; padding: 8px 12px;
+  background: #fef2f2; border-radius: var(--radius-sm);
+  font-size: 12px; color: #7f1d1d; line-height: 1.5;
+}
+
+.ex-contra-label {
+  font-weight: 700; display: inline;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EXERCISE LIBRARY: Balance category badge (new)
+   ───────────────────────────────────────────────────────────────────────────── */
+.cat-Balance { background: #ede9fe; color: #5b21b6; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EXERCISE: Video link button
+   ───────────────────────────────────────────────────────────────────────────── */
+.ex-video-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 10px; padding: 8px 14px;
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 20px; font-size: 13px; font-weight: 600;
+  text-decoration: none; border: 1.5px solid var(--accent);
+  transition: background .15s;
+}
+.ex-video-link:active { background: var(--accent); color: #fff; }
+.ex-video-link svg    { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PROGRESS: Pain sparkline chart
+   ───────────────────────────────────────────────────────────────────────────── */
+.pain-sparkline-wrap {
+  margin: 14px 0 4px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px 8px;
+  border: 1px solid var(--border);
+}
+.pain-sparkline {
+  display: block; width: 100%; height: auto;
+  overflow: visible;
+}
+.pain-sparkline-labels {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--text-muted); font-weight: 600;
+  margin-bottom: 4px;
+}
+.pain-sparkline-label-mid {
+  font-size: 11px; color: var(--text-muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.pain-sparkline-axis {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 4px;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ACCESS GUARD  —  shown when PROGRAM.access.status !== "active"
+   ───────────────────────────────────────────────────────────────────────────── */
+.access-guard-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 65dvh; padding: 32px 24px; text-align: center;
+}
+.access-guard-icon { color: var(--text-muted); margin-bottom: 16px; opacity: .5; }
+.access-guard-icon svg { width: 52px; height: 52px; }
+.access-guard-heading {
+  font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 10px;
+}
+.access-guard-body {
+  font-size: 15px; color: var(--text-muted); line-height: 1.6;
+  max-width: 320px; margin: 0 auto 20px;
+}
+.access-guard-coach {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 14px 18px; margin-bottom: 16px; width: 100%; max-width: 340px;
+  border: 1px solid var(--border);
+}
+.access-guard-coach-name  { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.access-guard-coach-note  { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.access-guard-type {
+  font-size: 12px; color: var(--text-muted);
+  background: var(--bg); padding: 8px 14px; border-radius: 20px;
+}
+.access-status-expired   { color: var(--danger);  font-weight: 700; }
+.access-status-suspended { color: var(--danger);  font-weight: 700; }
+.access-status-pending   { color: var(--warning); font-weight: 700; }
+.access-status-active    { color: var(--success); font-weight: 700; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EXERCISE LIBRARY: Live search input
+   ───────────────────────────────────────────────────────────────────────────── */
+.ex-search-wrap {
+  position: relative; margin-bottom: 12px;
+}
+.ex-search-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); pointer-events: none;
+  display: flex; align-items: center;
+}
+.ex-search-icon svg { width: 17px; height: 17px; }
+.ex-search-input {
+  width: 100%; padding: 11px 14px 11px 42px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-card); color: var(--text);
+  font-size: 15px; font-family: inherit;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+}
+.ex-search-input:focus          { outline: none; border-color: var(--accent); }
+.ex-search-input::placeholder   { color: var(--text-muted); }
+/* hide the native clear button — we rely on clearing via filter chips */
+.ex-search-input::-webkit-search-cancel-button { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PROGRESS: Week completion grid  (multi_week mode)
+   ───────────────────────────────────────────────────────────────────────────── */
+.week-grid-wrap    { padding: 12px 16px 8px; }
+.week-grid-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+}
+.week-grid-row:last-of-type          { border-bottom: none; }
+.week-grid-row.current-week          { background: var(--accent-light); margin: 0 -16px; padding: 6px 16px; border-radius: var(--radius-sm); }
+.week-grid-label {
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  width: 34px; flex-shrink: 0; white-space: nowrap;
+}
+.week-grid-cells  { display: flex; gap: 4px; flex-shrink: 0; }
+.week-grid-cell {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1.5px solid var(--border); background: transparent;
+  transition: background .2s, border-color .2s;
+}
+.week-grid-cell.done  { border-color: transparent; }
+.week-grid-cell.todo  { background: var(--bg); }
+.week-grid-focus {
+  font-size: 11px; color: var(--text-muted); line-height: 1.3;
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.week-grid-legend {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  margin-top: 12px; font-size: 11px; color: var(--text-muted);
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.week-grid-legend-dot {
+  width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--border);
+  display: inline-block; flex-shrink: 0;
+}
+.week-grid-legend-dot.done { border-color: transparent; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SESSION LOG: Optional note field in check-in modal
+   ───────────────────────────────────────────────────────────────────────────── */
+.checkin-note-wrap   { margin-top: 18px; }
+.checkin-note-label  { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.checkin-note-textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text);
+  font-size: 14px; font-family: inherit; line-height: 1.5; resize: vertical;
+}
+.checkin-note-textarea:focus { outline: none; border-color: var(--accent); }
+.checkin-note-textarea::placeholder { color: var(--text-muted); }
+
+/* Session note displayed on completed session card */
+.session-note-display {
+  margin-top: 12px; padding: 10px 14px;
+  background: var(--bg); border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent); text-align: left;
+  font-size: 13px; line-height: 1.6; color: var(--text-muted);
+}
+.session-note-label {
+  display: block; font-size: 11px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
+}
+
+/* Note row in session history table */
+.history-note-row {
+  font-size: 12px; color: var(--text-muted); font-style: italic;
+  padding-top: 0 !important; padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EXERCISE: Video link button
+   ───────────────────────────────────────────────────────────────────────────── */
+.ex-video-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 10px; padding: 8px 14px;
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 20px; font-size: 13px; font-weight: 600;
+  text-decoration: none; border: 1.5px solid var(--accent);
+  transition: background .15s;
+}
+.ex-video-link:active { background: var(--accent); color: #fff; }
+.ex-video-link svg    { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PROGRESS: Pain sparkline chart
+   ───────────────────────────────────────────────────────────────────────────── */
+.pain-sparkline-wrap {
+  margin: 14px 0 4px;
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 10px 12px 8px; border: 1px solid var(--border);
+}
+.pain-sparkline      { display: block; width: 100%; height: auto; overflow: visible; }
+.pain-sparkline-labels {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;
+}
+.pain-sparkline-label-mid {
+  font-size: 11px; color: var(--text-muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.pain-sparkline-axis {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-muted); margin-top: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MODE BADGES  —  matches app.js output of mode-${MODE}
+   ───────────────────────────────────────────────────────────────────────────── */
+.mode-multi_week         { background: #dbeafe; color: #1e40af; }
+.mode-ongoing_coaching   { background: #fef3c7; color: #92400e; }
+.mode-one_off            { background: #dcfce7; color: #15803d; }
+
