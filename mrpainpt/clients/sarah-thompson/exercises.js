@@ -1,26 +1,172 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// SARAH THOMPSON — CLIENT-SPECIFIC EXERCISE OVERRIDES
-//
-// This file holds exercises or prescription modifications specific to Sarah.
-// The shared exercise library lives at:
-//   mrpainpt/packages/exercise-library/index.js
-//
-// Use this file ONLY for:
-//   1. Exercises that are specific to Sarah and not reusable across clients
-//   2. Prescription overrides for shared exercises (e.g. different reps, cue)
-//      — use the same id as the shared library entry; only specify changed fields
-//
-// MERGE BEHAVIOUR (Phase 4)
-// ─────────────────────────
-// The API will merge as:
-//   final = { ...sharedLibrary[id], ...clientOverride[id] }
-//
-// Current status: empty — Sarah's program uses the shared library as-is.
+// EXERCISE LIBRARY
+// Add, remove, or edit exercises here.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CLIENT_EXERCISE_OVERRIDES = [
+const EXERCISE_LIBRARY = [
+  // ── Phase 1 — Activation & early range of motion ──────────────────────────
+  {
+    id: "quad-sets",
+    phase: 1,
+    category: "Activation",
+    name: "Quad Sets",
+    description:
+      "Lie on your back with the leg straight. Tighten the thigh muscle by pressing the back of the knee gently into the surface. Hold, then relax.",
+    sets: 3,
+    reps: 15,
+    hold: "5 s",
+    tempo: "Squeeze — hold 5 s — release",
+    rest: "30 s between sets",
+    cue: "Think about pushing the back of your knee into the floor without moving your leg. You should feel the front of the thigh engage.",
+    painNote: "Mild muscle fatigue is normal. Stop if you feel pain in the joint.",
+    imageAlt: "Quad set exercise demonstration",
+  },
+  {
+    id: "heel-slides",
+    phase: 1,
+    category: "Range of Motion",
+    name: "Heel Slides",
+    description:
+      "Lie on your back. Slowly slide your heel toward your body by bending the knee as far as comfortable, then slowly straighten.",
+    sets: 3,
+    reps: 12,
+    hold: null,
+    tempo: "3 s in — 3 s out",
+    rest: "30 s between sets",
+    cue: "Move only as far as your current range allows. Do not force the knee. Breathe out as you bend, breathe in as you straighten.",
+    painNote: "Gentle pulling or stretch sensation is expected. Sharp or stabbing pain: stop immediately.",
+    imageAlt: "Heel slide exercise demonstration",
+  },
+  {
+    id: "ankle-pumps",
+    phase: 1,
+    category: "Circulation",
+    name: "Ankle Pumps",
+    description:
+      "Lie or sit with legs elevated. Slowly pump the foot up and down at the ankle to promote blood flow and reduce swelling.",
+    sets: 2,
+    reps: 20,
+    hold: null,
+    tempo: "1 s up — 1 s down, continuous",
+    rest: "No rest required",
+    cue: "Keep the movement smooth and rhythmic. Do this especially first thing in the morning and after sitting for long periods.",
+    painNote: "Should feel no pain — only gentle movement.",
+    imageAlt: "Ankle pump exercise demonstration",
+  },
+  {
+    id: "straight-leg-raise",
+    phase: 1,
+    category: "Strength",
+    name: "Straight Leg Raise",
+    description:
+      "Lie on your back with the uninvolved knee bent. Tighten the quad of the surgical leg, then lift the straight leg to the height of the opposite knee.",
+    sets: 3,
+    reps: 10,
+    hold: "2 s at top",
+    tempo: "2 s up — 2 s hold — 2 s down",
+    rest: "45 s between sets",
+    cue: "Lock the knee straight BEFORE lifting. If you see a sag in the knee as you lift, reset and try again. Quality over quantity.",
+    painNote: "Muscle fatigue in front of the thigh is expected. Groin or hip pain: stop and report.",
+    imageAlt: "Straight leg raise demonstration",
+  },
 
-  // No overrides at this time.
-  // Add entries here if Sarah's prescription diverges from the shared library.
+  // ── Phase 2 — Strength & stability ───────────────────────────────────────
+  {
+    id: "mini-squat",
+    phase: 2,
+    category: "Strength",
+    name: "Mini Squat (0–45°)",
+    description:
+      "Stand at a counter or chair back for support. Feet hip-width apart. Slowly lower into a shallow squat to about 45° of knee bend, then drive back up.",
+    sets: 3,
+    reps: 12,
+    hold: null,
+    tempo: "3 s down — 1 s up",
+    rest: "60 s between sets",
+    cue: "Keep your knee tracking over the second toe — do not let it cave inward. Look straight ahead, chest up, weight through the whole foot.",
+    painNote: "Mild quad burn is expected. Any sharp knee pain or clicking: stop and contact your coach.",
+    imageAlt: "Mini squat demonstration",
+  },
+  {
+    id: "step-up",
+    phase: 2,
+    category: "Functional Strength",
+    name: "Step-Up (4-inch step)",
+    description:
+      "Place the involved foot on a low step. Push through the heel to step up, bring the other foot up, then lower back down with control.",
+    sets: 3,
+    reps: 10,
+    hold: null,
+    tempo: "2 s up — 3 s down (focus on the lowering)",
+    rest: "60 s between sets",
+    cue: "The lowering phase (eccentric) is the most important part. Go slow and controlled on the way down. Avoid using the trailing leg to push off.",
+    painNote: "Some front-of-knee discomfort on the way down is common early on. If it is greater than 4/10 on your pain scale, reduce height or stop.",
+    imageAlt: "Step-up exercise demonstration",
+  },
+  {
+    id: "terminal-knee-ext",
+    phase: 2,
+    category: "Strength",
+    name: "Terminal Knee Extension (TKE)",
+    description:
+      "Anchor a light resistance band around something behind you. Loop it behind the knee. Stand with slight knee bend and straighten the knee against the band's resistance.",
+    sets: 3,
+    reps: 15,
+    hold: "1 s at full extension",
+    tempo: "Controlled throughout",
+    rest: "45 s between sets",
+    cue: "Focus on the last 20° of straightening. This targets the VMO (inner quad) which is critical for knee stability. Keep the movement smooth — no snapping.",
+    painNote: "Band tension should provide mild resistance only. Reduce resistance if knee pain > 3/10.",
+    imageAlt: "Terminal knee extension band exercise",
+  },
+  {
+    id: "single-leg-balance",
+    phase: 2,
+    category: "Stability",
+    name: "Single-Leg Balance",
+    description:
+      "Stand on the involved leg with a slight knee bend (~10°). Hold as still as possible. Progress to eyes closed once 30 s is comfortable.",
+    sets: 3,
+    reps: null,
+    hold: "20–30 s",
+    tempo: "Static hold",
+    rest: "30 s between sets",
+    cue: "Find a focal point on the wall. Soften the knee — never lock it out. If you feel wobbling, that is the nervous system adapting. Stay with it.",
+    painNote: "Balance fatigue and mild muscular shaking are normal. Joint pain or instability feeling: stop.",
+    imageAlt: "Single-leg balance demonstration",
+  },
 
+  // ── Phase 3 — Progressive loading ────────────────────────────────────────
+  {
+    id: "wall-squat",
+    phase: 3,
+    category: "Strength",
+    name: "Wall Squat (60°)",
+    description:
+      "Place your back against a smooth wall. Walk feet out. Slide down until knees are at 60°. Hold position, then slide back up.",
+    sets: 3,
+    reps: null,
+    hold: "20–30 s",
+    tempo: "Isometric hold",
+    rest: "90 s between sets",
+    cue: "Do not let the knees go past the toes. Keep your lower back pressed into the wall. Breathe steadily — do not hold your breath.",
+    painNote: "Quad burning is expected and is a sign of the muscles working. Any sharp joint pain: stop.",
+    imageAlt: "Wall squat hold demonstration",
+  },
+  {
+    id: "lateral-band-walk",
+    phase: 3,
+    category: "Hip & Glute",
+    name: "Lateral Band Walk",
+    description:
+      "Place a resistance band around the ankles or just above the knees. Stand in a slight squat. Step sideways, maintaining band tension throughout.",
+    sets: 3,
+    reps: "10 steps each direction",
+    hold: null,
+    tempo: "Controlled — no snapping the feet together",
+    rest: "60 s between sets",
+    cue: "Keep the band taut the whole time. Squeeze the glutes as you step. Avoid leaning side to side — stay upright and controlled.",
+    painNote: "Hip and glute fatigue is normal. Knee pain or snapping sensation: reduce band resistance.",
+    imageAlt: "Lateral band walk demonstration",
+  },
 ];

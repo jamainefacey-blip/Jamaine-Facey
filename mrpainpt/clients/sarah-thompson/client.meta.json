@@ -1,33 +1,8 @@
 {
-  "_comment": "Registry metadata for Sarah Thompson. Populated from client.config.js at Phase 2.",
-
-  "clientId":    "sarah-thompson",
-  "slug":        "sarah",
-  "displayName": "Sarah Thompson",
-  "status":      "active",
-
-  "program": {
-    "condition":    "ACL Reconstruction",
-    "startDate":    "2026-01-27",
-    "totalWeeks":   12,
-    "currentPhase": 1
-  },
-
-  "coach": {
-    "coachId":   "marcus-reid",
-    "coachName": "Marcus Reid DPT, CSCS"
-  },
-
-  "deployment": {
-    "deployUrl":    "",
-    "customDomain": "",
-    "netlifyId":    ""
-  },
-
-  "_meta": {
-    "schemaVersion": "1.0",
-    "createdDate":   "2026-01-27",
-    "lastUpdated":   "2026-03-16",
-    "notes":         "First client. ACL reconstruction, 12-week program. Currently Week 3, Phase 1."
-  }
+  "clientId": "sarah-thompson",
+  "status": "active",
+  "programType": "rehab",
+  "deployment": "local-canonical",
+  "source": "apps/client/scripts/data",
+  "createdFromPhase": "phase2-checkpoint1"
 }
