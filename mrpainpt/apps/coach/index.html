@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mr Pain PT — Coach Portal</title>
+  <link rel="stylesheet" href="styles/coach.css" />
+</head>
+<body>
+
+  <!-- ── Header / global nav ──────────────────────────────────────────────── -->
+  <header class="c-header" role="banner">
+    <div class="c-header__brand">
+      <span class="c-header__logo" aria-hidden="true">MR PT</span>
+      <span class="c-header__title">Coach Portal</span>
+    </div>
+    <nav class="c-nav" aria-label="Primary navigation">
+      <a class="c-nav__link" href="#clients">Clients</a>
+      <a class="c-nav__link" href="#library">Exercise Library</a>
+    </nav>
+  </header>
+
+  <!-- ── Main router mount ────────────────────────────────────────────────── -->
+  <main class="c-main" id="main" role="main">
+    <div id="view" class="c-view" aria-live="polite"></div>
+  </main>
+
+  <!-- ── Script load order — DO NOT REORDER ──────────────────────────────── -->
+  <!--
+    Dependency chain (each step depends on the globals from the previous):
+
+    1. packages/exercise-library/index.js   → EXERCISE_LIBRARY (global)
+    2. clients/<slug>/client.config.js      → CLIENT_CONFIG    (global)
+    3. clients/<slug>/plan.js               → REHAB_PLAN       (global, refs CLIENT_CONFIG + EXERCISE_LIBRARY)
+
+    NOTE: clients/<slug>/exercises.js is intentionally NOT loaded.
+    It declares `const EXERCISE_LIBRARY` which collides with step 1.
+    The canonical library (step 1) is the sole exercise source for Phase 3.
+    Loader passes an empty override array. See loader.js for full explanation.
+    This is resolved in Phase 4 when the API layer handles merging server-side.
+
+    4. scripts/data/registry.js             → CLIENT_REGISTRY  (global)
+    5. scripts/data/loader.js               → loadClient()     (global fn)
+    6. scripts/coach-app.js                 → router boot      (must be last)
+  -->
+
+  <!-- 1. Shared exercise library -->
+  <script src="../../packages/exercise-library/index.js"></script>
+
+  <!-- 2–3. sarah-thompson canonical client data -->
+  <script src="../../clients/sarah-thompson/client.config.js"></script>
+  <script src="../../clients/sarah-thompson/plan.js"></script>
+  <!--
+    TO ADD A FUTURE CLIENT: add two <script> tags here for their
+    client.config.js and plan.js, then add their slug to registry.js
+    and CLIENT_DATA_MAP in loader.js.
+  -->
+
+  <!-- 4–5. Coach portal data layer -->
+  <script src="scripts/data/registry.js"></script>
+  <script src="scripts/data/loader.js"></script>
+
+  <!-- 6. App router — must load after all data scripts -->
+  <script src="scripts/coach-app.js"></script>
+
+</body>
+</html>

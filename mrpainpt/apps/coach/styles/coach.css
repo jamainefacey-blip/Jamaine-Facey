@@ -1,0 +1,867 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   MR PAIN PT — COACH PORTAL STYLESHEET
+   Standalone. No imports from apps/client/styles/.
+   All design tokens are defined locally below.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+
+/* ── Design tokens ────────────────────────────────────────────────────────── */
+
+:root {
+  /* Palette */
+  --color-brand:          #0d9488;   /* teal — consistent with client app accent */
+  --color-brand-dark:     #0f766e;
+  --color-brand-light:    #ccfbf1;
+
+  --color-surface:        #ffffff;
+  --color-surface-raised: #f8fafc;   /* page background */
+  --color-surface-muted:  #f1f5f9;   /* sidebar, inactive tabs */
+  --color-border:         #e2e8f0;
+  --color-border-strong:  #cbd5e1;
+
+  --color-text:           #0f172a;   /* primary text — near black */
+  --color-text-secondary: #475569;   /* secondary / meta text */
+  --color-text-muted:     #94a3b8;   /* disabled, placeholders */
+  --color-text-inverse:   #ffffff;
+
+  /* Pain colour tokens — clinical severity scale */
+  --pain-green:  #059669;  /* score 0–3  — acceptable / well-managed */
+  --pain-amber:  #d97706;  /* score 4–6  — moderate — monitor closely */
+  --pain-red:    #dc2626;  /* score 7–10 — high — coach action required */
+
+  --pain-green-bg:  #d1fae5;
+  --pain-amber-bg:  #fef3c7;
+  --pain-red-bg:    #fee2e2;
+
+  /* Session status tokens */
+  --status-completed: #059669;
+  --status-upcoming:  #2563eb;
+  --status-missed:    #94a3b8;
+  --status-overdue:   #d97706;
+
+  /* Phase colour tokens */
+  --phase-1: #0d9488;
+  --phase-2: #2563eb;
+  --phase-3: #7c3aed;
+
+  /* Spacing scale */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono",
+                 ui-monospace, monospace;
+
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  --leading-tight:  1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.625;
+
+  /* Radius */
+  --radius-sm:   0.25rem;
+  --radius-base: 0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-full: 9999px;
+
+  /* Shadow */
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base:0 1px 3px 0 rgb(0 0 0 / 0.10), 0 1px 2px -1px rgb(0 0 0 / 0.10);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -2px rgb(0 0 0 / 0.10);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.10), 0 4px 6px -4px rgb(0 0 0 / 0.10);
+
+  /* Layout */
+  --header-height:   3.5rem;
+  --content-max-w:   72rem;   /* 1152px — coach portal is data-dense, wider than client app */
+  --sidebar-w:       16rem;
+}
+
+
+/* ── Reset / base ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font: inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+
+.c-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  background: var(--color-text);   /* dark header — clinical, not fitness-bro */
+  border-bottom: 1px solid rgba(255 255 255 / 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  gap: var(--space-4);
+}
+
+.c-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.c-header__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.c-header__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-inverse);
+  letter-spacing: 0.01em;
+}
+
+/* Nav */
+.c-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.c-nav__link {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: rgba(255 255 255 / 0.7);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.c-nav__link:hover {
+  color: var(--color-text-inverse);
+  background: rgba(255 255 255 / 0.08);
+  text-decoration: none;
+}
+
+.c-nav__link--active {
+  color: var(--color-text-inverse);
+  background: rgba(255 255 255 / 0.12);
+}
+
+
+/* ── Main layout ──────────────────────────────────────────────────────────── */
+
+.c-main {
+  min-height: calc(100vh - var(--header-height));
+  padding: var(--space-8) var(--space-6);
+}
+
+.c-view {
+  max-width: var(--content-max-w);
+  margin: 0 auto;
+}
+
+
+/* ── Placeholder (Checkpoint 2 — replaced by real views in CP3–5) ─────────── */
+
+.c-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.c-placeholder__text {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+
+.c-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+
+.c-card--elevated {
+  box-shadow: var(--shadow-base);
+}
+
+.c-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.c-card__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.c-card__subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+
+/* ── Client list grid ─────────────────────────────────────────────────────── */
+
+.c-client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: var(--space-6);
+}
+
+
+/* ── Client card ──────────────────────────────────────────────────────────── */
+
+.c-client-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.c-client-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-brand);
+}
+
+.c-client-card__name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.c-client-card__condition {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.c-client-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.c-client-card__link {
+  display: block;
+  margin-top: auto;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-base);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-align: center;
+  transition: background 0.15s ease;
+}
+
+.c-client-card__link:hover {
+  background: var(--color-brand-dark);
+  text-decoration: none;
+}
+
+
+/* ── Pain score badge ─────────────────────────────────────────────────────── */
+
+.c-pain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.03em;
+}
+
+.c-pain--green {
+  background: var(--pain-green-bg);
+  color: var(--pain-green);
+}
+
+.c-pain--amber {
+  background: var(--pain-amber-bg);
+  color: var(--pain-amber);
+}
+
+.c-pain--red {
+  background: var(--pain-red-bg);
+  color: var(--pain-red);
+}
+
+.c-pain--none {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.c-pain__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+
+/* ── Badge / chip ─────────────────────────────────────────────────────────── */
+
+.c-badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.03em;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.c-badge--phase-1 { background: #ccfbf1; color: var(--phase-1); border-color: #99f6e4; }
+.c-badge--phase-2 { background: #dbeafe; color: var(--phase-2); border-color: #bfdbfe; }
+.c-badge--phase-3 { background: #ede9fe; color: var(--phase-3); border-color: #ddd6fe; }
+
+.c-badge--active   { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.c-badge--paused   { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.c-badge--complete { background: #dbeafe; color: #1e3a8a; border-color: #bfdbfe; }
+
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+
+.c-tabs {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-6);
+}
+
+.c-tabs__list {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.c-tabs__list::-webkit-scrollbar {
+  display: none;
+}
+
+.c-tabs__tab {
+  display: inline-block;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.c-tabs__tab:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.c-tabs__tab--active {
+  color: var(--color-brand);
+  border-bottom-color: var(--color-brand);
+}
+
+
+/* ── Section header ───────────────────────────────────────────────────────── */
+
+.c-section-header {
+  margin-bottom: var(--space-6);
+}
+
+.c-section-header__title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.c-section-header__subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}
+
+.c-section-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+
+/* ── Controls (sort / filter bar) ────────────────────────────────────────── */
+
+.c-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.c-controls__label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.c-select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 1.75rem;
+}
+
+.c-select:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+  border-color: var(--color-brand);
+}
+
+
+/* ── Button ───────────────────────────────────────────────────────────────── */
+
+.c-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-base);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.c-btn--primary {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-brand);
+}
+
+.c-btn--primary:hover {
+  background: var(--color-brand-dark);
+  border-color: var(--color-brand-dark);
+  text-decoration: none;
+  color: var(--color-text-inverse);
+}
+
+.c-btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.c-btn--secondary:hover {
+  background: var(--color-surface-muted);
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.c-btn--danger {
+  background: var(--color-surface);
+  color: var(--pain-red);
+  border: 1px solid var(--pain-red);
+}
+
+.c-btn--danger:hover {
+  background: var(--pain-red-bg);
+  text-decoration: none;
+}
+
+
+/* ── Form elements ────────────────────────────────────────────────────────── */
+
+.c-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.c-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.c-input,
+.c-textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  transition: border-color 0.15s ease;
+}
+
+.c-input:focus,
+.c-textarea:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+  border-color: var(--color-brand);
+}
+
+.c-textarea {
+  resize: vertical;
+  min-height: 7rem;
+  line-height: var(--leading-relaxed);
+}
+
+
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+
+.c-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.c-progress__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.c-progress__track {
+  height: 0.5rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.c-progress__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-brand);
+  transition: width 0.4s ease;
+}
+
+
+/* ── Table ────────────────────────────────────────────────────────────────── */
+
+.c-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.c-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  background: var(--color-surface);
+}
+
+.c-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.c-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.c-table tr:last-child td {
+  border-bottom: none;
+}
+
+.c-table tbody tr:hover {
+  background: var(--color-surface-raised);
+}
+
+
+/* ── Stat tile ────────────────────────────────────────────────────────────── */
+
+.c-stat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+}
+
+.c-stat__label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.c-stat__value {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  line-height: 1.1;
+  margin-top: var(--space-2);
+}
+
+.c-stat__sub {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.c-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--space-4);
+}
+
+
+/* ── Alert / callout ──────────────────────────────────────────────────────── */
+
+.c-alert {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-base);
+  font-size: var(--text-sm);
+  border: 1px solid transparent;
+}
+
+.c-alert--amber {
+  background: var(--pain-amber-bg);
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.c-alert--red {
+  background: var(--pain-red-bg);
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.c-alert--green {
+  background: var(--pain-green-bg);
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+
+/* ── Code / pre block (for note export in tab-notes.js) ──────────────────── */
+
+.c-pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  background: var(--color-text);
+  color: #e2e8f0;
+  padding: var(--space-4);
+  border-radius: var(--radius-base);
+  overflow-x: auto;
+  white-space: pre;
+  line-height: var(--leading-relaxed);
+}
+
+
+/* ── Back link ────────────────────────────────────────────────────────────── */
+
+.c-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+.c-back:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.c-back::before {
+  content: "←";
+}
+
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+
+.c-empty {
+  text-align: center;
+  padding: var(--space-16) var(--space-8);
+  color: var(--color-text-muted);
+}
+
+.c-empty__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.c-empty__text {
+  font-size: var(--text-sm);
+}
+
+
+/* ── Responsive breakpoints ───────────────────────────────────────────────── */
+
+@media (max-width: 48rem) {
+  .c-main {
+    padding: var(--space-4);
+  }
+
+  .c-header {
+    padding: 0 var(--space-4);
+  }
+
+  .c-header__title {
+    display: none; /* show logo only on small screens */
+  }
+
+  .c-client-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .c-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .c-tabs__tab {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .c-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 30rem) {
+  .c-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 64rem) {
+  .c-main {
+    padding: var(--space-10) var(--space-8);
+  }
+}
