@@ -1,0 +1,12 @@
+{
+  "coaches": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "marcus@mrpainpt.com",
+      "name": "Marcus Reid",
+      "credentials": "DPT, CSCS",
+      "role": "coach",
+      "passwordHash": "$2a$10$MW3LF9/1/sKREIF8QAhopOJZnzgze8JtWYgaIybEkvKfRRVOTiOoy"
+    }
+  ]
+}

@@ -9,14 +9,14 @@
 //
 // ROUTE REGISTRY
 // ──────────────
-// CP6 (read-only, no auth — current):
-//   GET  /api/clients             coach client roster
-//   GET  /api/client/:slug        single client full data set
+// CP6 (read-only, no auth — complete):
+//   GET  /api/clients             coach client roster        [requireAuth]
+//   GET  /api/client/:slug        single client full data    [requireAuth]
 //
-// CP7 (auth — added in CP7, not yet active):
-//   POST /api/auth/login
-//   POST /api/auth/logout
-//   GET  /api/auth/me
+// CP7 (auth — current):
+//   POST /api/auth/login          issue JWT (public)
+//   POST /api/auth/logout         clear session (public)
+//   GET  /api/auth/me             return coach identity      [requireAuth]
 //
 // CP9 (notes persistence — added in CP9, not yet active):
 //   GET  /api/client/:slug/notes
@@ -41,16 +41,25 @@
 
 'use strict';
 
-const router      = require('../router');
-const clientsRoute = require('../routes/clients');
-const clientRoute  = require('../routes/client');
+const router         = require('../router');
+const { requireAuth } = require('../middleware/auth');
+const authRoute      = require('../routes/auth');
+const clientsRoute   = require('../routes/clients');
+const clientRoute    = require('../routes/client');
 
 // ── Route registration ────────────────────────────────────────────────────────
-// Specific sub-resource routes will be registered here in CP9/CP10.
-// Keep more-specific patterns above less-specific ones.
+// Auth routes are public (no requireAuth wrapper).
+// All data routes are protected (wrapped with requireAuth).
+// More-specific patterns must appear before less-specific ones.
 
-router.get('/api/clients',       clientsRoute.list);
-router.get('/api/client/:slug',  clientRoute.get);
+// Public auth routes
+router.post('/api/auth/login',   authRoute.login);
+router.post('/api/auth/logout',  authRoute.logout);
+router.get('/api/auth/me',       requireAuth(authRoute.me));
+
+// Protected data routes — CP9/CP10 sub-resource routes go above these
+router.get('/api/clients',       requireAuth(clientsRoute.list));
+router.get('/api/client/:slug',  requireAuth(clientRoute.get));
 
 // ── CORS headers ──────────────────────────────────────────────────────────────
 // In production the coach portal and API share the same Netlify origin.

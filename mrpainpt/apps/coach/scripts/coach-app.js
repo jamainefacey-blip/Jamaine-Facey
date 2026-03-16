@@ -13,17 +13,21 @@
 // This file NEVER makes fetch() calls.
 //
 // Supported routes:
-//   #clients                        → client list dashboard
-//   #client/:slug/profile           → client detail — profile tab
-//   #client/:slug/plan              → client detail — plan tab
-//   #client/:slug/progress          → client detail — progress tab
-//   #client/:slug/notes             → client detail — notes tab
-//   #library                        → exercise library browser
+//   #login                          → coach sign-in form (public)
+//   #clients                        → client list dashboard (protected)
+//   #client/:slug/profile           → client detail — profile tab (protected)
+//   #client/:slug/plan              → client detail — plan tab (protected)
+//   #client/:slug/progress          → client detail — progress tab (protected)
+//   #client/:slug/notes             → client detail — notes tab (protected)
+//   #library                        → exercise library browser (protected)
 //
-// Default: any unrecognised or empty hash redirects to #clients.
+// Auth guard (Phase 4 CP7):
+//   Unauthenticated users on any protected route → redirect to #login.
+//   Authenticated users on #login → redirect to #clients.
+//   Empty / bare hash → #login if unauthenticated, #clients if authenticated.
 //
-// PHASE 4 EXTENSION:
-//   Add #login and #settings routes here. No other file needs to change.
+// COACH_AUTH (scripts/auth.js) must be loaded before this file.
+// view-login.js self-registers 'login' after this file loads.
 // ─────────────────────────────────────────────────────────────────────────────
 
 (function () {
@@ -52,9 +56,13 @@
   function parseRoute(hash) {
     var raw = (hash || "").replace(/^#\/?/, "").trim();
 
-    // Empty or root → send to clients
+    // Empty or root — auth guard in dispatch() decides the actual destination
     if (!raw) {
       return { name: "clients", slug: null, tab: null };
+    }
+
+    if (raw === "login") {
+      return { name: "login", slug: null, tab: null };
     }
 
     if (raw === "clients") {
@@ -99,6 +107,9 @@
   function renderPlaceholder(route) {
     var label;
     switch (route.name) {
+      case "login":
+        label = "Sign in — login view loading";
+        break;
       case "clients":
         label = "Client list — view file loads in Checkpoint 3";
         break;
@@ -123,6 +134,18 @@
     );
   }
 
+  // ── Auth state helpers ─────────────────────────────────────────────────────
+  function isAuthenticated() {
+    return typeof COACH_AUTH !== "undefined" && COACH_AUTH.isAuthenticated();
+  }
+
+  // Update #js-signout button visibility on every dispatch.
+  function updateAuthUI() {
+    if (typeof COACH_AUTH !== "undefined" && COACH_AUTH.updateSignoutButton) {
+      COACH_AUTH.updateSignoutButton();
+    }
+  }
+
   // ── Nav active state ───────────────────────────────────────────────────────
   function syncNav(route) {
     document.querySelectorAll(".c-nav__link").forEach(function (link) {
@@ -144,10 +167,29 @@
 
   // ── Dispatch ───────────────────────────────────────────────────────────────
   // Called on every hash change and on initial load.
+  //
+  // Auth guard (CP7):
+  //   #login + authenticated  → redirect to #clients
+  //   any other route + unauthenticated → redirect to #login
 
   function dispatch(hash) {
     var route = parseRoute(hash);
+    var authed = isAuthenticated();
+
+    if (route.name === "login") {
+      if (authed) {
+        location.replace("#clients");
+        return;
+      }
+    } else if (route.name !== "not-found") {
+      if (!authed) {
+        location.replace("#login");
+        return;
+      }
+    }
+
     syncNav(route);
+    updateAuthUI();
 
     var handler = _routes[route.name];
     if (handler) {
@@ -178,10 +220,13 @@
     if (typeof EXERCISE_LIBRARY === "undefined") {
       console.error("[coach-app] EXERCISE_LIBRARY not found. Check that packages/exercise-library/index.js is loaded before coach-app.js in index.html.");
     }
+    if (typeof COACH_AUTH === "undefined") {
+      console.error("[coach-app] COACH_AUTH not found. Check that auth.js is loaded before coach-app.js in index.html.");
+    }
 
-    // Default route: redirect empty or bare hash to #clients
+    // Default route: unauthenticated → #login, authenticated → #clients
     if (!location.hash || location.hash === "#" || location.hash === "") {
-      location.replace("#clients");
+      location.replace(isAuthenticated() ? "#clients" : "#login");
       return; // hashchange event will fire and call dispatch
     }
 

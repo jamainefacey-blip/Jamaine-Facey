@@ -17,6 +17,7 @@
     <nav class="c-nav" aria-label="Primary navigation">
       <a class="c-nav__link" href="#clients">Clients</a>
       <a class="c-nav__link" href="#library">Exercise Library</a>
+      <button class="c-nav__link c-nav__link--signout" id="js-signout" type="button" style="display:none">Sign out</button>
     </nav>
   </header>
 
@@ -41,7 +42,8 @@
 
     4. scripts/data/registry.js             → CLIENT_REGISTRY  (global)
     5. scripts/data/loader.js               → loadClient()     (global fn)
-    6. scripts/coach-app.js                 → router boot      (must be last)
+    6. scripts/auth.js                      → COACH_AUTH       (global, must be before coach-app.js)
+    7. scripts/coach-app.js                 → router boot      (must load after auth.js)
   -->
 
   <!-- 1. Shared exercise library -->
@@ -60,20 +62,24 @@
   <script src="scripts/data/registry.js"></script>
   <script src="scripts/data/loader.js"></script>
 
-  <!-- 6. App router — must load after all data scripts -->
+  <!-- 6. Auth module — must load before coach-app.js (provides COACH_AUTH global) -->
+  <script src="scripts/auth.js"></script>
+
+  <!-- 7. App router — must load after all data scripts and auth module -->
   <script src="scripts/coach-app.js"></script>
 
-  <!-- 7. Route views (self-register via COACH_APP.registerRoute) -->
+  <!-- 8. Route views (self-register via COACH_APP.registerRoute) -->
+  <script src="scripts/views/view-login.js"></script>
   <script src="scripts/views/client-list.js"></script>
   <script src="scripts/views/client-detail.js"></script>
 
-  <!-- 8. Tab content handlers (self-register via window.COACH_TAB_HANDLERS) -->
+  <!-- 9. Tab content handlers (self-register via window.COACH_TAB_HANDLERS) -->
   <script src="scripts/views/tab-profile.js"></script>
   <script src="scripts/views/tab-plan.js"></script>
   <script src="scripts/views/tab-progress.js"></script>
   <script src="scripts/views/tab-notes.js"></script>
 
-  <!-- 9. Exercise library view (self-registers #library route — CP5) -->
+  <!-- 10. Exercise library view (self-registers #library route — CP5) -->
   <script src="scripts/views/exercise-library.js"></script>
 
 </body>
