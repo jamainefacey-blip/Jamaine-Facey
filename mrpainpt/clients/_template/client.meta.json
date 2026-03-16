@@ -1,0 +1,33 @@
+{
+  "_comment": "Registry metadata for this client instance. Used by Phase 5 white-label automation.",
+
+  "clientId":      "EDIT — unique slug, lowercase, hyphenated, e.g. jane-doe",
+  "slug":          "EDIT — short URL-safe slug, e.g. jane",
+  "displayName":   "EDIT — Full Name as shown in coach portal",
+  "status":        "active",
+
+  "program": {
+    "condition":     "EDIT — e.g. ACL Reconstruction",
+    "startDate":     "YYYY-MM-DD",
+    "totalWeeks":    12,
+    "currentPhase":  1
+  },
+
+  "coach": {
+    "coachId":   "EDIT — coach slug matching coach registry",
+    "coachName": "EDIT — coach display name"
+  },
+
+  "deployment": {
+    "deployUrl":     "",
+    "customDomain":  "",
+    "netlifyId":     ""
+  },
+
+  "_meta": {
+    "schemaVersion": "1.0",
+    "createdDate":   "YYYY-MM-DD",
+    "lastUpdated":   "YYYY-MM-DD",
+    "notes":         "Add any onboarding or clinical notes here."
+  }
+}
