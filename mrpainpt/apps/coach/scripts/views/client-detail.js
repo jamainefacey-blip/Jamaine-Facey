@@ -141,43 +141,52 @@
       return;
     }
 
-    var client = loadClient(slug);
-    if (!client) {
-      // loadClient() already logged the error — render user-facing not-found
-      renderNotFound(slug);
-      return;
+    // Show loading state while data fetches from the API
+    var el = document.getElementById("view");
+    if (el) {
+      el.innerHTML = '<div class="c-placeholder"><p class="c-placeholder__text">Loading\u2026</p></div>';
     }
 
-    var cfg  = client.config.client;
-    var html = [];
+    // PHASE 4: loadClient() is async — await the result then render
+    loadClient(slug).then(function (client) {
+      if (!client) {
+        renderNotFound(slug);
+        return;
+      }
 
-    // Back link
-    html.push('<a class="c-back" href="#clients">All clients</a>');
+      var cfg  = client.config.client;
+      var html = [];
 
-    // Client header
-    html.push('<div class="c-section-header">');
-    html.push(
-      '  <h1 class="c-section-header__title">' +
-        esc(cfg.firstName) + "\u00a0" + esc(cfg.lastName) +
-        "</h1>"
-    );
-    html.push(
-      '  <p class="c-section-header__subtitle">' +
-        esc(cfg.condition) +
-        "</p>"
-    );
-    html.push("</div>");
+      // Back link
+      html.push('<a class="c-back" href="#clients">All clients</a>');
 
-    // Tab bar
-    html.push(renderTabBar(slug, tab));
+      // Client header
+      html.push('<div class="c-section-header">');
+      html.push(
+        '  <h1 class="c-section-header__title">' +
+          esc(cfg.firstName) + "\u00a0" + esc(cfg.lastName) +
+          "</h1>"
+      );
+      html.push(
+        '  <p class="c-section-header__subtitle">' +
+          esc(cfg.condition) +
+          "</p>"
+      );
+      html.push("</div>");
 
-    // Tab body
-    html.push('<div id="tab-body" class="c-view__tab-body">');
-    html.push(renderTabBody(tab, client, slug));
-    html.push("</div>");
+      // Tab bar
+      html.push(renderTabBar(slug, tab));
 
-    var el = document.getElementById("view");
-    if (el) el.innerHTML = html.join("\n");
+      // Tab body
+      html.push('<div id="tab-body" class="c-view__tab-body">');
+      html.push(renderTabBody(tab, client, slug));
+      html.push("</div>");
+
+      if (el) el.innerHTML = html.join("\n");
+    }).catch(function (err) {
+      console.error("[client-detail] Failed to load client data:", err);
+      renderNotFound(slug);
+    });
   }
 
   // ── Self-register ──────────────────────────────────────────────────────────

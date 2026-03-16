@@ -145,58 +145,76 @@
   // ── Main render ────────────────────────────────────────────────────────────
 
   function render() {
+    var el = document.getElementById("view");
+    if (el) {
+      el.innerHTML = '<div class="c-placeholder"><p class="c-placeholder__text">Loading clients\u2026</p></div>';
+    }
+
     // Sort: active entries before inactive, preserve original order within each group
     var sorted = CLIENT_REGISTRY.slice().sort(function (a, b) {
       if (a.active === b.active) return 0;
       return a.active ? -1 : 1;
     });
 
-    var cards  = [];
-    var failed = [];
+    // PHASE 4: loadClient() is async — fetch all clients in parallel then render
+    Promise.all(sorted.map(function (entry) {
+      return loadClient(entry.slug).then(function (client) {
+        return { entry: entry, client: client };
+      });
+    })).then(function (results) {
+      var cards  = [];
+      var failed = [];
 
-    sorted.forEach(function (entry) {
-      var client = loadClient(entry.slug);
-      if (!client) {
-        failed.push(entry.slug);
-        return;
-      }
-      cards.push(renderCard(entry.slug, client, entry.active !== false));
-    });
+      results.forEach(function (result) {
+        if (!result.client) {
+          failed.push(result.entry.slug);
+          return;
+        }
+        cards.push(renderCard(result.entry.slug, result.client, result.entry.active !== false));
+      });
 
-    var total = CLIENT_REGISTRY.length;
-    var html  = [];
+      var total = CLIENT_REGISTRY.length;
+      var html  = [];
 
-    html.push('<div class="c-section-header">');
-    html.push('  <h1 class="c-section-header__title">Clients</h1>');
-    html.push(
-      "  <p class=\"c-section-header__subtitle\">" +
-        esc(total) +
-        " client" +
-        (total === 1 ? "" : "s") +
-        " registered</p>"
-    );
-    html.push("</div>");
-
-    if (failed.length > 0) {
+      html.push('<div class="c-section-header">');
+      html.push('  <h1 class="c-section-header__title">Clients</h1>');
       html.push(
-        '<div class="c-alert c-alert--amber" role="alert">' +
-          "<p>Could not load data for: " +
-          failed.map(esc).join(", ") +
-          ". Check that all script tags are present in index.html and loader.js is up to date.</p>" +
-          "</div>"
+        "  <p class=\"c-section-header__subtitle\">" +
+          esc(total) +
+          " client" +
+          (total === 1 ? "" : "s") +
+          " registered</p>"
       );
-    }
-
-    if (cards.length === 0) {
-      html.push(renderEmpty());
-    } else {
-      html.push('<div class="c-client-grid">');
-      cards.forEach(function (card) { html.push(card); });
       html.push("</div>");
-    }
 
-    var el = document.getElementById("view");
-    if (el) el.innerHTML = html.join("\n");
+      if (failed.length > 0) {
+        html.push(
+          '<div class="c-alert c-alert--amber" role="alert">' +
+            "<p>Could not load data for: " +
+            failed.map(esc).join(", ") +
+            ". Check that the API is reachable and loader.js is up to date.</p>" +
+            "</div>"
+        );
+      }
+
+      if (cards.length === 0) {
+        html.push(renderEmpty());
+      } else {
+        html.push('<div class="c-client-grid">');
+        cards.forEach(function (card) { html.push(card); });
+        html.push("</div>");
+      }
+
+      if (el) el.innerHTML = html.join("\n");
+    }).catch(function (err) {
+      console.error("[client-list] Failed to load client data:", err);
+      if (el) {
+        el.innerHTML =
+          '<div class="c-alert c-alert--red" role="alert">' +
+            "<p>Failed to load client data. Please refresh the page.</p>" +
+          "</div>";
+      }
+    });
   }
 
   // ── Self-register ──────────────────────────────────────────────────────────
