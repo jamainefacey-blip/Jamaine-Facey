@@ -1,0 +1,13 @@
+{
+  "name": "pain-system-coach-api",
+  "version": "1.0.0",
+  "description": "Coach portal serverless API — Pain System platform",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

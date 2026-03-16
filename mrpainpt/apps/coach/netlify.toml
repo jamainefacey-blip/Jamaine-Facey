@@ -5,22 +5,31 @@
 # The root netlify.toml handles the client app (mrpainpt/apps/client).
 #
 # Routing: hash-based (#clients, #library, #client/:slug/:tab)
-#   Hash routing is fully client-side — no server-side redirect rules
-#   required for navigation. The SPA fallback below covers direct URL
-#   access and browser refresh on any path.
+#   Hash routing is fully client-side. The SPA fallback below covers direct
+#   URL access and browser refresh on any path.
 #
-# Phase 4: When the API layer is added, uncomment the API proxy redirect
-#   block below and deploy the server component.
+# API: Netlify Function at api/functions/api.js handles all /api/* requests.
+#   The /api/* redirect MUST appear before the /* SPA fallback so that API
+#   calls are not swallowed by the fallback rule.
 # ─────────────────────────────────────────────────────────────────────────────
 
 [build]
-  publish = "."
-  command = "echo No build step — coach portal is plain HTML/CSS/JS"
+  publish  = "."
+  command  = "echo No build step — coach portal is plain HTML/CSS/JS"
+  functions = "api/functions"
+
+# ── API proxy — MUST be before the SPA fallback ───────────────────────────────
+# Routes all /api/* requests to the Netlify Function handler.
+# force = true: match even if a static file exists at this path (none do).
+
+[[redirects]]
+  from   = "/api/*"
+  to     = "/.netlify/functions/api"
+  status = 200
+  force  = true
 
 # ── SPA fallback ──────────────────────────────────────────────────────────────
-# Ensures index.html is served for any direct path access (e.g. a browser
-# refresh or a shared link without a hash). Hash routing handles the rest
-# entirely on the client side.
+# Serves index.html for any non-API path so hash routing works on refresh/share.
 
 [[redirects]]
   from   = "/*"
@@ -51,14 +60,3 @@
   for = "/scripts/*.js"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
-# ── Phase 4: API proxy (NOT YET ACTIVE) ──────────────────────────────────────
-# Uncomment when the API layer is deployed. All /api/* calls will proxy
-# to the coach portal server. No view file changes required — loadClient()
-# in loader.js handles the switch from globals to fetch().
-#
-# [[redirects]]
-#   from   = "/api/*"
-#   to     = "https://coach-api.mrpainpt.com/:splat"
-#   status = 200
-#   force  = true
