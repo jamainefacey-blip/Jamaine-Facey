@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Pain System — Venture Infrastructure</title>
+  <meta name="description" content="An open architecture for building, launching, and scaling venture-grade products. From incubation to commercial distribution.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Favicon (inline SVG data URI) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9670;</text></svg>">
+</head>
+<body>
+
+  <!-- Header (persistent) -->
+  <div id="site-header"></div>
+
+  <!-- App shell -->
+  <div id="app"></div>
+
+  <!-- Footer (persistent) -->
+  <div id="site-footer"></div>
+
+  <!-- Scripts -->
+  <script src="js/components.js"></script>
+  <script src="js/router.js"></script>
+
+  <!-- Pages -->
+  <script src="pages/home.js"></script>
+  <script src="pages/about.js"></script>
+  <script src="pages/architecture.js"></script>
+  <script src="pages/ventures.js"></script>
+  <script src="pages/governance.js"></script>
+  <script src="pages/enterprise.js"></script>
+  <script src="pages/contact.js"></script>
+
+  <script>
+    // Render persistent layout
+    document.getElementById('site-header').innerHTML = Components.SiteHeader();
+    document.getElementById('site-footer').innerHTML = Components.SiteFooter();
+
+    // Mobile nav toggle
+    document.getElementById('mobile-toggle').addEventListener('click', function() {
+      document.getElementById('site-nav').classList.toggle('open');
+    });
+
+    // Close mobile nav on link click
+    document.querySelectorAll('.site-nav a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        document.getElementById('site-nav').classList.remove('open');
+      });
+    });
+
+    // Boot router
+    Router.init();
+  </script>
+
+</body>
+</html>
