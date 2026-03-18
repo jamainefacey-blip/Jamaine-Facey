@@ -1,11 +1,13 @@
-// safety module — scaffold
-// Phase 2: implement service + controller
 import { Module } from '@nestjs/common';
+import { SafetyService } from './safety.service';
+import { SafetyController, CheckInController } from './safety.controller';
+import { SosEscalationTask } from './tasks/sos-escalation.task';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [],
-  controllers: [],
-  providers: [],
-  exports: [],
+  imports: [AuthModule],
+  controllers: [SafetyController, CheckInController],
+  providers: [SafetyService, SosEscalationTask],
+  exports: [SafetyService],
 })
 export class SafetyModule {}
