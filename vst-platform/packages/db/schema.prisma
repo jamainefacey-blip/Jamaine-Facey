@@ -1,0 +1,542 @@
+// VST Platform — Database Schema
+// ORM: Prisma | DB: PostgreSQL
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  clerkId       String   @unique          // Clerk user.id
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  phone         String?
+  phoneVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  profile         UserProfile?
+  preferences     UserPreferences?
+  membership      Membership?
+  safetyContacts  SafetyContact[]
+  passport        Passport?
+  bookings        Booking[]
+  sosEvents       SosEvent[]
+  priceAlerts     PriceAlert[]
+  reviews         Review[]
+  notifications   Notification[]
+  payments        Payment[]
+  subscriptions   Subscription[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  displayName String?
+  avatarUrl   String?
+  bio         String?
+  nationality String?   // ISO 3166-1 alpha-2
+  dateOfBirth DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("user_profiles")
+}
+
+model UserPreferences {
+  id                  String      @id @default(cuid())
+  userId              String      @unique
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Travel
+  preferredCabinClass CabinClass  @default(ECONOMY)
+  preferredCurrency   String      @default("GBP")
+  preferredLanguage   String      @default("en")
+  budgetRange         BudgetRange @default(MODERATE)
+  travelStyle         TravelStyle[]
+  // Accessibility
+  requiresWheelchair  Boolean     @default(false)
+  requiresAssistance  Boolean     @default(false)
+  dietaryRequirements String[]
+  accessibilityNotes  String?
+  // Notifications
+  emailAlerts         Boolean     @default(true)
+  smsAlerts           Boolean     @default(false)
+  pushNotifications   Boolean     @default(true)
+  priceAlertThreshold Float?      // % price drop to trigger alert
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@map("user_preferences")
+}
+
+enum CabinClass    { ECONOMY PREMIUM_ECONOMY BUSINESS FIRST }
+enum BudgetRange   { BUDGET MODERATE PREMIUM LUXURY }
+enum TravelStyle   { ADVENTURE LUXURY CULTURAL BEACH FAMILY SOLO BUSINESS BACKPACKER }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SAFETY SYSTEM
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SafetyContact {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  relationship     String
+  email            String?
+  phone            String
+  isPrimary        Boolean   @default(false)
+  notifyOnSos      Boolean   @default(true)
+  notifyOnCheckin  Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  sosNotifications SosContactNotification[]
+
+  @@map("safety_contacts")
+}
+
+model SosEvent {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  status       SosStatus  @default(ACTIVE)
+  triggerType  SosTrigger
+  latitude     Float?
+  longitude    Float?
+  locationName String?
+  message      String?
+  resolvedAt   DateTime?
+  resolvedBy   String?    // userId | "user" | "auto"
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  notifications SosContactNotification[]
+  checkins      CheckIn[]
+
+  @@map("sos_events")
+}
+
+enum SosStatus  { ACTIVE ESCALATED RESOLVED FALSE_ALARM }
+enum SosTrigger { MANUAL CHECKIN_MISSED ESCALATION }
+
+model SosContactNotification {
+  id              String              @id @default(cuid())
+  sosEventId      String
+  sosEvent        SosEvent            @relation(fields: [sosEventId], references: [id])
+  safetyContactId String
+  safetyContact   SafetyContact       @relation(fields: [safetyContactId], references: [id])
+  channel         NotificationChannel
+  status          DeliveryStatus      @default(PENDING)
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime            @default(now())
+
+  @@map("sos_contact_notifications")
+}
+
+model CheckIn {
+  id           String    @id @default(cuid())
+  userId       String
+  sosEventId   String?
+  sosEvent     SosEvent? @relation(fields: [sosEventId], references: [id])
+  latitude     Float?
+  longitude    Float?
+  note         String?
+  scheduledAt  DateTime?
+  checkedInAt  DateTime  @default(now())
+
+  @@map("check_ins")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSPORT & VISA & EMBASSY
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Passport {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nationality     String   // ISO 3166-1 alpha-2
+  passportNumber  String?  // stored encrypted
+  expiryDate      DateTime
+  alertDaysBefore Int      @default(90)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("passports")
+}
+
+model Destination {
+  id               String            @id @default(cuid())
+  countryCode      String            @unique // ISO 3166-1 alpha-2
+  countryName      String
+  region           String
+  visaRequirements VisaRequirement[]
+  embassies        Embassy[]
+  explorerPins     ExplorerPin[]
+  reviews          Review[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("destinations")
+}
+
+model VisaRequirement {
+  id                  String      @id @default(cuid())
+  destinationId       String
+  destination         Destination @relation(fields: [destinationId], references: [id])
+  passportNationality String      // ISO 3166-1 alpha-2
+  visaType            VisaType
+  maxStayDays         Int?
+  notes               String?
+  officialUrl         String?
+  lastVerifiedAt      DateTime?
+  updatedAt           DateTime    @updatedAt
+
+  @@unique([destinationId, passportNationality])
+  @@map("visa_requirements")
+}
+
+enum VisaType { VISA_FREE VISA_ON_ARRIVAL E_VISA VISA_REQUIRED UNKNOWN }
+
+model Embassy {
+  id            String      @id @default(cuid())
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  name          String
+  address       String?
+  phone         String?
+  email         String?
+  website       String?
+  emergencyLine String?
+  latitude      Float?
+  longitude     Float?
+  updatedAt     DateTime    @updatedAt
+
+  @@map("embassies")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEMBERSHIP & SUBSCRIPTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Membership {
+  id        String           @id @default(cuid())
+  userId    String           @unique
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier      MembershipTier   @default(GUEST)
+  status    MembershipStatus @default(ACTIVE)
+  startedAt DateTime         @default(now())
+  expiresAt DateTime?
+  updatedAt DateTime         @updatedAt
+
+  @@map("memberships")
+}
+
+enum MembershipTier   { GUEST PREMIUM VOYAGE_ELITE }
+enum MembershipStatus { ACTIVE EXPIRED CANCELLED PAUSED }
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String
+  user                 User               @relation(fields: [userId], references: [id])
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  tier                 MembershipTier
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus { ACTIVE PAST_DUE CANCELLED TRIALING INCOMPLETE }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAYMENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Payment {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  stripePaymentId String?       @unique
+  amount          Int           // in smallest currency unit (pence/cents)
+  currency        String        @default("GBP")
+  status          PaymentStatus
+  type            PaymentType
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+
+  @@map("payments")
+}
+
+enum PaymentStatus { PENDING SUCCEEDED FAILED REFUNDED }
+enum PaymentType   { SUBSCRIPTION BOOKING_DEPOSIT AFFILIATE_COMMISSION }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOKINGS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Booking {
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id])
+  type             BookingType
+  status           BookingStatus @default(PENDING)
+  externalRef      String?       // partner booking reference
+  affiliateCode    String?
+  rawSearchParams  Json?         // original search params snapshot
+  priceSnapshot    Json?         // price at time of booking
+  currency         String        @default("GBP")
+  totalAmount      Int?          // in pence
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  flightBooking    FlightBooking?
+  hotelBooking     HotelBooking?
+
+  @@map("bookings")
+}
+
+enum BookingType   { FLIGHT HOTEL PACKAGE }
+enum BookingStatus { PENDING CONFIRMED CANCELLED COMPLETED FAILED }
+
+model FlightBooking {
+  id                String    @id @default(cuid())
+  bookingId         String    @unique
+  booking           Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  origin            String    // IATA code
+  destination       String    // IATA code
+  departureAt       DateTime
+  arrivalAt         DateTime
+  returnDepartureAt DateTime?
+  returnArrivalAt   DateTime?
+  cabinClass        CabinClass
+  adults            Int       @default(1)
+  children          Int       @default(0)
+  infants           Int       @default(0)
+  carrier           String?
+  flightNumbers     String[]
+
+  @@map("flight_bookings")
+}
+
+model HotelBooking {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  hotelId     String?  // external partner hotel ID
+  hotelName   String
+  destination String
+  checkIn     DateTime
+  checkOut    DateTime
+  rooms       Int      @default(1)
+  guests      Int      @default(1)
+  roomType    String?
+
+  @@map("hotel_bookings")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRICE ALERTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PriceAlert {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          BookingType
+  origin        String?     // IATA code; null for hotels
+  destination   String
+  targetPrice   Int?        // in pence; null = any drop
+  thresholdPct  Float?      // % drop to trigger; takes precedence over targetPrice
+  isActive      Boolean     @default(true)
+  lastCheckedAt DateTime?
+  triggeredAt   DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@map("price_alerts")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  channel   NotificationChannel
+  title     String
+  body      String
+  data      Json?               // arbitrary payload (deep link, alert data, etc.)
+  status    DeliveryStatus      @default(PENDING)
+  sentAt    DateTime?
+  readAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  SOS_ALERT
+  CHECKIN_REMINDER
+  PRICE_ALERT
+  BOOKING_CONFIRMATION
+  PASSPORT_EXPIRY
+  TRAVEL_ADVISORY
+  MEMBERSHIP_RENEWAL
+  SYSTEM
+}
+
+enum NotificationChannel { EMAIL SMS PUSH IN_APP }
+enum DeliveryStatus      { PENDING SENT DELIVERED FAILED BOUNCED }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMMUNITY
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Review {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  destinationId String
+  destination   Destination  @relation(fields: [destinationId], references: [id])
+  rating        Int          // 1–5
+  title         String?
+  body          String
+  travelDate    DateTime?
+  isVerified    Boolean      @default(false)
+  status        ReviewStatus @default(PENDING)
+  replyBody     String?      // hotel/partner right-to-reply
+  replyAt       DateTime?
+  replyBy       String?      // partner.id
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  media ReviewMedia[]
+
+  @@map("reviews")
+}
+
+enum ReviewStatus { PENDING PUBLISHED HIDDEN FLAGGED }
+
+model ReviewMedia {
+  id        String    @id @default(cuid())
+  reviewId  String
+  review    Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  type      MediaType
+  url       String
+  caption   String?
+  createdAt DateTime  @default(now())
+
+  @@map("review_media")
+}
+
+enum MediaType { IMAGE VIDEO }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPLORER MAP
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ExplorerPin {
+  id            String       @id @default(cuid())
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+  latitude      Float
+  longitude     Float
+  title         String
+  description   String?
+  mediaUrl      String?
+  mediaType     MediaType?
+  authorId      String?      // userId; null = editorial pin
+  tags          String[]
+  isPublished   Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("explorer_pins")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARTNERS & AFFILIATES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Partner {
+  id           String        @id @default(cuid())
+  name         String
+  type         PartnerType
+  contactName  String?
+  contactEmail String
+  website      String?
+  logoUrl      String?
+  status       PartnerStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  campaigns  PartnerCampaign[]
+  affiliates Affiliate[]
+
+  @@map("partners")
+}
+
+enum PartnerType   { HOTEL AIRLINE TOUR_OPERATOR INSURANCE EXPERIENCE TRANSPORT TECHNOLOGY }
+enum PartnerStatus { PENDING ACTIVE SUSPENDED TERMINATED }
+
+model PartnerCampaign {
+  id            String   @id @default(cuid())
+  partnerId     String
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+  name          String
+  description   String?
+  commissionPct Float
+  startDate     DateTime
+  endDate       DateTime?
+  isActive      Boolean  @default(true)
+  rules         Json?    // deal rules engine config (conditions, caps, exclusions)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  affiliates Affiliate[]
+
+  @@map("partner_campaigns")
+}
+
+model Affiliate {
+  id               String           @id @default(cuid())
+  partnerId        String
+  partner          Partner          @relation(fields: [partnerId], references: [id])
+  campaignId       String?
+  campaign         PartnerCampaign? @relation(fields: [campaignId], references: [id])
+  trackingCode     String           @unique
+  platform         String?          // "skyscanner" | "booking.com" | "direct"
+  commissionPct    Float
+  totalClicks      Int              @default(0)
+  totalConversions Int              @default(0)
+  totalEarned      Int              @default(0) // in pence
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@map("affiliates")
+}
