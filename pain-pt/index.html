@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#09101f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Pain PT — training structure, discipline, and coaching support in one platform. Built for clients who want to improve with accountability." />
+  <meta property="og:title" content="Pain PT" />
+  <meta property="og:description" content="Training structure, discipline, and coaching support in one platform." />
+  <meta property="og:type" content="website" />
+  <title>Pain PT</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="ppt-app">
+    <header class="site-header" id="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#home" data-route="home" aria-label="Pain PT home">
+          <span class="brand-mark">PPT</span>
+          <span class="brand-name">Pain PT</span>
+        </a>
+        <nav class="main-nav" id="main-nav" aria-label="Primary navigation">
+          <a href="#home"          data-route="home"          class="nav-link">Home</a>
+          <a href="#about"         data-route="about"         class="nav-link">About</a>
+          <a href="#features"      data-route="features"      class="nav-link">The System</a>
+          <a href="#safety"        data-route="safety"        class="nav-link">Safe Training</a>
+          <a href="#accessibility" data-route="accessibility" class="nav-link">Accessibility</a>
+          <a href="#partners"      data-route="partners"      class="nav-link">Partners</a>
+          <a href="#contact"       data-route="contact"       class="nav-link nav-cta">Start Coaching</a>
+        </nav>
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <a href="#home"          data-route="home"          class="mobile-link">Home</a>
+        <a href="#about"         data-route="about"         class="mobile-link">About</a>
+        <a href="#features"      data-route="features"      class="mobile-link">The System</a>
+        <a href="#safety"        data-route="safety"        class="mobile-link">Safe Training</a>
+        <a href="#accessibility" data-route="accessibility" class="mobile-link">Accessibility</a>
+        <a href="#partners"      data-route="partners"      class="mobile-link">Partners</a>
+        <a href="#contact"       data-route="contact"       class="mobile-link mobile-link-cta">Start Coaching</a>
+      </div>
+    </header>
+    <main class="site-main" id="site-main">
+      <div class="loading-screen"><div class="loading-spinner"></div><p>Loading…</p></div>
+    </main>
+    <footer class="site-footer" id="site-footer"></footer>
+  </div>
+  <script src="js/components.js"></script>
+  <script src="pages/home.js"></script>
+  <script src="pages/about.js"></script>
+  <script src="pages/features.js"></script>
+  <script src="pages/safety.js"></script>
+  <script src="pages/accessibility.js"></script>
+  <script src="pages/partners.js"></script>
+  <script src="pages/contact.js"></script>
+  <script src="js/router.js"></script>
+</body>
+</html>
