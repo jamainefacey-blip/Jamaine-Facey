@@ -4,6 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { PassportCryptoService } from '../../common/crypto/passport-crypto.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 import { CreateSafetyContactDto } from './dto/create-safety-contact.dto';
@@ -14,7 +15,10 @@ const MAX_SAFETY_CONTACTS_PREMIUM = 5;
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly passportCrypto: PassportCryptoService,
+  ) {}
 
   async getMe(userId: string) {
     return this.prisma.user.findUniqueOrThrow({
@@ -113,24 +117,43 @@ export class UsersService {
   async getPassport(userId: string) {
     const passport = await this.prisma.passport.findUnique({ where: { userId } });
     if (!passport) throw new NotFoundException('No passport record found');
-    // STUB: decrypt passportNumber — Phase 3 adds AES-256 encryption at rest
-    return passport;
+
+    // Decrypt passport number before returning to the authenticated owner.
+    // Never expose the raw ciphertext or the plaintext to other consumers.
+    const decryptedNumber = passport.passportNumber
+      ? this.passportCrypto.decrypt(passport.passportNumber)
+      : null;
+
+    return {
+      id:              passport.id,
+      userId:          passport.userId,
+      nationality:     passport.nationality,
+      passportNumber:  decryptedNumber,
+      expiryDate:      passport.expiryDate,
+      alertDaysBefore: passport.alertDaysBefore,
+      createdAt:       passport.createdAt,
+      updatedAt:       passport.updatedAt,
+    };
   }
 
   async upsertPassport(userId: string, dto: UpsertPassportDto) {
-    // STUB: encrypt passportNumber before storage — Phase 3
+    // Encrypt the passport number before persisting. Never store plaintext.
+    const encryptedNumber = dto.passportNumber
+      ? this.passportCrypto.encrypt(dto.passportNumber)
+      : null;
+
     return this.prisma.passport.upsert({
       where: { userId },
       update: {
         nationality:     dto.nationality,
-        passportNumber:  dto.passportNumber ?? null,
+        passportNumber:  encryptedNumber,
         expiryDate:      new Date(dto.expiryDate),
         alertDaysBefore: dto.alertDaysBefore ?? 90,
       },
       create: {
         userId,
         nationality:     dto.nationality,
-        passportNumber:  dto.passportNumber ?? null,
+        passportNumber:  encryptedNumber,
         expiryDate:      new Date(dto.expiryDate),
         alertDaysBefore: dto.alertDaysBefore ?? 90,
       },

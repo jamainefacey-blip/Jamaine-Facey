@@ -12,6 +12,9 @@ import {
 } from '@nestjs/common';
 import { EventsService, CreateLocalEventDto, EventBoundsQuery } from './events.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller()
 export class EventsController {
@@ -46,28 +49,33 @@ export class EventsController {
 
   /**
    * POST /v1/admin/events
-   * Internal — editorial / partner event creation.
+   * Internal — editorial / partner event creation. Requires ADMIN role.
    */
   @Post('admin/events')
-  @UseGuards(ClerkAuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   createEvent(@Body() dto: CreateLocalEventDto) {
     return this.eventsService.createEvent(dto);
   }
 
   /**
    * PATCH /v1/admin/events/:id/publish
+   * Requires ADMIN role.
    */
   @Patch('admin/events/:id/publish')
-  @UseGuards(ClerkAuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   publishEvent(@Param('id') id: string, @Body('publish') publish: boolean) {
     return this.eventsService.publishEvent(id, publish);
   }
 
   /**
    * DELETE /v1/admin/events/:id
+   * Requires ADMIN role.
    */
   @Delete('admin/events/:id')
-  @UseGuards(ClerkAuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   @HttpCode(200)
   deleteEvent(@Param('id') id: string) {
     return this.eventsService.deleteEvent(id);

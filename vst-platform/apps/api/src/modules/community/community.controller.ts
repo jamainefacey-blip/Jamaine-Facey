@@ -11,7 +11,10 @@ import {
 } from '@nestjs/common';
 import { CommunityService, CreateReviewDto, ReplyToReviewDto, ModerateReviewDto, RequestUploadUrlDto } from './community.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller()
 export class CommunityController {
@@ -57,10 +60,11 @@ export class CommunityController {
 
   /**
    * PATCH /v1/admin/reviews/:id/moderate
-   * Internal moderation endpoint. Guard: ClerkAuthGuard (admin role check deferred to Phase 5).
+   * Internal moderation endpoint. Requires MODERATOR or ADMIN role.
    */
   @Patch('admin/reviews/:id/moderate')
-  @UseGuards(ClerkAuthGuard)
+  @Roles(UserRole.MODERATOR)
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   moderateReview(
     @Param('id')    id:  string,
     @CurrentUser()  user: AuthenticatedUser,

@@ -10,7 +10,10 @@ import {
 } from '@nestjs/common';
 import { ExplorerService, CreatePinDto, PinBoundsQuery } from './explorer.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller()
 export class ExplorerController {
@@ -52,10 +55,11 @@ export class ExplorerController {
 
   /**
    * PATCH /v1/admin/explorer/pins/:id/publish
-   * Internal — editorial publish/unpublish control.
+   * Internal — editorial publish/unpublish control. Requires ADMIN role.
    */
   @Patch('admin/explorer/pins/:id/publish')
-  @UseGuards(ClerkAuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   publishPin(@Param('id') id: string, @Body('publish') publish: boolean) {
     return this.explorerService.publishPin(id, publish);
   }

@@ -15,6 +15,8 @@ datasource db {
 // USERS & AUTH
 // ─────────────────────────────────────────────────────────────────────────────
 
+enum UserRole { USER MODERATOR ADMIN }
+
 model User {
   id               String   @id @default(cuid())
   clerkId          String   @unique          // Clerk user.id
@@ -22,6 +24,7 @@ model User {
   emailVerified    Boolean  @default(false)
   phone            String?
   phoneVerified    Boolean  @default(false)
+  role             UserRole @default(USER)   // RBAC — elevated via admin tooling only
   stripeCustomerId String?  @unique          // set on first Stripe checkout
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
