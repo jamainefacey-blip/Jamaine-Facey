@@ -1,11 +1,12 @@
-// auth module — scaffold
-// Phase 2: implement service + controller
 import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 
 @Module({
-  imports: [],
-  controllers: [],
-  providers: [],
-  exports: [],
+  controllers: [AuthController],
+  providers: [AuthService, ClerkAuthGuard],
+  // Export ClerkAuthGuard so other modules can use it without re-declaring
+  exports: [AuthService, ClerkAuthGuard],
 })
 export class AuthModule {}
