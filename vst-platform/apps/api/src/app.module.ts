@@ -19,9 +19,10 @@ import { PaymentsModule }      from './modules/payments/payments.module';
 
 // Phase 4
 import { VisaModule }          from './modules/visa/visa.module';
+import { CommunityModule }     from './modules/community/community.module';
+import { ExplorerModule }      from './modules/explorer/explorer.module';
+import { EventsModule }        from './modules/events/events.module';
 // Deferred
-// import { CommunityModule }     from './modules/community/community.module';
-// import { ExplorerModule }      from './modules/explorer/explorer.module';
 // import { PartnersModule }      from './modules/partners/partners.module';
 
 @Module({
@@ -41,6 +42,9 @@ import { VisaModule }          from './modules/visa/visa.module';
     PaymentsModule,
     // Phase 4
     VisaModule,
+    CommunityModule,
+    ExplorerModule,
+    EventsModule,
   ],
 })
 export class AppModule {}

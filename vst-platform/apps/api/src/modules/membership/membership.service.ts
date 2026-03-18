@@ -135,6 +135,11 @@ export class MembershipService {
     return VST_PLANS;
   }
 
+  async getUserTier(userId: string): Promise<'GUEST' | 'PREMIUM' | 'VOYAGE_ELITE'> {
+    const membership = await this.prisma.membership.findUnique({ where: { userId } });
+    return (membership?.tier ?? 'GUEST') as 'GUEST' | 'PREMIUM' | 'VOYAGE_ELITE';
+  }
+
   async getMembership(userId: string) {
     const membership = await this.prisma.membership.findUnique({
       where: { userId },
