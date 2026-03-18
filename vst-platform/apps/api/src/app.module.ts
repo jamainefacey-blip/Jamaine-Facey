@@ -10,6 +10,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule }          from './modules/auth/auth.module';
 import { UsersModule }          from './modules/users/users.module';
 import { SafetyModule }          from './modules/safety/safety.module';
+import { BookingModule }         from './modules/booking/booking.module';
 // Remaining modules imported as built:
 // import { UsersModule }         from './modules/users/users.module';
 // import { BookingModule }       from './modules/booking/booking.module';
@@ -32,6 +33,7 @@ import { PrismaModule }        from './database/prisma.module';
     AuthModule,
     UsersModule,
     SafetyModule,
+    BookingModule,
     // Additional modules added as each phase completes
   ],
 })
