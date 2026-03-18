@@ -1,11 +1,12 @@
-// membership module — scaffold
-// Phase 2: implement service + controller
 import { Module } from '@nestjs/common';
+import { MembershipService } from './membership.service';
+import { MembershipController } from './membership.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [],
-  controllers: [],
-  providers: [],
-  exports: [],
+  imports: [AuthModule],
+  controllers: [MembershipController],
+  providers: [MembershipService],
+  exports: [MembershipService],
 })
 export class MembershipModule {}
