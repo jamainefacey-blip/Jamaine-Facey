@@ -82,4 +82,20 @@ export class CommunityController {
   requestUploadUrl(@CurrentUser() user: AuthenticatedUser, @Body() dto: RequestUploadUrlDto) {
     return this.communityService.requestUploadUrl(user.id, dto);
   }
+
+  /**
+   * POST /v1/reviews/media/:mediaId/confirm
+   * Client calls this after a successful PUT to the R2 presigned URL.
+   * Marks the ReviewMedia row as confirmed; it will now appear in public queries.
+   * Idempotent — safe to call more than once.
+   */
+  @Post('reviews/media/:mediaId/confirm')
+  @UseGuards(ClerkAuthGuard)
+  @HttpCode(200)
+  confirmMediaUpload(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('mediaId') mediaId: string,
+  ) {
+    return this.communityService.confirmMediaUpload(user.id, mediaId);
+  }
 }

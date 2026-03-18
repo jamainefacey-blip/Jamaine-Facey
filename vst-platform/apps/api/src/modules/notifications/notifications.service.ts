@@ -2,8 +2,31 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TwilioService } from '../../integrations/twilio/twilio.service';
 import { ResendService } from '../../integrations/resend/resend.service';
+import { RedisService } from '../../integrations/redis/redis.service';
+import * as webpush from 'web-push';
 
-// ── HTML email template helpers ───────────────────────────────────────────────
+// ── VAPID setup (run once at module load) ─────────────────────────────────────
+// Keys generated with: npx web-push generate-vapid-keys
+// Set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT in env.
+// If keys are missing, web-push calls are skipped with a warning.
+function initVapid(): void {
+  const pub     = process.env.VAPID_PUBLIC_KEY     ?? '';
+  const priv    = process.env.VAPID_PRIVATE_KEY    ?? '';
+  const subject = process.env.VAPID_SUBJECT        ?? 'mailto:push@voyagesmarttravel.com';
+  if (pub && priv) {
+    webpush.setVapidDetails(subject, pub, priv);
+  }
+}
+initVapid();
+
+// ── Redis key helpers ─────────────────────────────────────────────────────────
+// Push subscriptions are stored as a Redis HASH per user.
+//   Key:   vst:push:subs:{userId}
+//   Field: endpoint URL (unique per browser/device registration)
+//   Value: JSON-serialised WebPushSubscription object
+const pushSubsKey = (userId: string) => `vst:push:subs:${userId}`;
+
+// ── HTML email templates ──────────────────────────────────────────────────────
 
 function sosEmailHtml(contactName: string, triggerName: string, locationText: string, message: string | null): string {
   return `
@@ -53,13 +76,11 @@ function passportExpiryEmailHtml(daysRemaining: number, nationality: string): st
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  // In-memory push subscription store — Phase 4: move to Redis or DB table
-  private readonly pushSubscriptions = new Map<string, any[]>();
-
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly twilio: TwilioService,
-    private readonly resend: ResendService,
+    private readonly prisma:  PrismaService,
+    private readonly twilio:  TwilioService,
+    private readonly resend:  ResendService,
+    private readonly redis:   RedisService,
   ) {}
 
   // ── SOS dispatch (called by SafetyService + SosEscalationTask) ─────────────
@@ -67,7 +88,6 @@ export class NotificationsService {
   /**
    * Sends all PENDING SosContactNotification rows for a given SOS event.
    * Updates each row status to SENT or FAILED based on delivery result.
-   * This is the method that was stubbed in Phase 2 Safety module.
    */
   async dispatchSosNotifications(sosEventId: string): Promise<void> {
     const pendingNotifs = await this.prisma.sosContactNotification.findMany({
@@ -114,7 +134,7 @@ export class NotificationsService {
     }
   }
 
-  // ── General notification creation + routing ────────────────────────────────
+  // ── General notifications ─────────────────────────────────────────────────
 
   async sendPriceAlert(
     userId: string,
@@ -131,21 +151,26 @@ export class NotificationsService {
     await this.prisma.notification.create({
       data: {
         userId,
-        type: 'PRICE_ALERT',
+        type:    'PRICE_ALERT',
         channel: 'IN_APP',
-        title: `Price drop: ${destination}`,
-        body: `Price dropped ${dropPct}% — now £${(newPrice / 100).toFixed(2)}`,
-        data: { destination, dropPct, newPrice, affiliateUrl },
+        title:   `Price drop: ${destination}`,
+        body:    `Price dropped ${dropPct}% — now £${(newPrice / 100).toFixed(2)}`,
+        data:    { destination, dropPct, newPrice, affiliateUrl },
       },
     });
 
     if (user.preferences?.emailAlerts) {
       await this.resend.send({
-        to: user.email,
+        to:      user.email,
         subject: `Price drop alert — ${destination}`,
-        html: priceAlertEmailHtml(destination, dropPct, newPrice, affiliateUrl),
+        html:    priceAlertEmailHtml(destination, dropPct, newPrice, affiliateUrl),
       });
     }
+
+    // Fan out a push notification if the user has registered push subscriptions
+    await this.sendPushToUser(userId, `Price drop: ${destination}`, `Price dropped ${dropPct}%`, {
+      type: 'PRICE_ALERT', affiliateUrl,
+    });
   }
 
   async sendPassportExpiryAlert(userId: string, daysRemaining: number, nationality: string): Promise<void> {
@@ -154,36 +179,83 @@ export class NotificationsService {
     await this.prisma.notification.create({
       data: {
         userId,
-        type: 'PASSPORT_EXPIRY',
+        type:    'PASSPORT_EXPIRY',
         channel: 'IN_APP',
-        title: 'Passport expiring soon',
-        body: `Your ${nationality} passport expires in ${daysRemaining} days`,
-        data: { daysRemaining, nationality },
+        title:   'Passport expiring soon',
+        body:    `Your ${nationality} passport expires in ${daysRemaining} days`,
+        data:    { daysRemaining, nationality },
       },
     });
 
     await this.resend.send({
-      to: user.email,
+      to:      user.email,
       subject: `Passport expiry reminder — ${daysRemaining} days`,
-      html: passportExpiryEmailHtml(daysRemaining, nationality),
+      html:    passportExpiryEmailHtml(daysRemaining, nationality),
     });
   }
 
-  // ── Push subscriptions ─────────────────────────────────────────────────────
+  // ── Push subscriptions (Redis-backed, in-memory fallback) ─────────────────
 
-  registerPushSubscription(userId: string, subscription: any): void {
-    const subs = this.pushSubscriptions.get(userId) ?? [];
-    const exists = subs.some(s => s.endpoint === subscription.endpoint);
-    if (!exists) {
-      subs.push(subscription);
-      this.pushSubscriptions.set(userId, subs);
-    }
-    // Phase 4: persist to DB or Redis for cross-instance support
+  async registerPushSubscription(userId: string, subscription: any): Promise<void> {
+    const key   = pushSubsKey(userId);
+    // Use endpoint as the dedup field — endpoint is unique per device/browser registration
+    const field = Buffer.from(subscription.endpoint).toString('base64url');
+    await this.redis.hset(key, field, JSON.stringify(subscription));
+
+    // Pub-sub: notify other instances that subscriptions changed for this user
+    await this.redis.publish('vst:push:subs:updated', JSON.stringify({ userId }));
   }
 
-  removePushSubscription(userId: string, endpoint: string): void {
-    const subs = this.pushSubscriptions.get(userId) ?? [];
-    this.pushSubscriptions.set(userId, subs.filter(s => s.endpoint !== endpoint));
+  async removePushSubscription(userId: string, endpoint: string): Promise<void> {
+    const key   = pushSubsKey(userId);
+    const field = Buffer.from(endpoint).toString('base64url');
+    await this.redis.hdel(key, field);
+  }
+
+  /**
+   * Delivers a Web Push notification to all registered subscriptions for a user.
+   * Removes stale subscriptions (410 Gone) automatically.
+   * Silently skips if VAPID keys are not configured.
+   */
+  async sendPushToUser(
+    userId:  string,
+    title:   string,
+    body:    string,
+    data?:   Record<string, unknown>,
+  ): Promise<{ sent: number; failed: number }> {
+    if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+      this.logger.debug('VAPID keys not configured — skipping push delivery');
+      return { sent: 0, failed: 0 };
+    }
+
+    const key    = pushSubsKey(userId);
+    const stored = await this.redis.hgetall(key);
+    const fields = Object.keys(stored);
+
+    if (fields.length === 0) return { sent: 0, failed: 0 };
+
+    const payload = JSON.stringify({ title, body, data: data ?? {} });
+    let sent = 0, failed = 0;
+
+    for (const field of fields) {
+      const sub = JSON.parse(stored[field]);
+      try {
+        await webpush.sendNotification(sub, payload);
+        sent++;
+      } catch (err: any) {
+        if (err?.statusCode === 410) {
+          // Subscription expired — remove silently
+          await this.redis.hdel(key, field);
+          this.logger.debug(`Removed expired push subscription for user ${userId}`);
+        } else {
+          this.logger.warn(`Push delivery failed for user ${userId}: ${err?.message}`);
+          failed++;
+        }
+      }
+    }
+
+    this.logger.debug(`Push fanout user ${userId}: sent=${sent} failed=${failed}`);
+    return { sent, failed };
   }
 
   // ── Notification list + read state ────────────────────────────────────────
@@ -192,10 +264,10 @@ export class NotificationsService {
     const skip = (page - 1) * limit;
     const [items, total] = await this.prisma.$transaction([
       this.prisma.notification.findMany({
-        where: { userId },
+        where:   { userId },
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit,
+        take:    limit,
       }),
       this.prisma.notification.count({ where: { userId } }),
     ]);
@@ -207,14 +279,14 @@ export class NotificationsService {
     if (!notif || notif.userId !== userId) throw new NotFoundException('Notification not found');
     await this.prisma.notification.update({
       where: { id: notificationId },
-      data: { readAt: new Date() },
+      data:  { readAt: new Date() },
     });
   }
 
   async markAllRead(userId: string): Promise<void> {
     await this.prisma.notification.updateMany({
       where: { userId, readAt: null },
-      data: { readAt: new Date() },
+      data:  { readAt: new Date() },
     });
   }
 }

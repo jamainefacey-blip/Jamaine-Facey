@@ -137,7 +137,9 @@ export class CommunityService {
         replyBody:   r.replyBody,
         replyAt:     r.replyAt,
         createdAt:   r.createdAt,
-        media:       r.media.map(m => ({
+        // Only return confirmed media — unconfirmed uploads are never public
+        media:       r.media.filter(m => m.isConfirmed).map(m => ({
+          id:                      m.id,
           type:                    m.type,
           url:                     m.url,
           caption:                 m.caption,
@@ -228,5 +230,30 @@ export class CommunityService {
       publicUrl,   // CDN URL — store and reference this permanently
       expiresIn,
     };
+  }
+
+  // ── Media upload confirmation ─────────────────────────────────────────────
+  // The client calls this endpoint after a successful PUT to the presigned URL.
+  // Only confirmed media is returned in public review queries.
+  // Unconfirmed rows are orphaned if the upload never completes — they are
+  // safe to clean via a scheduled task (e.g. delete where isConfirmed = false
+  // AND createdAt < now - 2h).
+
+  async confirmMediaUpload(userId: string, mediaId: string) {
+    const media = await this.prisma.reviewMedia.findUnique({
+      where:   { id: mediaId },
+      include: { review: { select: { userId: true } } },
+    });
+
+    if (!media) throw new NotFoundException('Media record not found');
+    if (media.review.userId !== userId) throw new ForbiddenException('Not your media');
+    if (media.isConfirmed) return { id: media.id, isConfirmed: true }; // idempotent
+
+    await this.prisma.reviewMedia.update({
+      where: { id: mediaId },
+      data:  { isConfirmed: true, confirmedAt: new Date() },
+    });
+
+    return { id: mediaId, isConfirmed: true };
   }
 }

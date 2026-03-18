@@ -7,6 +7,7 @@ import {
   Param,
   Query,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { ExplorerService, CreatePinDto, PinBoundsQuery, RequestPinUploadUrlDto } from './explorer.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
@@ -57,7 +58,7 @@ export class ExplorerController {
    * POST /v1/explorer/pins/:id/upload-url
    * PREMIUM+ required (same tier as createPin).
    * Returns a presigned R2 PUT URL for the pin's media asset.
-   * After upload completes, PATCH the pin with the returned publicUrl.
+   * After upload completes, call /confirm with the returned publicUrl.
    */
   @Post('explorer/pins/:id/upload-url')
   @UseGuards(ClerkAuthGuard)
@@ -67,6 +68,25 @@ export class ExplorerController {
     @Body() dto: RequestPinUploadUrlDto,
   ) {
     return this.explorerService.requestPinUploadUrl(id, user.id, dto);
+  }
+
+  /**
+   * POST /v1/explorer/pins/:id/media/confirm
+   * Client calls this after a successful PUT to the R2 presigned URL.
+   * Sets mediaUrl + mediaType on the pin and marks mediaConfirmed = true.
+   * Only confirmed media is returned in pin detail responses.
+   * Idempotent — safe to call more than once.
+   */
+  @Post('explorer/pins/:id/media/confirm')
+  @UseGuards(ClerkAuthGuard)
+  @HttpCode(200)
+  confirmPinMedia(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Body('publicUrl') publicUrl: string,
+    @Body('mediaType') mediaType: 'IMAGE' | 'VIDEO',
+  ) {
+    return this.explorerService.confirmPinMedia(id, user.id, publicUrl, mediaType);
   }
 
   /**

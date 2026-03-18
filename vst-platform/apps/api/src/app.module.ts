@@ -22,8 +22,11 @@ import { VisaModule }          from './modules/visa/visa.module';
 import { CommunityModule }     from './modules/community/community.module';
 import { ExplorerModule }      from './modules/explorer/explorer.module';
 import { EventsModule }        from './modules/events/events.module';
-// Deferred
-// import { PartnersModule }      from './modules/partners/partners.module';
+
+// Phase 5
+import { PartnersModule }      from './modules/partners/partners.module';
+import { AvaModule }           from './modules/ava/ava.module';
+import { TranslationModule }   from './modules/translation/translation.module';
 
 @Module({
   imports: [
@@ -45,6 +48,10 @@ import { EventsModule }        from './modules/events/events.module';
     CommunityModule,
     ExplorerModule,
     EventsModule,
+    // Phase 5
+    PartnersModule,
+    AvaModule,
+    TranslationModule,
   ],
 })
 export class AppModule {}

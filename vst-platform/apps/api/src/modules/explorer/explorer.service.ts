@@ -136,9 +136,36 @@ export class ExplorerService {
 
     return {
       uploadUrl,   // PUT here — expires in expiresIn seconds; never stored
-      publicUrl,   // CDN URL — use this as pin.mediaUrl after upload completes
+      publicUrl,   // CDN URL — pass this back in /confirm after upload completes
       mediaType,
       expiresIn,
     };
+  }
+
+  // ── POST /v1/explorer/pins/:id/media/confirm ──────────────────────────────
+  // Client calls this after a successful R2 upload.
+  // Sets mediaUrl, mediaType, and mediaConfirmed = true on the pin.
+  // Idempotent — safe to call more than once with the same publicUrl.
+
+  async confirmPinMedia(
+    pinId:     string,
+    userId:    string,
+    publicUrl: string,
+    mediaType: 'IMAGE' | 'VIDEO',
+  ) {
+    const pin = await this.prisma.explorerPin.findUnique({ where: { id: pinId } });
+    if (!pin) throw new NotFoundException('Pin not found');
+    if (pin.authorId !== userId) throw new ForbiddenException('Not your pin');
+
+    await this.prisma.explorerPin.update({
+      where: { id: pinId },
+      data:  {
+        mediaUrl:      publicUrl,
+        mediaType:     mediaType,
+        mediaConfirmed: true,
+      },
+    });
+
+    return { id: pinId, mediaConfirmed: true, mediaUrl: publicUrl };
   }
 }

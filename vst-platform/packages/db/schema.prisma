@@ -449,14 +449,16 @@ model Review {
 enum ReviewStatus { PENDING PUBLISHED HIDDEN FLAGGED }
 
 model ReviewMedia {
-  id                      String   @id @default(cuid())
+  id                      String    @id @default(cuid())
   reviewId                String
-  review                  Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review                  Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   type                    MediaType
   url                     String
   caption                 String?
-  isAccessibilityEvidence Boolean  @default(false) // first-class; marks media as accessibility proof
-  createdAt               DateTime @default(now())
+  isAccessibilityEvidence Boolean   @default(false) // first-class; marks media as accessibility proof
+  isConfirmed             Boolean   @default(false) // true after client confirms R2 upload completed
+  confirmedAt             DateTime?
+  createdAt               DateTime  @default(now())
 
   @@map("review_media")
 }
@@ -468,20 +470,21 @@ enum MediaType { IMAGE VIDEO }
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ExplorerPin {
-  id            String       @id @default(cuid())
-  destinationId String?
-  destination   Destination? @relation(fields: [destinationId], references: [id])
-  latitude      Float
-  longitude     Float
-  title         String
-  description   String?
-  mediaUrl      String?
-  mediaType     MediaType?
-  authorId      String?      // userId; null = editorial pin
-  tags          String[]
-  isPublished   Boolean      @default(false)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id             String       @id @default(cuid())
+  destinationId  String?
+  destination    Destination? @relation(fields: [destinationId], references: [id])
+  latitude       Float
+  longitude      Float
+  title          String
+  description    String?
+  mediaUrl       String?
+  mediaType      MediaType?
+  mediaConfirmed Boolean      @default(false)  // true after client confirms R2 upload completed
+  authorId       String?      // userId; null = editorial pin
+  tags           String[]
+  isPublished    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@map("explorer_pins")
 }
