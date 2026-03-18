@@ -17,8 +17,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { MembershipModule }    from './modules/membership/membership.module';
 import { PaymentsModule }      from './modules/payments/payments.module';
 
-// Phase 4 — deferred
-// import { VisaModule }          from './modules/visa/visa.module';
+// Phase 4
+import { VisaModule }          from './modules/visa/visa.module';
+// Deferred
 // import { CommunityModule }     from './modules/community/community.module';
 // import { ExplorerModule }      from './modules/explorer/explorer.module';
 // import { PartnersModule }      from './modules/partners/partners.module';
@@ -38,6 +39,8 @@ import { PaymentsModule }      from './modules/payments/payments.module';
     NotificationsModule,
     MembershipModule,
     PaymentsModule,
+    // Phase 4
+    VisaModule,
   ],
 })
 export class AppModule {}

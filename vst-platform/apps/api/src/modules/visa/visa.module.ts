@@ -1,11 +1,13 @@
-// visa module — scaffold
-// Phase 2: implement service + controller
 import { Module } from '@nestjs/common';
+import { VisaService } from './visa.service';
+import { VisaController } from './visa.controller';
+import { PassportExpiryTask } from './tasks/passport-expiry.task';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [],
-  controllers: [],
-  providers: [],
-  exports: [],
+  imports:     [NotificationsModule],
+  controllers: [VisaController],
+  providers:   [VisaService, PassportExpiryTask],
+  exports:     [VisaService],
 })
 export class VisaModule {}

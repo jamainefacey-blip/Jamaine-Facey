@@ -419,22 +419,24 @@ enum DeliveryStatus      { PENDING SENT DELIVERED FAILED BOUNCED }
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Review {
-  id            String       @id @default(cuid())
-  userId        String
-  user          User         @relation(fields: [userId], references: [id])
-  destinationId String
-  destination   Destination  @relation(fields: [destinationId], references: [id])
-  rating        Int          // 1–5
-  title         String?
-  body          String
-  travelDate    DateTime?
-  isVerified    Boolean      @default(false)
-  status        ReviewStatus @default(PENDING)
-  replyBody     String?      // hotel/partner right-to-reply
-  replyAt       DateTime?
-  replyBy       String?      // partner.id
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  destinationId   String
+  destination     Destination  @relation(fields: [destinationId], references: [id])
+  rating          Int          // 1–5
+  title           String?
+  body            String
+  travelDate      DateTime?
+  isVerified      Boolean      @default(false)
+  status          ReviewStatus @default(PENDING)
+  moderationNotes String?      // internal mod notes — never exposed to public
+  moderationBy    String?      // userId of moderator
+  replyBody       String?      // hotel/partner right-to-reply
+  replyAt         DateTime?
+  replyBy         String?      // partner.id
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   media ReviewMedia[]
 
@@ -444,13 +446,14 @@ model Review {
 enum ReviewStatus { PENDING PUBLISHED HIDDEN FLAGGED }
 
 model ReviewMedia {
-  id        String    @id @default(cuid())
-  reviewId  String
-  review    Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  type      MediaType
-  url       String
-  caption   String?
-  createdAt DateTime  @default(now())
+  id                      String   @id @default(cuid())
+  reviewId                String
+  review                  Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  type                    MediaType
+  url                     String
+  caption                 String?
+  isAccessibilityEvidence Boolean  @default(false) // first-class; marks media as accessibility proof
+  createdAt               DateTime @default(now())
 
   @@map("review_media")
 }
@@ -540,4 +543,49 @@ model Affiliate {
   updatedAt        DateTime         @updatedAt
 
   @@map("affiliates")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCAL EVENTS (first-class recurring-use module — Local Discovery OS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model LocalEvent {
+  id                   String             @id @default(cuid())
+  title                String
+  description          String
+  latitude             Float
+  longitude            Float
+  address              String?
+  category             LocalEventCategory
+  startDate            DateTime
+  endDate              DateTime?
+  isRecurring          Boolean            @default(false)
+  recurrenceRule       String?            // iCal RRULE string
+  price                Int?               // in pence; null = free
+  currency             String             @default("GBP")
+  affiliateUrl         String?
+  ticketUrl            String?
+  organizerId          String?            // partner.id; null = editorial
+  accessibilityFeatures String[]          // first-class — never optional
+  tags                 String[]
+  isPublished          Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@map("local_events")
+}
+
+enum LocalEventCategory {
+  FOOD_DRINK
+  CULTURE
+  OUTDOOR
+  TRANSPORT
+  WELLNESS
+  NIGHTLIFE
+  FAMILY
+  SHOPPING
+  SPORT
+  MUSIC
+  ART
+  FESTIVAL
 }
