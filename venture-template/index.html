@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#09101f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <!-- REPLACE: Update description for {{VENTURE_NAME}} -->
+  <meta name="description" content="{{VENTURE_NAME}} — {{TAGLINE}}" />
+  <meta property="og:title" content="{{VENTURE_NAME}}" />
+  <meta property="og:description" content="{{TAGLINE}}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://{{VENTURE_DOMAIN}}" />
+  <!-- REPLACE: Update page title -->
+  <title>{{VENTURE_NAME}}</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- REPLACE: Change id from venture-app to {{VENTURE_SLUG}}-app -->
+  <div id="venture-app">
+
+    <header class="site-header" id="site-header">
+      <div class="header-inner">
+        <!-- REPLACE: Update brand initials and name -->
+        <a class="brand" href="#home" data-route="home" aria-label="{{VENTURE_NAME}} home">
+          <span class="brand-mark">{{BRAND_INITIALS}}</span>
+          <span class="brand-name">{{VENTURE_NAME}}</span>
+        </a>
+
+        <!-- REPLACE: Update nav labels and routes for your page set -->
+        <nav class="main-nav" id="main-nav" aria-label="Primary navigation">
+          <a href="#home"          data-route="home"          class="nav-link">Home</a>
+          <a href="#about"         data-route="about"         class="nav-link">About</a>
+          <a href="#features"      data-route="features"      class="nav-link">{{NAV_FEATURES}}</a>
+          <a href="#safety"        data-route="safety"        class="nav-link">{{NAV_SAFETY}}</a>
+          <a href="#accessibility" data-route="accessibility" class="nav-link">Accessibility</a>
+          <a href="#partners"      data-route="partners"      class="nav-link">Partners</a>
+          <a href="#contact"       data-route="contact"       class="nav-link nav-cta">{{CTA_LABEL}}</a>
+        </nav>
+
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <a href="#home"          data-route="home"          class="mobile-link">Home</a>
+        <a href="#about"         data-route="about"         class="mobile-link">About</a>
+        <a href="#features"      data-route="features"      class="mobile-link">{{NAV_FEATURES}}</a>
+        <a href="#safety"        data-route="safety"        class="mobile-link">{{NAV_SAFETY}}</a>
+        <a href="#accessibility" data-route="accessibility" class="mobile-link">Accessibility</a>
+        <a href="#partners"      data-route="partners"      class="mobile-link">Partners</a>
+        <a href="#contact"       data-route="contact"       class="mobile-link mobile-link-cta">{{CTA_LABEL}}</a>
+      </div>
+    </header>
+
+    <main class="site-main" id="site-main">
+      <div class="loading-screen"><div class="loading-spinner"></div><p>Loading…</p></div>
+    </main>
+
+    <footer class="site-footer" id="site-footer"></footer>
+
+  </div>
+
+  <!-- Load order: components → pages → router -->
+  <script src="js/components.js"></script>
+  <script src="pages/home.js"></script>
+  <script src="pages/about.js"></script>
+  <script src="pages/features.js"></script>
+  <script src="pages/safety.js"></script>
+  <script src="pages/accessibility.js"></script>
+  <script src="pages/partners.js"></script>
+  <script src="pages/contact.js"></script>
+  <script src="js/router.js"></script>
+
+</body>
+</html>
