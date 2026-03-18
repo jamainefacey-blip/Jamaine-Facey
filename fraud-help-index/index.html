@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#07101e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Fraud Help Index — the global directory for fraud reporting, recovery, and prevention. Independent. Free. Accessible." />
+  <meta property="og:title" content="Fraud Help Index" />
+  <meta property="og:description" content="The global directory for fraud reporting, recovery, and prevention." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fraudhelpindex.com" />
+  <title>Fraud Help Index</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <div id="fhi-app">
+
+    <header class="site-header" id="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#home" data-route="home" aria-label="Fraud Help Index home">
+          <span class="brand-mark">FHI</span>
+          <span class="brand-name">Fraud Help Index</span>
+        </a>
+
+        <nav class="main-nav" id="main-nav" aria-label="Primary navigation">
+          <a href="#home"          data-route="home"          class="nav-link">Home</a>
+          <a href="#about"         data-route="about"         class="nav-link">About</a>
+          <a href="#fraud-types"   data-route="fraud-types"   class="nav-link">Fraud Types</a>
+          <a href="#prevention"    data-route="prevention"    class="nav-link">Prevention</a>
+          <a href="#accessibility" data-route="accessibility" class="nav-link">Accessibility</a>
+          <a href="#partners"      data-route="partners"      class="nav-link">Partners</a>
+          <a href="#contact"       data-route="contact"       class="nav-link nav-cta">Report Fraud</a>
+        </nav>
+
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <a href="#home"          data-route="home"          class="mobile-link">Home</a>
+        <a href="#about"         data-route="about"         class="mobile-link">About</a>
+        <a href="#fraud-types"   data-route="fraud-types"   class="mobile-link">Fraud Types</a>
+        <a href="#prevention"    data-route="prevention"    class="mobile-link">Prevention</a>
+        <a href="#accessibility" data-route="accessibility" class="mobile-link">Accessibility</a>
+        <a href="#partners"      data-route="partners"      class="mobile-link">Partners</a>
+        <a href="#contact"       data-route="contact"       class="mobile-link mobile-link-cta">Report Fraud</a>
+      </div>
+    </header>
+
+    <main class="site-main" id="site-main">
+      <div class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Loading…</p>
+      </div>
+    </main>
+
+    <footer class="site-footer" id="site-footer"></footer>
+
+  </div>
+
+  <script src="js/components.js"></script>
+  <script src="pages/home.js"></script>
+  <script src="pages/about.js"></script>
+  <script src="pages/fraud-types.js"></script>
+  <script src="pages/prevention.js"></script>
+  <script src="pages/accessibility.js"></script>
+  <script src="pages/partners.js"></script>
+  <script src="pages/contact.js"></script>
+  <script src="js/router.js"></script>
+
+</body>
+</html>
