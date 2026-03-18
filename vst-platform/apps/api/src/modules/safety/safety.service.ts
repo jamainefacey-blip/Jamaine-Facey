@@ -3,16 +3,22 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TriggerSosDto } from './dto/trigger-sos.dto';
 import { CreateCheckInDto } from './dto/create-check-in.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class SafetyService {
   private readonly logger = new Logger(SafetyService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // Optional: NotificationsModule is Phase 3 — circular dep avoided via forwardRef if needed
+    @Optional() private readonly notificationsService: NotificationsService | null,
+  ) {}
 
   // ── SOS ───────────────────────────────────────────────────────────────────
 
@@ -85,12 +91,17 @@ export class SafetyService {
       }
     }
 
-    // STUB: dispatch notifications — Phase 3 wires Twilio + Resend
-    // await this.notificationsService.dispatchSosNotifications(sosEvent.id);
-    this.logger.warn(
-      `SOS TRIGGERED — user ${userId} | event ${sosEvent.id} | ` +
-      `${user.safetyContacts.length} contacts | NOTIFICATIONS STUBBED`,
-    );
+    if (this.notificationsService) {
+      // Fire-and-forget — SOS response must not be delayed by notification latency
+      this.notificationsService.dispatchSosNotifications(sosEvent.id).catch(err =>
+        this.logger.error(`SOS notification dispatch failed: ${err.message}`),
+      );
+    } else {
+      this.logger.warn(
+        `SOS TRIGGERED — user ${userId} | event ${sosEvent.id} | ` +
+        `${user.safetyContacts.length} contacts | NOTIFICATIONS NOT WIRED`,
+      );
+    }
 
     return sosEvent;
   }
@@ -167,9 +178,13 @@ export class SafetyService {
         data: { status: 'ESCALATED' },
       });
 
-      // STUB: re-notify contacts at escalation level — Phase 3
-      // await this.notificationsService.dispatchEscalationNotifications(event.id);
-      this.logger.warn(`SOS ESCALATED — event ${event.id} | NOTIFICATIONS STUBBED`);
+      if (this.notificationsService) {
+        this.notificationsService.dispatchSosNotifications(event.id).catch(err =>
+          this.logger.error(`SOS escalation dispatch failed: ${err.message}`),
+        );
+      } else {
+        this.logger.warn(`SOS ESCALATED — event ${event.id} | NOTIFICATIONS NOT WIRED`);
+      }
     }
 
     return stale.length;
