@@ -8,7 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ExplorerService, CreatePinDto, PinBoundsQuery } from './explorer.service';
+import { ExplorerService, CreatePinDto, PinBoundsQuery, RequestPinUploadUrlDto } from './explorer.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -51,6 +51,22 @@ export class ExplorerController {
   @UseGuards(ClerkAuthGuard)
   createPin(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreatePinDto) {
     return this.explorerService.createPin(user.id, dto);
+  }
+
+  /**
+   * POST /v1/explorer/pins/:id/upload-url
+   * PREMIUM+ required (same tier as createPin).
+   * Returns a presigned R2 PUT URL for the pin's media asset.
+   * After upload completes, PATCH the pin with the returned publicUrl.
+   */
+  @Post('explorer/pins/:id/upload-url')
+  @UseGuards(ClerkAuthGuard)
+  requestPinUploadUrl(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: RequestPinUploadUrlDto,
+  ) {
+    return this.explorerService.requestPinUploadUrl(id, user.id, dto);
   }
 
   /**

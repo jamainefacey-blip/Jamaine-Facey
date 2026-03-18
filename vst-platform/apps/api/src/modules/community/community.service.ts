@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { MembershipService } from '../membership/membership.service';
+import { R2Service } from '../../integrations/r2/r2.service';
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -55,6 +56,7 @@ export class CommunityService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly membershipService: MembershipService,
+    private readonly r2: R2Service,
   ) {}
 
   // ── Reviews ───────────────────────────────────────────────────────────────
@@ -192,23 +194,25 @@ export class CommunityService {
   }
 
   // ── Media upload — presigned URL ──────────────────────────────────────────
-  // Pattern: client calls this endpoint → gets a presigned R2/S3 PUT URL →
-  // uploads directly to object storage → calls confirmMediaUpload() with the key.
-  // CDN URL is stored (not upload URL). Phase 5: swap stub for real R2 presign.
+  // Pattern: client calls this endpoint → gets a real R2 presigned PUT URL →
+  // uploads directly to object storage (no server proxying, no public write) →
+  // publicUrl (CDN-fronted) is stored in ReviewMedia immediately.
 
   async requestUploadUrl(userId: string, dto: RequestUploadUrlDto) {
     const review = await this.prisma.review.findUnique({ where: { id: dto.reviewId } });
     if (!review) throw new NotFoundException('Review not found');
     if (review.userId !== userId) throw new ForbiddenException('Not your review');
 
-    const key        = `reviews/${dto.reviewId}/${Date.now()}-${dto.filename}`;
-    const cdnBaseUrl = process.env.CDN_BASE_URL ?? 'https://cdn.voyagesmarttravel.com';
+    // Build a safe, scoped object key using R2Service path conventions
+    const key = this.r2.buildReviewMediaKey(dto.reviewId, dto.filename);
 
-    // STUB: return a deterministic URL — replace with real R2 presign in Phase 5.
-    const uploadUrl = `${cdnBaseUrl}/upload-stub/${key}`;
-    const publicUrl = `${cdnBaseUrl}/${key}`;
+    // Generate a real presigned PUT URL via Cloudflare R2 (S3-compatible)
+    const { uploadUrl, publicUrl, expiresIn } = await this.r2.presignUpload(
+      key,
+      dto.contentType,
+    );
 
-    // Pre-create the ReviewMedia row in PENDING state (confirmed via confirmMediaUpload)
+    // Pre-create the ReviewMedia row — stores the permanent CDN URL, not the upload URL
     const media = await this.prisma.reviewMedia.create({
       data: {
         reviewId:                dto.reviewId,
@@ -219,10 +223,10 @@ export class CommunityService {
     });
 
     return {
-      uploadUrl,
-      mediaId:   media.id,
-      publicUrl,
-      expiresIn: 900, // seconds — stub; real presign uses same TTL
+      uploadUrl,   // PUT here — expires in expiresIn seconds; never stored
+      mediaId:     media.id,
+      publicUrl,   // CDN URL — store and reference this permanently
+      expiresIn,
     };
   }
 }

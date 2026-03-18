@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { MembershipService } from '../membership/membership.service';
+import { R2Service } from '../../integrations/r2/r2.service';
 
 export interface CreatePinDto {
   latitude:     number;
@@ -14,6 +15,11 @@ export interface CreatePinDto {
   mediaUrl?:    string;
   tags?:        string[];
   countryCode?: string;    // links pin to a Destination
+}
+
+export interface RequestPinUploadUrlDto {
+  filename:     string;
+  contentType:  'image/jpeg' | 'image/png' | 'image/webp' | 'video/mp4';
 }
 
 export interface PinBoundsQuery {
@@ -29,6 +35,7 @@ export class ExplorerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly membershipService: MembershipService,
+    private readonly r2: R2Service,
   ) {}
 
   // ── GET /v1/explorer/pins?minLat=&maxLat=&minLng=&maxLng= ────────────────
@@ -104,5 +111,34 @@ export class ExplorerService {
     });
 
     return { id: pinId, isPublished: publish };
+  }
+
+  // ── POST /v1/explorer/pins/:id/upload-url — PREMIUM+ ─────────────────────
+  // Returns a presigned R2 PUT URL for the pin's media asset.
+  // Flow: client uploads directly to R2 → updates pin mediaUrl with publicUrl.
+  // Only the pin's author can request an upload URL.
+
+  async requestPinUploadUrl(pinId: string, userId: string, dto: RequestPinUploadUrlDto) {
+    const pin = await this.prisma.explorerPin.findUnique({ where: { id: pinId } });
+    if (!pin) throw new NotFoundException('Pin not found');
+    if (pin.authorId !== userId) throw new ForbiddenException('Not your pin');
+
+    // Build a safe, scoped object key using R2Service path conventions
+    const key = this.r2.buildExplorerPinKey(pinId, dto.filename);
+
+    // Generate a real presigned PUT URL via Cloudflare R2
+    const { uploadUrl, publicUrl, expiresIn } = await this.r2.presignUpload(
+      key,
+      dto.contentType,
+    );
+
+    const mediaType = dto.contentType.startsWith('video') ? 'VIDEO' : 'IMAGE';
+
+    return {
+      uploadUrl,   // PUT here — expires in expiresIn seconds; never stored
+      publicUrl,   // CDN URL — use this as pin.mediaUrl after upload completes
+      mediaType,
+      expiresIn,
+    };
   }
 }
