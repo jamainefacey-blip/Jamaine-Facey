@@ -87,11 +87,70 @@ export const SEVERITY_LEVELS = [
 ];
 
 export const REPORT_STATUSES = [
-  { id: "submitted",    label: "Submitted",    color: "#3498db", description: "Report received, awaiting review" },
-  { id: "under_review", label: "Under Review", color: "#f39c12", description: "Moderator is reviewing this report" },
-  { id: "confirmed",    label: "Confirmed",    color: "#e74c3c", description: "Fraud confirmed by moderator or community" },
-  { id: "resolved",     label: "Resolved",     color: "#27ae60", description: "Case resolved or action taken" },
-  { id: "rejected",     label: "Rejected",     color: "#95a5a6", description: "Report rejected — insufficient evidence or false report" },
+  {
+    id: "submitted",
+    label: "Submitted",
+    color: "#3498db",
+    description: "Report received, awaiting review",
+    explanation: "This report has been submitted and is waiting for a moderator to begin review.",
+    actionLabel: "Begin Review",
+  },
+  {
+    id: "under_review",
+    label: "Under Review",
+    color: "#f39c12",
+    description: "Moderator is reviewing this report",
+    explanation: "A moderator is currently reviewing this report for accuracy and evidence quality.",
+    actionLabel: "Mark Under Review",
+  },
+  {
+    id: "confirmed",
+    label: "Confirmed",
+    color: "#e74c3c",
+    description: "Fraud confirmed by moderator or community",
+    explanation: "This fraud case has been verified by a moderator or corroborated by multiple community members.",
+    actionLabel: "Confirm Fraud",
+  },
+  {
+    id: "resolved",
+    label: "Resolved",
+    color: "#27ae60",
+    description: "Case resolved or action taken",
+    explanation: "This case has been resolved. Appropriate action has been taken or the threat has been mitigated.",
+    actionLabel: "Mark Resolved",
+  },
+  {
+    id: "disputed",
+    label: "Disputed",
+    color: "#e67e22",
+    description: "Report accuracy challenged — under re-review",
+    explanation: "This report has been challenged by the community or a moderator. It is under additional review.",
+    actionLabel: "Mark Disputed",
+  },
+  {
+    id: "rejected",
+    label: "Rejected",
+    color: "#95a5a6",
+    description: "Report rejected — insufficient evidence or false report",
+    explanation: "This report was reviewed and rejected due to insufficient evidence, duplicate content, or being a false report.",
+    actionLabel: "Reject Report",
+  },
+  {
+    id: "archived",
+    label: "Archived",
+    color: "#636e72",
+    description: "Report archived — no longer active",
+    explanation: "This report has been archived. It remains on record but is no longer actively monitored.",
+    actionLabel: "Archive",
+  },
+];
+
+/** Financial harm thresholds for filtering */
+export const HARM_TIERS = [
+  { id: "none",     label: "No loss",       min: 0,     max: 0     },
+  { id: "low",      label: "Under £500",    min: 1,     max: 499   },
+  { id: "medium",   label: "£500 – £5,000", min: 500,   max: 5000  },
+  { id: "high",     label: "£5,000+",       min: 5001,  max: Infinity },
 ];
 
 export function getCategoryById(id) {

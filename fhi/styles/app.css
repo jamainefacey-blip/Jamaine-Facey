@@ -1,5 +1,5 @@
 /* ================================================================
-   Fraud Help Index — Core Styles (Phase 2: UX Hardened)
+   Fraud Help Index — Core Styles (Phase 3: Authority & Trust)
    Mobile-first, no external deps, system font stack
    ================================================================ */
 
@@ -219,6 +219,8 @@ a:hover { text-decoration: underline; }
 .badge-status-confirmed    { background: rgba(231,76,60,0.12);  color: #e74c3c; }
 .badge-status-resolved     { background: rgba(39,174,96,0.12);  color: #27ae60; }
 .badge-status-rejected     { background: rgba(149,165,166,0.12);color: #95a5a6; }
+.badge-status-disputed     { background: rgba(230,126,34,0.12); color: #e67e22; }
+.badge-status-archived     { background: rgba(99,110,114,0.12); color: #636e72; }
 
 /* ── Trust Score ───────────────────────────────────── */
 
@@ -235,9 +237,10 @@ a:hover { text-decoration: underline; }
   font-family: var(--fhi-mono);
 }
 
-.trust-high   { --trust-r:231; --trust-g:76;  --trust-b:60;  }
-.trust-medium { --trust-r:243; --trust-g:156; --trust-b:18;  }
-.trust-low    { --trust-r:39;  --trust-g:174; --trust-b:96;  }
+.trust-verified   { --trust-r:231; --trust-g:76;  --trust-b:60;  }
+.trust-credible   { --trust-r:243; --trust-g:156; --trust-b:18;  }
+.trust-assessment { --trust-r:52;  --trust-g:152; --trust-b:219; }
+.trust-unverified { --trust-r:99;  --trust-g:110; --trust-b:114; }
 
 .trust-detail { margin-bottom: 20px; }
 
@@ -588,12 +591,229 @@ mark, .highlight {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+/* ── Phase 3: Status Explanation ───────────────────── */
+
+.status-explanation {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--fhi-surface); border: 1px solid var(--fhi-border);
+  border-radius: var(--fhi-radius-lg); padding: 14px 16px;
+  margin-bottom: 24px;
+}
+.status-explanation-icon { font-size: 20px; flex-shrink: 0; line-height: 1.3; }
+.status-explanation-text { font-size: 13px; color: var(--fhi-text-dim); line-height: 1.5; }
+
+/* ── Phase 3: Card Harm / Dispute Indicators ──────── */
+
+.card-harm {
+  font-weight: 700; color: var(--fhi-warn);
+  font-family: var(--fhi-mono); font-size: 11px;
+}
+.card-signal-dispute { color: var(--fhi-warn); }
+.signal-btn-dispute { border-color: var(--fhi-warn); }
+.signal-btn-dispute:hover { border-color: var(--fhi-warn); background: rgba(243,156,18,0.08); }
+
+/* ── Phase 3: Quality Checks (Trust Breakdown) ───── */
+
+.quality-checks {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--fhi-border);
+}
+.quality-checks-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--fhi-text-xdim); margin-bottom: 8px;
+}
+.quality-check {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--fhi-text-xdim);
+  margin-right: 12px; margin-bottom: 4px;
+}
+.quality-check.done { color: var(--fhi-success); }
+
+/* ── Phase 3: Quality Meter (Report Form) ─────────── */
+
+.quality-meter { margin-bottom: 4px; }
+.quality-meter-bar {
+  width: 100%; height: 4px; background: var(--fhi-surface2);
+  border-radius: 2px; overflow: hidden;
+}
+.quality-meter-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 0.4s var(--fhi-ease);
+}
+.quality-meter-label {
+  font-size: 11px; font-weight: 600; margin-top: 5px;
+  font-family: var(--fhi-mono);
+}
+
+/* ── Phase 3: Guidance Boxes ──────────────────────── */
+
+.guidance-box {
+  background: var(--fhi-surface); border: 1px solid var(--fhi-border);
+  border-radius: var(--fhi-radius-lg); padding: 16px;
+  margin-bottom: 20px;
+}
+.guidance-box-evidence { border-color: rgba(74,158,255,0.25); }
+.guidance-box-warn { border-color: rgba(243,156,18,0.3); background: rgba(243,156,18,0.04); }
+.guidance-title {
+  font-size: 13px; font-weight: 700; margin-bottom: 8px;
+  color: var(--fhi-text);
+}
+.guidance-list {
+  list-style: none; margin: 0; padding: 0;
+}
+.guidance-list li {
+  font-size: 13px; color: var(--fhi-text-dim);
+  padding-left: 14px; margin-bottom: 5px;
+  position: relative; line-height: 1.45;
+}
+.guidance-list li::before {
+  content: "\2022"; position: absolute; left: 0; color: var(--fhi-accent);
+}
+.guidance-note {
+  font-size: 12px; color: var(--fhi-text-xdim);
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid var(--fhi-border);
+  font-style: italic;
+}
+
+/* ── Phase 3: Advanced Filter Panel ───────────────── */
+
+.filter-panel { margin-bottom: 16px; }
+.filter-group { margin-bottom: 12px; }
+.filter-group-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--fhi-text-xdim); margin-bottom: 6px;
+}
+.filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 99px;
+  background: var(--fhi-surface2); border: 1px solid var(--fhi-border);
+  font-size: 12px; cursor: pointer; color: var(--fhi-text-dim);
+  transition: all 0.15s var(--fhi-ease);
+}
+.filter-chip:hover { border-color: var(--fhi-accent); color: var(--fhi-text); }
+.filter-chip.active { background: var(--fhi-accent); color: #fff; border-color: var(--fhi-accent); }
+.filter-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
+.collapsible {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s var(--fhi-ease);
+}
+.collapsible.open { max-height: 400px; }
+
+.search-advanced-toggle { margin-bottom: 12px; }
+.search-advanced-toggle summary {
+  list-style: none; cursor: pointer;
+}
+.search-advanced-toggle summary::-webkit-details-marker { display: none; }
+
+/* ── Phase 3: Case History Timeline ───────────────── */
+
+.timeline { padding-left: 16px; border-left: 2px solid var(--fhi-border); }
+.timeline-item {
+  position: relative; padding: 0 0 16px 16px;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute; left: -21px; top: 2px;
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--fhi-bg);
+}
+.timeline-content { min-height: 20px; }
+.timeline-action {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 4px;
+}
+.timeline-time {
+  font-size: 11px; color: var(--fhi-text-xdim);
+  font-family: var(--fhi-mono);
+}
+.timeline-notes {
+  font-size: 12px; color: var(--fhi-text-dim);
+  line-height: 1.4; margin-top: 2px;
+}
+
+/* ── Phase 3: Moderator Panel ─────────────────────── */
+
+.mod-panel {
+  border-top: 1px solid var(--fhi-border);
+  padding-top: 20px; margin-top: 24px;
+}
+.mod-actions {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 20px;
+}
+.mod-btn-under_review { border-color: #f39c12; color: #f39c12; }
+.mod-btn-confirmed    { border-color: #e74c3c; color: #e74c3c; }
+.mod-btn-resolved     { border-color: #27ae60; color: #27ae60; }
+.mod-btn-disputed     { border-color: #e67e22; color: #e67e22; }
+.mod-btn-rejected     { border-color: #95a5a6; color: #95a5a6; }
+.mod-btn-submitted    { border-color: #3498db; color: #3498db; }
+
+.mod-danger-zone {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px dashed rgba(231,76,60,0.3);
+}
+.mod-danger-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--fhi-danger); margin-bottom: 10px;
+}
+
+.mod-section-note {
+  font-size: 12px; color: var(--fhi-text-xdim);
+  margin-bottom: 12px; margin-top: -8px;
+  line-height: 1.4;
+}
+
+/* ── Phase 3: Audit Log ───────────────────────────── */
+
+.audit-log {
+  background: var(--fhi-surface); border: 1px solid var(--fhi-border);
+  border-radius: var(--fhi-radius-lg); overflow: hidden;
+}
+.audit-row {
+  display: grid; grid-template-columns: auto 1fr auto 2fr;
+  gap: 10px; padding: 10px 14px;
+  font-size: 12px; border-bottom: 1px solid var(--fhi-border);
+  align-items: center;
+}
+.audit-row:last-child { border-bottom: none; }
+.audit-time {
+  color: var(--fhi-text-xdim); font-family: var(--fhi-mono);
+  font-size: 11px; white-space: nowrap;
+}
+.audit-action {
+  font-weight: 600; color: var(--fhi-text);
+  font-family: var(--fhi-mono); font-size: 11px;
+}
+.audit-id {
+  color: var(--fhi-text-xdim); font-family: var(--fhi-mono);
+  font-size: 10px;
+}
+.audit-detail {
+  color: var(--fhi-text-dim); font-size: 12px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Phase 3: Stat Chip Variants ──────────────────── */
+
+.stats-row-wide { grid-template-columns: repeat(3, 1fr); }
+.stat-chip-alert { border-color: rgba(74,158,255,0.3); }
+.stat-chip-alert .stat-value { color: var(--fhi-accent); }
+.stat-chip-warn { border-color: rgba(243,156,18,0.3); }
+.stat-chip-warn .stat-value { color: var(--fhi-warn); }
+
 /* ── Responsive ────────────────────────────────────── */
 
 @media (min-width: 640px) {
   .stats-row { grid-template-columns: repeat(4, 1fr); }
+  .stats-row-wide { grid-template-columns: repeat(6, 1fr); }
   .card-header { align-items: center; }
   .hero-title { font-size: 28px; }
+  .audit-row { grid-template-columns: 100px 120px 100px 1fr; }
 }
 
 @media (min-width: 768px) {
@@ -606,4 +826,5 @@ mark, .highlight {
   .nav-item { flex-direction: row; font-size: 13px; gap: 6px; }
   .nav-item.active::after { top: auto; bottom: 0; top: unset; }
   .toast { bottom: 24px; }
+  .signal-bar { flex-wrap: wrap; }
 }

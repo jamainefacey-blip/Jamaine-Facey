@@ -1,11 +1,13 @@
 /**
  * FHI — Report Form View
- * 4-step wizard with progress bar, live validation, char counts.
+ * Phase 3: Evidence guidance panel, live quality meter,
+ * stronger submission guidance.
  */
 
 import { CATEGORIES, SEVERITY_LEVELS, getCategoryById, getSeverityById } from "../../data/categories.js";
 import { createReport, validateReport } from "../../data/schema.js";
 import { escapeHtml } from "../../utils/sanitise.js";
+import { calculateReportQuality } from "../../utils/trustScore.js";
 import * as store from "../../utils/store.js";
 import { $main, renderProgressBar } from "../ui/dom.js";
 import * as toast from "../ui/toast.js";
@@ -30,12 +32,28 @@ export function render() {
 }
 
 function renderForm() {
+  const quality = calculateReportQuality(draft);
+
   $main().innerHTML = `
     <div class="section-title" style="margin-bottom:20px;">Report Fraud</div>
     ${renderProgressBar(STEPS, step)}
+    ${step > 0 ? renderQualityMeter(quality) : ""}
     <div id="step-content" style="margin-top:24px;"></div>
   `;
   renderStep();
+}
+
+function renderQualityMeter(quality) {
+  const color = quality >= 80 ? "var(--fhi-success)" : quality >= 50 ? "var(--fhi-warn)" : "var(--fhi-text-xdim)";
+  const label = quality >= 80 ? "Strong report" : quality >= 50 ? "Good start" : "Add more detail";
+  return `
+    <div class="quality-meter" style="margin-top:16px;">
+      <div class="quality-meter-bar">
+        <div class="quality-meter-fill" style="width:${quality}%;background:${color};"></div>
+      </div>
+      <div class="quality-meter-label" style="color:${color};">${label} — ${quality}% complete</div>
+    </div>
+  `;
 }
 
 function renderStep() {
@@ -82,6 +100,16 @@ function renderCategoryStep($el) {
 
 function renderDetailsStep($el) {
   $el.innerHTML = `
+    <div class="guidance-box">
+      <div class="guidance-title">Writing a strong report</div>
+      <ul class="guidance-list">
+        <li>Be specific — include names, dates, and amounts where possible</li>
+        <li>Describe the sequence of events clearly</li>
+        <li>Avoid vague language like "something suspicious happened"</li>
+        <li>Include how you were contacted and what was requested</li>
+      </ul>
+    </div>
+
     <div class="form-group">
       <label class="form-label form-label-req">Title</label>
       <input class="form-input" id="f-title" value="${escapeHtml(draft.title)}"
@@ -91,7 +119,7 @@ function renderDetailsStep($el) {
     <div class="form-group">
       <label class="form-label form-label-req">Description</label>
       <textarea class="form-textarea" id="f-desc"
-        placeholder="Describe what happened in detail — how you were contacted, what was said, what you did…"
+        placeholder="Describe what happened in detail — how you were contacted, what was said, what you did, and what the outcome was."
         maxlength="5000">${escapeHtml(draft.description)}</textarea>
       <div class="form-char-count" id="desc-count">${draft.description.length}/5000</div>
     </div>
@@ -100,22 +128,24 @@ function renderDetailsStep($el) {
       <select class="form-select" id="f-severity">
         ${SEVERITY_LEVELS.map(s => `<option value="${s.id}" ${draft.severity === s.id ? "selected" : ""}>${s.label} — ${s.description}</option>`).join("")}
       </select>
+      <div class="form-hint">How severe is the financial or personal impact?</div>
     </div>
     <div class="form-group">
       <label class="form-label">Date of Incident</label>
       <input class="form-input" id="f-date" type="date" value="${draft.incidentDate}" />
-      <div class="form-hint">When did this happen?</div>
+      <div class="form-hint">When did this happen? Exact date helps corroborate reports.</div>
     </div>
     <div class="form-group">
       <label class="form-label">Amount Lost (£)</label>
       <input class="form-input" id="f-amount" type="number" min="0" step="0.01"
         value="${draft.amountLost}" placeholder="0.00" />
-      <div class="form-hint">Enter 0 if no money was lost</div>
+      <div class="form-hint">Enter 0 if no money was lost. Financial data helps prioritise reports.</div>
     </div>
     <div class="form-group">
       <label class="form-label">How were you contacted?</label>
       <input class="form-input" id="f-contact" value="${escapeHtml(draft.contactMethod)}"
         placeholder="e.g. Email, Phone, Instagram DM, Facebook Marketplace" />
+      <div class="form-hint">Knowing the contact method helps others identify similar scams.</div>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn btn-outline" id="step-back">Back</button>
@@ -156,6 +186,18 @@ function collectDetails() {
 
 function renderEvidenceStep($el) {
   $el.innerHTML = `
+    <div class="guidance-box guidance-box-evidence">
+      <div class="guidance-title">What counts as strong evidence?</div>
+      <ul class="guidance-list">
+        <li><strong>Screenshots</strong> of messages, emails, or transactions</li>
+        <li><strong>URLs</strong> of fake websites or social profiles</li>
+        <li><strong>Phone numbers, emails, usernames</strong> used by the scammer</li>
+        <li><strong>Transaction references</strong> or bank statement excerpts</li>
+        <li><strong>Archive.org links</strong> preserving deleted pages</li>
+      </ul>
+      <div class="guidance-note">Reports with evidence are given higher credibility scores and prioritised in moderation review.</div>
+    </div>
+
     <div class="form-group">
       <label class="form-label">Evidence Links</label>
       <div id="evidence-fields">
@@ -170,7 +212,7 @@ function renderEvidenceStep($el) {
         ${draft.scammerIdentifiers.map((s, i) => `<input class="form-input" style="margin-bottom:8px;" data-sc="${i}" value="${escapeHtml(s)}" placeholder="Phone, email, website, username…" />`).join("")}
       </div>
       <button class="btn btn-ghost btn-sm" id="add-sc">+ Add identifier</button>
-      <div class="form-hint">Phone numbers, emails, websites, social handles (max 10)</div>
+      <div class="form-hint">Phone numbers, emails, websites, social handles (max 10). These help others search for known scammers.</div>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn btn-outline" id="step-back">Back</button>
@@ -199,6 +241,7 @@ function renderReviewStep($el) {
   const sev = getSeverityById(draft.severity);
   const evLinks = draft.evidenceLinks.filter(l => l.trim());
   const scIds = draft.scammerIdentifiers.filter(s => s.trim());
+  const quality = calculateReportQuality(draft);
 
   $el.innerHTML = `
     <div class="card" style="cursor:default;">
@@ -217,6 +260,14 @@ function renderReviewStep($el) {
       ${evLinks.length ? `<div style="font-size:13px;margin-bottom:8px;"><strong>Evidence:</strong> ${evLinks.length} link(s)</div>` : ""}
       ${scIds.length ? `<div style="font-size:13px;"><strong>Identifiers:</strong> ${scIds.map(s => escapeHtml(s)).join(", ")}</div>` : ""}
     </div>
+
+    ${quality < 60 ? `
+      <div class="guidance-box guidance-box-warn" style="margin-top:16px;">
+        <div class="guidance-title">Strengthen your report</div>
+        <p style="font-size:13px;color:var(--fhi-text-dim);margin:0;">Reports with more detail receive higher credibility scores. Consider going back to add evidence links, scammer identifiers, or a contact method.</p>
+      </div>
+    ` : ""}
+
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn btn-outline" id="step-back">Edit</button>
       <button class="btn btn-success btn-block" id="submit-report">Submit Report</button>
@@ -246,7 +297,7 @@ function renderReviewStep($el) {
     }
 
     store.saveReport(report);
-    toast.success("Report submitted successfully");
+    toast.success("Report submitted — it will appear as 'Submitted' until reviewed");
     window.location.hash = `#detail/${report.id}`;
   });
 }
