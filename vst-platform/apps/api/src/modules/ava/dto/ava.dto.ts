@@ -124,6 +124,7 @@ export type AvaIntent =
   | 'WEATHER_QUERY'
   | 'PASSPORT_QUERY'
   | 'MEMBERSHIP_QUERY'
+  | 'OPPORTUNITY_QUERY'
   | 'GENERAL';
 
 export interface AvaAction {

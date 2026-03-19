@@ -82,7 +82,13 @@ import {
   MatchingQueryOptions,
   OpportunityAction,
   OpportunityType,
+  SeedOpportunity,
 } from './dto/matching-result.dto';
+import {
+  LiveSeedService,
+  FALLBACK_LOCAL_SEED,
+  FALLBACK_LONG_DISTANCE_SEEDS,
+} from './live-seed.service';
 import { MembershipTier } from '@prisma/client';
 import { createHash } from 'crypto';
 
@@ -102,34 +108,9 @@ const TIER_LIMITS: Record<MembershipTier, { maxResults: number; allowedTypes: Op
   },
 };
 
-// ── Stub opportunity seeds ────────────────────────────────────────────────────
-// Phase 5: static representative opportunities for each type.
-// Phase 6: generated from live EventsService, PriceAlert triggers, and
-//          the Skyscanner / booking partner feeds.
-interface SeedOpportunity {
-  type:            OpportunityType;
-  destinationCode: string;
-  destinationName: string;
-  tripType?:       string;
-  estimatedDays?:  number;
-  priceHint?:      string;
-  isLastMinute:    boolean;
-  daysUntilDepart?: number;  // for last-minute scoring
-}
-
-const STUB_SEEDS: SeedOpportunity[] = [
-  { type: 'LOCAL_DISCOVERY',  destinationCode: 'GB',  destinationName: 'Near You',     tripType: 'CITY_BREAK',  estimatedDays: 1,  priceHint: 'Free',     isLastMinute: false },
-  { type: 'SHORT_BREAK',      destinationCode: 'ES',  destinationName: 'Barcelona',    tripType: 'SHORT_BREAK', estimatedDays: 4,  priceHint: 'from £199', isLastMinute: false },
-  { type: 'SHORT_BREAK',      destinationCode: 'FR',  destinationName: 'Paris',        tripType: 'CITY_BREAK',  estimatedDays: 3,  priceHint: 'from £149', isLastMinute: false },
-  { type: 'WEEK_HOLIDAY',     destinationCode: 'IT',  destinationName: 'Amalfi Coast', tripType: 'WEEK_HOLIDAY',estimatedDays: 10, priceHint: 'from £549', isLastMinute: false },
-  { type: 'WEEK_HOLIDAY',     destinationCode: 'GR',  destinationName: 'Santorini',    tripType: 'WEEK_HOLIDAY',estimatedDays: 7,  priceHint: 'from £449', isLastMinute: false },
-  { type: 'LONG_HAUL',        destinationCode: 'JP',  destinationName: 'Japan',        tripType: 'LONG_HAUL',   estimatedDays: 14, priceHint: 'from £699', isLastMinute: false },
-  { type: 'LONG_HAUL',        destinationCode: 'TH',  destinationName: 'Thailand',     tripType: 'LONG_HAUL',   estimatedDays: 14, priceHint: 'from £549', isLastMinute: false },
-  { type: 'LAST_MINUTE',      destinationCode: 'PT',  destinationName: 'Lisbon',       tripType: 'SHORT_BREAK', estimatedDays: 4,  priceHint: 'from £129', isLastMinute: true,  daysUntilDepart: 7  },
-  { type: 'LAST_MINUTE',      destinationCode: 'NL',  destinationName: 'Amsterdam',    tripType: 'CITY_BREAK',  estimatedDays: 3,  priceHint: 'from £99',  isLastMinute: true,  daysUntilDepart: 10 },
-  { type: 'LONG_WAY_ROUND',   destinationCode: 'MULTI', destinationName: 'Round the World', tripType: 'LONG_WAY_ROUND', estimatedDays: 30, priceHint: 'from £1,299', isLastMinute: false },
-  { type: 'PRICE_DROP_MATCH', destinationCode: 'US',  destinationName: 'New York',     tripType: 'WEEK_HOLIDAY',estimatedDays: 7,  priceHint: 'from £379 ↓', isLastMinute: false },
-];
+// ── NOTE: SeedOpportunity type is now defined in matching-result.dto.ts ───────
+// FALLBACK_LOCAL_SEED and FALLBACK_LONG_DISTANCE_SEEDS are in live-seed.service.ts.
+// MatchingService composes seeds from LiveSeedService + fallbacks at runtime.
 
 // ── Opportunity ID (deterministic, dedup-safe) ────────────────────────────────
 function opportunityId(type: string, code: string): string {
@@ -263,13 +244,16 @@ export class MatchingService {
   constructor(
     private readonly prisma:       PrismaService,
     private readonly preferences:  PreferencesService,
+    private readonly liveSeeds:    LiveSeedService,
   ) {}
 
   /**
    * Generates a ranked list of travel opportunities for a user.
    *
-   * Phase 5: preference-aware stub scoring against STUB_SEEDS.
-   * Phase 6: live event data, live pricing, Redis caching, nightly job.
+   * Phase 5: preference-aware stub scoring against static seeds.
+   * Phase 6: live LOCAL_DISCOVERY seeds from EventsService + ExplorerPins;
+   *          live PRICE_DROP_MATCH seeds from triggered PriceAlerts.
+   *          Long-distance seeds remain static until Phase 7 live pricing.
    */
   async getOpportunities(
     userId:  string,
@@ -289,11 +273,35 @@ export class MatchingService {
       ...destinations.excluded,
     ];
 
+    // ── Compose seed list from live data + fallbacks ─────────────────────────
+    // LOCAL_DISCOVERY: live event + pin seeds when lat/lng provided, else fallback
+    const accessibilityRequired = !!(prefs?.requiresWheelchair || prefs?.requiresAssistance);
+    const [liveEventSeeds, livePinSeeds, liveDropSeeds] = await Promise.all([
+      lat != null && lng != null
+        ? this.liveSeeds.getLocalEventSeeds(lat, lng, { accessibilityRequired })
+        : Promise.resolve<SeedOpportunity[]>([]),
+      lat != null && lng != null
+        ? this.liveSeeds.getExplorerPinSeeds(lat, lng)
+        : Promise.resolve<SeedOpportunity[]>([]),
+      this.liveSeeds.getPriceDropSeeds(userId, allDests),
+    ]);
+
+    const localSeeds: SeedOpportunity[] =
+      liveEventSeeds.length > 0 || livePinSeeds.length > 0
+        ? [...liveEventSeeds, ...livePinSeeds]
+        : [FALLBACK_LOCAL_SEED];
+
+    const seedList: SeedOpportunity[] = [
+      ...localSeeds,
+      ...FALLBACK_LONG_DISTANCE_SEEDS,
+      ...liveDropSeeds,
+    ];
+
     const now     = new Date();
     const results: MatchResult[] = [];
     let   excluded = 0;
 
-    for (const seed of STUB_SEEDS) {
+    for (const seed of seedList) {
       // Tier gate: skip types not available on this tier
       if (!tierConfig.allowedTypes.includes(seed.type)) continue;
 
@@ -337,12 +345,12 @@ export class MatchingService {
       });
     }
 
-    // Tier gate: show LONG_HAUL / LONG_WAY_ROUND as upgrade prompts for lower tiers
+    // Tier gate: show locked types as upgrade prompts using static fallback seeds
     if (tier === 'GUEST' || tier === 'PREMIUM') {
       const lockedTypes: OpportunityType[] = tier === 'GUEST'
         ? ['WEEK_HOLIDAY', 'LONG_HAUL', 'LAST_MINUTE', 'LONG_WAY_ROUND', 'PRICE_DROP_MATCH']
         : ['LONG_HAUL', 'LONG_WAY_ROUND'];
-      for (const seed of STUB_SEEDS) {
+      for (const seed of FALLBACK_LONG_DISTANCE_SEEDS) {
         if (lockedTypes.includes(seed.type) && results.length < tierConfig.maxResults + 2) {
           results.push({
             id:              opportunityId(seed.type + ':locked', seed.destinationCode),

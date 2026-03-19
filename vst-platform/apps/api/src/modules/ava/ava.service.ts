@@ -53,10 +53,13 @@ import {
   AvaMode,
   AvaAction,
 } from './dto/ava.dto';
+import { MatchingService } from '../matching/matching.service';
+import { MembershipTier } from '@prisma/client';
 
 // ── Keyword-based intent classifier (Phase 5 stub) ────────────────────────────
 
 const INTENT_PATTERNS: Array<{ intent: AvaIntent; keywords: string[] }> = [
+  { intent: 'OPPORTUNITY_QUERY',  keywords: ['where should i go', 'recommend', 'suggest a trip', 'what fits my', 'free time', 'availability', 'where can i go', 'trip ideas', 'what should i book'] },
   { intent: 'VISA_QUERY',         keywords: ['visa', 'entry', 'require', 'passport', 'border'] },
   { intent: 'SAFETY_QUERY',       keywords: ['safe', 'danger', 'advisory', 'sos', 'emergency', 'risk'] },
   { intent: 'BOOKING_QUERY',      keywords: ['flight', 'hotel', 'book', 'reservation', 'check-in', 'checkout'] },
@@ -172,6 +175,13 @@ function buildCannedResponse(
         ],
       };
 
+    case 'OPPORTUNITY_QUERY':
+      // Handled live by AvaService.query() — buildCannedResponse is not called for this intent
+      return {
+        reply:       `Let me check what matches your preferences and availability…`,
+        suggestions: [],
+      };
+
     default:
       return {
         reply:       `I'm Ava, your Voyage Smart Travel assistant. I can help with flights, hotels, visa requirements, safety, local events, and translation. What do you need?`,
@@ -191,18 +201,31 @@ function buildCannedResponse(
 export class AvaService {
   private readonly logger = new Logger(AvaService.name);
 
+  constructor(private readonly matching: MatchingService) {}
+
   /**
    * Process a user message and return Ava's structured response.
    *
    * Phase 5: rule-based intent + canned replies.
-   * Phase 6: Claude claude-haiku-4-5 intent → Claude claude-sonnet-4-6 with tool use.
+   * Phase 6: OPPORTUNITY_QUERY routes to live MatchingService results.
+   *          Other intents remain as canned responses pending Claude tool-use (Phase 6 cont.)
    */
-  async query(userId: string, dto: AvaQueryDto): Promise<AvaResponseDto> {
+  async query(
+    userId: string,
+    dto:    AvaQueryDto,
+    tier:   MembershipTier = MembershipTier.GUEST,
+  ): Promise<AvaResponseDto> {
     const intent = classifyIntent(dto.message);
     const mode   = dto.context.mode;
 
     this.logger.debug(`Ava query user=${userId} intent=${intent} mode=${mode}`);
 
+    // ── Live opportunity matching ────────────────────────────────────────────
+    if (intent === 'OPPORTUNITY_QUERY') {
+      return this.handleOpportunityQuery(userId, tier, mode, dto);
+    }
+
+    // ── Canned responses for all other intents ───────────────────────────────
     const { reply, suggestions, disclaimer, contextUpdates } =
       buildCannedResponse(intent, mode, dto.context);
 
@@ -213,7 +236,65 @@ export class AvaService {
       suggestions:    suggestions ?? [],
       contextUpdates: contextUpdates ?? undefined,
       disclaimer:     disclaimer ?? undefined,
-      sources:        [],   // Phase 6: populated from tool call results
+      sources:        [],
+    };
+  }
+
+  private async handleOpportunityQuery(
+    userId: string,
+    tier:   MembershipTier,
+    mode:   AvaMode,
+    dto:    AvaQueryDto,
+  ): Promise<AvaResponseDto> {
+    const queryMode = mode === 'LOCAL' ? 'LOCAL' : 'LONG_DISTANCE';
+    const lat = dto.context.location?.lat;
+    const lng = dto.context.location?.lng;
+
+    const { opportunities } = await this.matching.getOpportunities(
+      userId,
+      tier,
+      { mode: queryMode, limit: 3, ...(lat !== undefined && lng !== undefined ? { lat, lng } : {}) },
+    );
+
+    const eligible = opportunities.filter(o => !o.requiresUpgrade);
+
+    if (eligible.length === 0) {
+      const upgradePrompt = opportunities.some(o => o.requiresUpgrade)
+        ? ' Upgrade to Premium to unlock personalised matches.'
+        : '';
+
+      return {
+        reply:       `I couldn't find any matching opportunities right now. Try updating your destination preferences or availability windows.${upgradePrompt}`,
+        intent:      'OPPORTUNITY_QUERY',
+        mode,
+        suggestions: [
+          { label: 'Update preferences',    type: 'DEEP_LINK', value: '/preferences' },
+          { label: 'Add availability',      type: 'DEEP_LINK', value: '/preferences/availability' },
+        ],
+        sources: [],
+      };
+    }
+
+    const lines = eligible
+      .map(o => `• ${o.destinationName}${o.priceHint ? ` — ${o.priceHint}` : ''} (${o.score}% match)`)
+      .join('\n');
+
+    const actions: AvaAction[] = eligible.flatMap(o =>
+      (o.actions ?? []).slice(0, 1).map((a: { label: string; url?: string; deepLink?: string }) => ({
+        label: a.label,
+        type:  a.url ? 'URL' : 'DEEP_LINK',
+        value: a.url ?? a.deepLink ?? '/matching',
+      } as AvaAction)),
+    ).slice(0, 4);
+
+    return {
+      reply:       `Here are your top matches:\n\n${lines}`,
+      intent:      'OPPORTUNITY_QUERY',
+      mode,
+      suggestions: actions.length > 0 ? actions : [
+        { label: 'View all matches', type: 'DEEP_LINK', value: '/matching' },
+      ],
+      sources: [],
     };
   }
 

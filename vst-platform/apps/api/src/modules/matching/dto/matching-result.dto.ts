@@ -98,3 +98,23 @@ export interface MatchingQueryOptions {
   lat?:       number;          // user latitude (LOCAL mode)
   lng?:       number;          // user longitude (LOCAL mode)
 }
+
+// ── Seed opportunity (internal engine type) ───────────────────────────────────
+// The raw input to the scoring engine. Produced by LiveSeedService (live data)
+// and by the static FALLBACK_SEEDS array (stub data when no live seeds exist).
+
+export interface SeedOpportunity {
+  type:             OpportunityType;
+  destinationCode:  string;
+  destinationName:  string;
+  tripType?:        string;
+  estimatedDays?:   number;
+  priceHint?:       string;
+  isLastMinute:     boolean;
+  daysUntilDepart?: number;
+  sourceId?:        string;           // DB id of originating event / pin / alert
+  latitude?:        number;           // populated for LOCAL_DISCOVERY seeds
+  longitude?:       number;
+  affiliateUrl?:    string;
+  accessibilityFeatures?: string[];   // first-class — surfaces in MatchResult
+}

@@ -43,6 +43,7 @@ model User {
   subscriptions            Subscription[]
   destinationPreferences   UserDestinationPreference[]
   availabilityWindows      UserAvailabilityWindow[]
+  longWayRoundRoutes       LongWayRoundRoute[]
 
   @@map("users")
 }
@@ -666,3 +667,76 @@ enum LocalEventCategory {
   ART
   FESTIVAL
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRAVEL RADAR (Phase 6)
+// Lightweight signal store. Signals are ingested from external triggers
+// (price APIs, trending data, visa changes, event cluster detection) and
+// fanned out to relevant users' weekly Travel Radar digests.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model RadarSignal {
+  id              String          @id @default(cuid())
+  type            RadarSignalType
+  destinationCode String          // ISO 3166-1 alpha-2 or IATA city code
+  destinationName String?
+  payload         Json            // type-specific data (dropPct, eventCount, etc.)
+  strength        Int             @default(50)  // 0–100 signal strength / relevance
+  expiresAt       DateTime?       // stale after this date
+  createdAt       DateTime        @default(now())
+
+  @@index([destinationCode])
+  @@index([type, createdAt])
+  @@map("radar_signals")
+}
+
+enum RadarSignalType {
+  PRICE_DROP        // significant fare/hotel price drop
+  TRENDING_DEST     // destination trending (search volume / social)
+  EVENT_CLUSTER     // multiple events at a location this week
+  VIRAL_PIN         // explorer pin with high engagement
+  VISA_CHANGE       // visa requirements eased → new opportunity
+  SAFETY_CHANGE     // advisory lifted → destination opens up
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LONG WAY ROUND (Phase 6 scaffold — route planning)
+// Multi-stop journey builder. Architecture only — route arbitrage and
+// booking integration deferred to Phase 7.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model LongWayRoundRoute {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String?            // user-given name: "Asia Loop 2026"
+  status      LongWayRoundStatus @default(DRAFT)
+  totalDays   Int?               // sum of stop durations
+  budgetGbp   Int?               // total trip budget in pence
+  notes       String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  stops       LongWayRoundStop[]
+
+  @@map("long_way_round_routes")
+}
+
+model LongWayRoundStop {
+  id              String            @id @default(cuid())
+  routeId         String
+  route           LongWayRoundRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  position        Int               // 1-based; determines travel order
+  destinationCode String            // ISO 3166-1 alpha-2 or IATA city code
+  destinationName String?
+  durationDays    Int?              // planned days at this stop
+  arrivalAfter    DateTime?         // earliest acceptable arrival date
+  isFlexible      Boolean           @default(true)
+  notes           String?
+  createdAt       DateTime          @default(now())
+
+  @@unique([routeId, position])
+  @@map("long_way_round_stops")
+}
+
+enum LongWayRoundStatus { DRAFT PLANNED BOOKED COMPLETED ABANDONED }

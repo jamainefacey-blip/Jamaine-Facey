@@ -21,6 +21,7 @@ import { AvaService } from './ava.service';
 import { AvaQueryDto, AvaMode } from './dto/ava.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { MembershipTier } from '@prisma/client';
 
 @Controller('ava')
 @UseGuards(ClerkAuthGuard)
@@ -40,7 +41,8 @@ export class AvaController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: AvaQueryDto,
   ) {
-    return this.avaService.query(user.id, dto);
+    const tier = user.membership?.tier ?? MembershipTier.GUEST;
+    return this.avaService.query(user.id, dto, tier);
   }
 
   /**
