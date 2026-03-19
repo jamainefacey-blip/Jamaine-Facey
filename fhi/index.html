@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Fraud Help Index — Report, search, and track fraud cases" />
+  <title>Fraud Help Index</title>
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="header-logo">FHI</div>
+        <div class="header-title">Fraud Help Index</div>
+        <div class="header-right">
+          <button id="role-toggle" class="role-toggle role-reporter">Reporter</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content — views render here -->
+    <main class="app-main" id="app-main">
+      <div class="loading">Loading…</div>
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="app-nav" id="app-nav">
+      <button class="nav-item active" data-view="feed">
+        <span class="nav-icon">📋</span> Feed
+      </button>
+      <button class="nav-item" data-view="search">
+        <span class="nav-icon">🔍</span> Search
+      </button>
+      <button class="nav-item" data-view="report">
+        <span class="nav-icon">🚨</span> Report
+      </button>
+      <button class="nav-item" data-view="moderation" id="nav-mod">
+        <span class="nav-icon">🛡️</span> Moderate
+      </button>
+    </nav>
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
