@@ -7,12 +7,15 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "ts-node seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0"
   },
   "devDependencies": {
-    "prisma": "^5.10.0"
+    "prisma": "^5.10.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.3.0"
   }
 }

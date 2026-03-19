@@ -22,6 +22,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
     TravelRadarService,
     LongWayRoundService,
   ],
-  exports:     [MatchingService, TravelRadarService],   // TravelRadarService exported for future subsystem ingestion
+  exports:     [MatchingService, MatchingRunnerService, TravelRadarService],
 })
 export class MatchingModule {}
