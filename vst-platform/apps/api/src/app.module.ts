@@ -27,6 +27,8 @@ import { EventsModule }        from './modules/events/events.module';
 import { PartnersModule }      from './modules/partners/partners.module';
 import { AvaModule }           from './modules/ava/ava.module';
 import { TranslationModule }   from './modules/translation/translation.module';
+import { PreferencesModule }   from './modules/preferences/preferences.module';
+import { MatchingModule }      from './modules/matching/matching.module';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { TranslationModule }   from './modules/translation/translation.module';
     PartnersModule,
     AvaModule,
     TranslationModule,
+    PreferencesModule,
+    MatchingModule,
   ],
 })
 export class AppModule {}

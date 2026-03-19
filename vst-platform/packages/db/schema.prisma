@@ -29,18 +29,20 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  profile         UserProfile?
-  preferences     UserPreferences?
-  membership      Membership?
-  safetyContacts  SafetyContact[]
-  passport        Passport?
-  bookings        Booking[]
-  sosEvents       SosEvent[]
-  priceAlerts     PriceAlert[]
-  reviews         Review[]
-  notifications   Notification[]
-  payments        Payment[]
-  subscriptions   Subscription[]
+  profile                  UserProfile?
+  preferences              UserPreferences?
+  membership               Membership?
+  safetyContacts           SafetyContact[]
+  passport                 Passport?
+  bookings                 Booking[]
+  sosEvents                SosEvent[]
+  priceAlerts              PriceAlert[]
+  reviews                  Review[]
+  notifications            Notification[]
+  payments                 Payment[]
+  subscriptions            Subscription[]
+  destinationPreferences   UserDestinationPreference[]
+  availabilityWindows      UserAvailabilityWindow[]
 
   @@map("users")
 }
@@ -63,34 +65,100 @@ model UserProfile {
 }
 
 model UserPreferences {
-  id                  String      @id @default(cuid())
-  userId              String      @unique
-  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Travel
-  preferredCabinClass CabinClass  @default(ECONOMY)
-  preferredCurrency   String      @default("GBP")
-  preferredLanguage   String      @default("en")
-  budgetRange         BudgetRange @default(MODERATE)
+  id                  String          @id @default(cuid())
+  userId              String          @unique
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Travel basics ──────────────────────────────────────────────────────────
+  preferredCabinClass CabinClass      @default(ECONOMY)
+  preferredCurrency   String          @default("GBP")
+  preferredLanguage   String          @default("en")
+  budgetRange         BudgetRange     @default(MODERATE)
+  budgetMinGbp        Int?            // per-person min budget in pence (overrides BudgetRange for matching)
+  budgetMaxGbp        Int?            // per-person max budget in pence
   travelStyle         TravelStyle[]
-  // Accessibility
-  requiresWheelchair  Boolean     @default(false)
-  requiresAssistance  Boolean     @default(false)
+
+  // ── Trip-type preferences (matching engine) ────────────────────────────────
+  tripTypes           TripType[]      // e.g. [SHORT_BREAK, CITY_BREAK]
+  stayTypes           StayType[]      // e.g. [HOTEL, APARTMENT]
+  transportModes      TransportMode[] // e.g. [FLIGHT, TRAIN]
+  minTripDays         Int?            // shortest acceptable trip length
+  maxTripDays         Int?            // longest acceptable trip length
+
+  // ── Accessibility ──────────────────────────────────────────────────────────
+  requiresWheelchair  Boolean         @default(false)
+  requiresAssistance  Boolean         @default(false)
   dietaryRequirements String[]
   accessibilityNotes  String?
-  // Notifications
-  emailAlerts         Boolean     @default(true)
-  smsAlerts           Boolean     @default(false)
-  pushNotifications   Boolean     @default(true)
-  priceAlertThreshold Float?      // % price drop to trigger alert
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+
+  // ── Notification preferences ───────────────────────────────────────────────
+  emailAlerts             Boolean     @default(true)
+  smsAlerts               Boolean     @default(false)
+  pushNotifications       Boolean     @default(true)
+  priceAlertThreshold     Float?      // % price drop to trigger alert
+  opportunityAlerts       Boolean     @default(true)   // new: matching engine results
+  lastMinuteAlerts        Boolean     @default(false)  // new: < 14 days to departure
+  longWayRoundAlerts      Boolean     @default(false)  // new: multi-stop itinerary suggestions
+  travelRadarAlerts       Boolean     @default(true)   // new: travel radar summaries (weekly digest)
+  localDiscoveryAlerts    Boolean     @default(true)   // new: nearby events / explorer pins
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
   @@map("user_preferences")
 }
 
-enum CabinClass    { ECONOMY PREMIUM_ECONOMY BUSINESS FIRST }
-enum BudgetRange   { BUDGET MODERATE PREMIUM LUXURY }
-enum TravelStyle   { ADVENTURE LUXURY CULTURAL BEACH FAMILY SOLO BUSINESS BACKPACKER }
+// ── Destination preferences ────────────────────────────────────────────────────
+// Stores preferred, dream, and excluded destinations per user.
+// Used by the matching engine to surface and suppress opportunities.
+
+model UserDestinationPreference {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationCode String              // ISO 3166-1 alpha-2 country code OR IATA city code
+  type            DestinationPrefType
+  note            String?             // user memo: "honeymoon someday", "avoid — bad experience"
+  addedAt         DateTime            @default(now())
+
+  @@unique([userId, destinationCode, type])
+  @@map("user_destination_preferences")
+}
+
+// ── Availability windows ───────────────────────────────────────────────────────
+// Date ranges when the user is free to travel.
+// Multiple windows per user (e.g. Easter + Summer + Christmas).
+// The matching engine cross-references these against trip duration preferences.
+
+model UserAvailabilityWindow {
+  id             String           @id @default(cuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label          String?          // e.g. "Easter 2026", "Summer hols", "Flexible Oct"
+  startDate      DateTime         // earliest departure date
+  endDate        DateTime         // latest return date
+  isFlexible     Boolean          @default(false)
+  flexDaysBefore Int              @default(0)  // allow this many days before startDate
+  flexDaysAfter  Int              @default(0)  // allow this many days after endDate
+  minTripDays    Int?             // window-specific min trip length (overrides global)
+  maxTripDays    Int?             // window-specific max trip length (overrides global)
+  windowType     AvailabilityType @default(TENTATIVE)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("user_availability_windows")
+}
+
+enum CabinClass            { ECONOMY PREMIUM_ECONOMY BUSINESS FIRST }
+enum BudgetRange           { BUDGET MODERATE PREMIUM LUXURY }
+enum TravelStyle           { ADVENTURE LUXURY CULTURAL BEACH FAMILY SOLO BUSINESS BACKPACKER }
+enum DestinationPrefType   { PREFERRED DREAM EXCLUDED }
+enum TripType              { SHORT_BREAK WEEKEND WEEK_HOLIDAY LONG_HAUL BACKPACKING CITY_BREAK CRUISE ROAD_TRIP LAST_MINUTE LONG_WAY_ROUND }
+enum StayType              { HOTEL HOSTEL APARTMENT VILLA CAMPING BOUTIQUE ALL_INCLUSIVE }
+enum TransportMode         { FLIGHT TRAIN BUS FERRY DRIVE }
+enum AvailabilityType      { CONFIRMED TENTATIVE }
+enum OpportunityType       { LOCAL_DISCOVERY SHORT_BREAK WEEK_HOLIDAY LONG_HAUL LAST_MINUTE LONG_WAY_ROUND PRICE_DROP_MATCH }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SAFETY SYSTEM
@@ -411,6 +479,9 @@ enum NotificationType {
   PASSPORT_EXPIRY
   TRAVEL_ADVISORY
   MEMBERSHIP_RENEWAL
+  OPPORTUNITY_MATCH      // matching engine surfaced a trip opportunity
+  TRAVEL_RADAR           // weekly travel radar digest
+  LOCAL_DISCOVERY        // nearby events / pins based on location + prefs
   SYSTEM
 }
 
