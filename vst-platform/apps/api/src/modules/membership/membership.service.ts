@@ -125,7 +125,7 @@ export class MembershipService {
 
   constructor(private readonly prisma: PrismaService) {
     if (process.env.STRIPE_SECRET_KEY) {
-      this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-04-10' });
+      this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
     } else {
       this.logger.warn('STRIPE_SECRET_KEY missing — Stripe features DISABLED');
     }

@@ -250,7 +250,7 @@ export class MatchingRunnerService {
             score:           o.score,
             actions:         o.actions,
           })),
-        },
+        } as any,
       },
     });
 

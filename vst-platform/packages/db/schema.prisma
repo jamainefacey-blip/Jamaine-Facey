@@ -15,7 +15,11 @@ datasource db {
 // USERS & AUTH
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum UserRole { USER MODERATOR ADMIN }
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
 
 model User {
   id               String   @id @default(cuid())
@@ -151,15 +155,74 @@ model UserAvailabilityWindow {
   @@map("user_availability_windows")
 }
 
-enum CabinClass            { ECONOMY PREMIUM_ECONOMY BUSINESS FIRST }
-enum BudgetRange           { BUDGET MODERATE PREMIUM LUXURY }
-enum TravelStyle           { ADVENTURE LUXURY CULTURAL BEACH FAMILY SOLO BUSINESS BACKPACKER }
-enum DestinationPrefType   { PREFERRED DREAM EXCLUDED }
-enum TripType              { SHORT_BREAK WEEKEND WEEK_HOLIDAY LONG_HAUL BACKPACKING CITY_BREAK CRUISE ROAD_TRIP LAST_MINUTE LONG_WAY_ROUND }
-enum StayType              { HOTEL HOSTEL APARTMENT VILLA CAMPING BOUTIQUE ALL_INCLUSIVE }
-enum TransportMode         { FLIGHT TRAIN BUS FERRY DRIVE }
-enum AvailabilityType      { CONFIRMED TENTATIVE }
-enum OpportunityType       { LOCAL_DISCOVERY SHORT_BREAK WEEK_HOLIDAY LONG_HAUL LAST_MINUTE LONG_WAY_ROUND PRICE_DROP_MATCH }
+enum CabinClass {
+  ECONOMY
+  PREMIUM_ECONOMY
+  BUSINESS
+  FIRST
+}
+enum BudgetRange {
+  BUDGET
+  MODERATE
+  PREMIUM
+  LUXURY
+}
+enum TravelStyle {
+  ADVENTURE
+  LUXURY
+  CULTURAL
+  BEACH
+  FAMILY
+  SOLO
+  BUSINESS
+  BACKPACKER
+}
+enum DestinationPrefType {
+  PREFERRED
+  DREAM
+  EXCLUDED
+}
+enum TripType {
+  SHORT_BREAK
+  WEEKEND
+  WEEK_HOLIDAY
+  LONG_HAUL
+  BACKPACKING
+  CITY_BREAK
+  CRUISE
+  ROAD_TRIP
+  LAST_MINUTE
+  LONG_WAY_ROUND
+}
+enum StayType {
+  HOTEL
+  HOSTEL
+  APARTMENT
+  VILLA
+  CAMPING
+  BOUTIQUE
+  ALL_INCLUSIVE
+}
+enum TransportMode {
+  FLIGHT
+  TRAIN
+  BUS
+  FERRY
+  DRIVE
+}
+enum AvailabilityType {
+  CONFIRMED
+  TENTATIVE
+}
+enum OpportunityType {
+  LOCAL_DISCOVERY
+  SHORT_BREAK
+  WEEK_HOLIDAY
+  LONG_HAUL
+  LAST_MINUTE
+  LONG_WAY_ROUND
+  PRICE_DROP_MATCH
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SAFETY SYSTEM
@@ -205,8 +268,17 @@ model SosEvent {
   @@map("sos_events")
 }
 
-enum SosStatus  { ACTIVE ESCALATED RESOLVED FALSE_ALARM }
-enum SosTrigger { MANUAL CHECKIN_MISSED ESCALATION }
+enum SosStatus {
+  ACTIVE
+  ESCALATED
+  RESOLVED
+  FALSE_ALARM
+}
+enum SosTrigger {
+  MANUAL
+  CHECKIN_MISSED
+  ESCALATION
+}
 
 model SosContactNotification {
   id              String              @id @default(cuid())
@@ -286,7 +358,13 @@ model VisaRequirement {
   @@map("visa_requirements")
 }
 
-enum VisaType { VISA_FREE VISA_ON_ARRIVAL E_VISA VISA_REQUIRED UNKNOWN }
+enum VisaType {
+  VISA_FREE
+  VISA_ON_ARRIVAL
+  E_VISA
+  VISA_REQUIRED
+  UNKNOWN
+}
 
 model Embassy {
   id            String      @id @default(cuid())
@@ -322,8 +400,17 @@ model Membership {
   @@map("memberships")
 }
 
-enum MembershipTier   { GUEST PREMIUM VOYAGE_ELITE }
-enum MembershipStatus { ACTIVE EXPIRED CANCELLED PAUSED }
+enum MembershipTier {
+  GUEST
+  PREMIUM
+  VOYAGE_ELITE
+}
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PAUSED
+}
 
 model Subscription {
   id                   String             @id @default(cuid())
@@ -342,7 +429,13 @@ model Subscription {
   @@map("subscriptions")
 }
 
-enum SubscriptionStatus { ACTIVE PAST_DUE CANCELLED TRIALING INCOMPLETE }
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+  INCOMPLETE
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PAYMENTS
@@ -363,8 +456,17 @@ model Payment {
   @@map("payments")
 }
 
-enum PaymentStatus { PENDING SUCCEEDED FAILED REFUNDED }
-enum PaymentType   { SUBSCRIPTION BOOKING_DEPOSIT AFFILIATE_COMMISSION }
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+enum PaymentType {
+  SUBSCRIPTION
+  BOOKING_DEPOSIT
+  AFFILIATE_COMMISSION
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOKINGS
@@ -391,8 +493,18 @@ model Booking {
   @@map("bookings")
 }
 
-enum BookingType   { FLIGHT HOTEL PACKAGE }
-enum BookingStatus { PENDING CONFIRMED CANCELLED COMPLETED FAILED }
+enum BookingType {
+  FLIGHT
+  HOTEL
+  PACKAGE
+}
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  FAILED
+}
 
 model FlightBooking {
   id                String    @id @default(cuid())
@@ -486,8 +598,19 @@ enum NotificationType {
   SYSTEM
 }
 
-enum NotificationChannel { EMAIL SMS PUSH IN_APP }
-enum DeliveryStatus      { PENDING SENT DELIVERED FAILED BOUNCED }
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMMUNITY
@@ -518,7 +641,12 @@ model Review {
   @@map("reviews")
 }
 
-enum ReviewStatus { PENDING PUBLISHED HIDDEN FLAGGED }
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+  FLAGGED
+}
 
 model ReviewMedia {
   id                      String    @id @default(cuid())
@@ -535,7 +663,10 @@ model ReviewMedia {
   @@map("review_media")
 }
 
-enum MediaType { IMAGE VIDEO }
+enum MediaType {
+  IMAGE
+  VIDEO
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EXPLORER MAP
@@ -583,8 +714,21 @@ model Partner {
   @@map("partners")
 }
 
-enum PartnerType   { HOTEL AIRLINE TOUR_OPERATOR INSURANCE EXPERIENCE TRANSPORT TECHNOLOGY }
-enum PartnerStatus { PENDING ACTIVE SUSPENDED TERMINATED }
+enum PartnerType {
+  HOTEL
+  AIRLINE
+  TOUR_OPERATOR
+  INSURANCE
+  EXPERIENCE
+  TRANSPORT
+  TECHNOLOGY
+}
+enum PartnerStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
 
 model PartnerCampaign {
   id            String   @id @default(cuid())
@@ -739,4 +883,10 @@ model LongWayRoundStop {
   @@map("long_way_round_stops")
 }
 
-enum LongWayRoundStatus { DRAFT PLANNED BOOKED COMPLETED ABANDONED }
+enum LongWayRoundStatus {
+  DRAFT
+  PLANNED
+  BOOKED
+  COMPLETED
+  ABANDONED
+}

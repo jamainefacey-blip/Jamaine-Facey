@@ -1,0 +1,6 @@
+
+# Staging / local
+apps/api/.env
+packages/db/.env
+apps/api/dist/
+package-lock.json

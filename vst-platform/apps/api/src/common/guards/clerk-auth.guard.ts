@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { createClerkClient } from '@clerk/backend';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -20,12 +20,10 @@ export class ClerkAuthGuard implements CanActivate {
     }
 
     try {
-      const clerk = createClerkClient({
+      // Verify JWT against Clerk's JWKS — no DB call, cryptographic verification only
+      const payload = await verifyToken(token, {
         secretKey: process.env.CLERK_SECRET_KEY,
       });
-
-      // Verify JWT against Clerk's JWKS — no DB call, cryptographic verification only
-      const payload = await clerk.verifyToken(token);
 
       // Fetch our internal user record — attach to request for use in controllers
       const user = await this.prisma.user.findUnique({
