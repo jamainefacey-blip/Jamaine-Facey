@@ -20,6 +20,29 @@ export interface AssetSource {
   content: string;
 }
 
+// ── Source Manifest ───────────────────────────
+// Logged per run. Exact record of what was fed in.
+
+export interface SourceManifestEntry {
+  kind: AssetSource["kind"];
+  label: string;
+  charCount: number;
+  /** SHA-256 hex digest of content for dedup/audit */
+  sha256: string;
+}
+
+// ── Confidence Scoring ────────────────────────
+// Every pipeline output must carry this.
+
+export interface ConfidenceScore {
+  /** Overall signal quality of output */
+  level: "high" | "medium" | "low";
+  /** 0–100 where 100 = fully confident */
+  score: number;
+  /** Specific ambiguities, inferences, or missing signals */
+  ambiguityNotes: string[];
+}
+
 // ── Extracted System ─────────────────────────
 
 export interface ExtractedSystem {
@@ -32,6 +55,7 @@ export interface ExtractedSystem {
   techStack: string[];
   knownGaps: string[];
   extractedAt: string; // ISO timestamp
+  confidence: ConfidenceScore;
 }
 
 export interface Entity {
@@ -64,7 +88,7 @@ export interface ReconstructedArchitecture {
   layers: ArchitectureLayer[];
   dataFlows: DataFlow[];
   missingPieces: string[];
-  confidence: "high" | "medium" | "low";
+  confidence: ConfidenceScore;
 }
 
 export interface ArchitectureLayer {
@@ -88,6 +112,7 @@ export interface GapRiskReport {
   risks: Risk[];
   blockers: Blocker[];
   score: number; // 0–100, system completeness
+  confidence: ConfidenceScore;
 }
 
 export interface Gap {
@@ -124,6 +149,7 @@ export interface MonetisationReport {
   revenuePaths: RevenuePath[];
   totalAddressableMarket: string;
   recommendedLaunchPath: string;
+  confidence: ConfidenceScore;
 }
 
 export interface PricingModel {
@@ -159,6 +185,7 @@ export interface BuildSpec {
   dependencies: string[];
   testPlan: string[];
   deployChecklist: string[];
+  confidence: ConfidenceScore;
 }
 
 export interface BuildModule {
@@ -237,14 +264,27 @@ export interface OrchestratorConfig {
   defaultPipelines: PipelineId[];
   claudeModel: string;
   outputDir: string;
+  /**
+   * "analysis" (default) — read-only; build-output pipeline is blocked.
+   * "write" — full pipeline including build spec generation.
+   */
+  mode: "analysis" | "write";
+  /**
+   * false (default) — enforce single-asset per run.
+   * true  — explicitly allow multi-asset batch runs.
+   */
+  allowMultiAsset: boolean;
 }
 
 export interface OrchestratorRun {
   runId: string;
   assetIds: AssetId[];
   pipelines: PipelineId[];
+  /** Exact record of every source fed into this run */
+  sourceManifest: Record<AssetId, SourceManifestEntry[]>;
   jobs: PipelineJob[];
   startedAt: string;
   completedAt?: string;
   status: "running" | "complete" | "partial" | "failed";
+  mode: "analysis" | "write";
 }

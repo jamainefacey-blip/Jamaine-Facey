@@ -4,7 +4,7 @@
 
 import type { OrchestratorConfig, PipelineId } from "./types.ts";
 
-export const AI_LAB_VERSION = "1.0.0";
+export const AI_LAB_VERSION = "1.1.0";
 
 export const DEFAULT_CONFIG: OrchestratorConfig = {
   maxConcurrentJobs: 10,
@@ -17,6 +17,9 @@ export const DEFAULT_CONFIG: OrchestratorConfig = {
   ],
   claudeModel: "claude-sonnet-4-6",
   outputDir: "ai-lab/outputs",
+  // Safeguard defaults — must be explicitly overridden
+  mode: "analysis",       // no write operations unless caller sets "write"
+  allowMultiAsset: false, // single-asset boundary enforced by default
 };
 
 /** Full pipeline execution order for a new asset */

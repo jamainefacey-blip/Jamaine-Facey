@@ -41,8 +41,18 @@ MonetisationReport schema:
   },
   "revenuePaths": [{ "name": string, "mechanism": string, "estimatedMonthlyRevenue": string, "timeToRevenue": string, "effort": "low"|"medium"|"high" }],
   "totalAddressableMarket": string,
-  "recommendedLaunchPath": string
+  "recommendedLaunchPath": string,
+  "confidence": {
+    "level": "high"|"medium"|"low",
+    "score": number (0-100, confidence in pricing/revenue estimates),
+    "ambiguityNotes": string[] (what market data, competitor info, or system detail is missing that would sharpen estimates)
+  }
 }
+
+Confidence scoring guide:
+- high (80–100): clear product, known market, pricing well-grounded
+- medium (40–79): product partially defined, pricing directional
+- low (0–39): minimal system detail, pricing highly speculative
 `.trim();
 
 export async function runMonetisationAgent(

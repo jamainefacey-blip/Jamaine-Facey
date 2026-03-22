@@ -37,8 +37,18 @@ ExtractedSystem schema:
   "integrations": [{ "name": string, "type": "inbound"|"outbound"|"bidirectional", "protocol": "http"|"webhook"|"queue"|"sdk"|"other", "status": "live"|"planned"|"unknown" }],
   "techStack": string[],
   "knownGaps": string[],
-  "extractedAt": string
+  "extractedAt": string,
+  "confidence": {
+    "level": "high"|"medium"|"low",
+    "score": number (0-100, how complete/reliable the extraction is),
+    "ambiguityNotes": string[] (specific items that were unclear, inferred, or missing from sources)
+  }
 }
+
+Confidence scoring guide:
+- high (80–100): sources are complete, all entities/flows extracted with certainty
+- medium (40–79): partial sources, some inferences required
+- low (0–39): minimal sources, significant gaps, most entities inferred
 `.trim();
 
 export async function runExtractorAgent(

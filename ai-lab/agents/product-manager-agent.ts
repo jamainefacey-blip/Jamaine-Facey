@@ -34,8 +34,18 @@ GapRiskReport schema:
   "gaps": [{ "id": string, "area": string, "description": string, "severity": "critical"|"high"|"medium"|"low", "effort": "small"|"medium"|"large" }],
   "risks": [{ "id": string, "area": string, "description": string, "likelihood": "high"|"medium"|"low", "impact": "high"|"medium"|"low", "mitigation": string }],
   "blockers": [{ "id": string, "description": string, "dependency": string, "resolution": string }],
-  "score": number
+  "score": number,
+  "confidence": {
+    "level": "high"|"medium"|"low",
+    "score": number (0-100, how certain you are the gap/risk analysis is complete),
+    "ambiguityNotes": string[] (areas where more source material would change the findings)
+  }
 }
+
+Confidence scoring guide:
+- high (80–100): well-defined system, analysis is comprehensive
+- medium (40–79): some system areas unclear, analysis may be incomplete
+- low (0–39): minimal system definition, analysis is speculative
 `.trim();
 
 export async function runProductManagerAgent(

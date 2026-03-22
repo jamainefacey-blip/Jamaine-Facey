@@ -27,7 +27,9 @@ async function main() {
     apiKey,
     {
       ...DEFAULT_CONFIG,
-      maxConcurrentJobs: 10, // process both assets in parallel
+      maxConcurrentJobs: 10,  // process both assets in parallel
+      allowMultiAsset: true,  // explicit: this runner is intentionally multi-asset
+      mode: "analysis",       // analysis only — no write output
     },
   );
 

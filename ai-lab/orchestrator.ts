@@ -2,10 +2,16 @@
 // AI LAB — ORCHESTRATOR
 // Controls pipelines, assigns agents, manages
 // execution order across all assets.
+//
+// Hardened safeguards (v1.1):
+//   1. Asset boundary lock  — single-asset default
+//   2. Source manifest      — logged per run
+//   3. Confidence scoring   — enforced via types
+//   4. No-write default     — build-output blocked in analysis mode
+//   5. Run record           — persisted after every run
 // ─────────────────────────────────────────────
 
 import type {
-  AssetId,
   OrchestratorConfig,
   OrchestratorRun,
   PipelineId,
@@ -19,6 +25,7 @@ import { runReconstructionPipeline } from "./pipelines/asset-reconstruction.ts";
 import { runGapRiskPipeline } from "./pipelines/gap-risk-analysis.ts";
 import { runMonetisationPipeline } from "./pipelines/monetisation.ts";
 import { runBuildOutputPipeline } from "./pipelines/build-output.ts";
+import { buildSourceManifest, formatSourceManifest, persistRunRecord } from "./run-log.ts";
 import type { ExtractedSystem, ReconstructedArchitecture } from "./types.ts";
 
 // ── ID generation (Deno/edge-safe) ───────────
@@ -91,12 +98,17 @@ export async function runAsset(
   // Respect PIPELINE_SEQUENCE order even if caller provides unordered list
   const orderedPipelines = PIPELINE_SEQUENCE.filter((p) => pipelines.includes(p));
 
-  // Identify serial vs parallel segments
-  // Serial: extraction → reconstruction
-  // Parallel: gap-risk + monetisation (both depend on extraction only)
-  // Serial: build-output (depends on all)
-
   for (const pipelineId of orderedPipelines) {
+    // ── Safeguard 4: No-write default ────────────
+    // build-output generates write instructions — blocked in analysis mode
+    if (pipelineId === "build-output" && config.mode === "analysis") {
+      console.log(
+        `[ORCHESTRATOR] SAFEGUARD: build-output blocked for ${asset.id} — mode is "analysis". ` +
+        `Set config.mode = "write" to enable.`,
+      );
+      continue;
+    }
+
     const job: PipelineJob = {
       jobId: uid(),
       pipelineId,
@@ -135,10 +147,32 @@ export async function orchestrate(
   apiKey: string,
   config: OrchestratorConfig = DEFAULT_CONFIG,
 ): Promise<OrchestratorRun> {
+  // ── Safeguard 1: Asset boundary lock ─────────
+  if (assets.length > 1 && !config.allowMultiAsset) {
+    throw new Error(
+      `[ORCHESTRATOR] SAFEGUARD: ${assets.length} assets provided but allowMultiAsset is false. ` +
+      `Set config.allowMultiAsset = true to run multiple assets in one call.`,
+    );
+  }
+
+  if (assets.length === 0) {
+    throw new Error("[ORCHESTRATOR] No assets provided.");
+  }
+
   const runId = uid();
   const startedAt = now();
 
-  console.log(`[ORCHESTRATOR] Run ${runId} started — ${assets.length} asset(s), ${pipelines.length} pipeline(s)`);
+  console.log(
+    `[ORCHESTRATOR] Run ${runId} started — ` +
+    `${assets.length} asset(s), ${pipelines.length} pipeline(s), mode: ${config.mode}`,
+  );
+
+  // ── Safeguard 2: Source manifest ─────────────
+  const sourceManifest: OrchestratorRun["sourceManifest"] = {};
+  for (const asset of assets) {
+    sourceManifest[asset.id] = await buildSourceManifest(asset.id, asset.sources);
+  }
+  console.log(formatSourceManifest(sourceManifest));
 
   // Batch assets up to maxConcurrentJobs
   const allJobs: PipelineJob[] = [];
@@ -162,11 +196,16 @@ export async function orchestrate(
     runId,
     assetIds: assets.map((a) => a.id),
     pipelines,
+    sourceManifest,
     jobs: allJobs,
     startedAt,
     completedAt: now(),
     status,
+    mode: config.mode,
   };
+
+  // ── Safeguard 5: Run record ───────────────────
+  await persistRunRecord(run);
 
   console.log(`[ORCHESTRATOR] Run ${runId} ${status} — ${allJobs.length} job(s) processed`);
   return run;
@@ -187,11 +226,14 @@ function chunk<T>(arr: T[], size: number): T[][] {
 export function summariseRun(run: OrchestratorRun): string {
   const lines: string[] = [
     `Run ID : ${run.runId}`,
+    `Mode   : ${run.mode.toUpperCase()}`,
     `Status : ${run.status.toUpperCase()}`,
     `Assets : ${run.assetIds.join(", ")}`,
     `Jobs   : ${run.jobs.length} (${run.jobs.filter((j) => j.status === "complete").length} ok, ${run.jobs.filter((j) => j.status === "failed").length} failed)`,
     `Started: ${run.startedAt}`,
     `Ended  : ${run.completedAt ?? "—"}`,
+    "",
+    formatSourceManifest(run.sourceManifest),
     "",
     "Pipeline Results:",
   ];

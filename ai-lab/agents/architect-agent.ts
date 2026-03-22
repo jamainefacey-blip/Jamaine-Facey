@@ -35,8 +35,17 @@ ReconstructedArchitecture schema:
   "layers": [{ "name": string, "role": string, "components": string[] }],
   "dataFlows": [{ "from": string, "to": string, "payload": string, "trigger": string }],
   "missingPieces": string[],
-  "confidence": "high"|"medium"|"low"
+  "confidence": {
+    "level": "high"|"medium"|"low",
+    "score": number (0-100),
+    "ambiguityNotes": string[] (which layers/flows were inferred vs. confirmed from source)
+  }
 }
+
+Confidence scoring guide:
+- high (80–100): architecture fully traceable to source material
+- medium (40–79): architecture partially inferred using standard patterns
+- low (0–39): significant reconstruction from minimal signals
 `.trim();
 
 export async function runArchitectAgent(

@@ -46,8 +46,18 @@ BuildSpec schema:
   "filesToModify": [{ "path": string, "change": string, "reason": string }],
   "dependencies": string[],
   "testPlan": string[],
-  "deployChecklist": string[]
+  "deployChecklist": string[],
+  "confidence": {
+    "level": "high"|"medium"|"low",
+    "score": number (0-100, how ready-to-execute this spec is),
+    "ambiguityNotes": string[] (any spec items that require human clarification before execution)
+  }
 }
+
+Confidence scoring guide:
+- high (80–100): spec is fully executable with no human decisions required
+- medium (40–79): spec is mostly executable but some items need clarification
+- low (0–39): spec is directional; significant clarification required before coding
 `.trim();
 
 export async function runValidatorAgent(
