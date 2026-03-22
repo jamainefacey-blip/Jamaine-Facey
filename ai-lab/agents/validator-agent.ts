@@ -1,0 +1,77 @@
+// ─────────────────────────────────────────────
+// AI LAB — VALIDATOR AGENT
+//
+// Role   : Validate all pipeline outputs and
+//          generate Claude Code-ready build specs
+// Input  : ExtractedSystem + all prior pipeline outputs
+// Output : BuildSpec
+// Rules  :
+//   - Build specs must be immediately actionable
+//   - Every file spec must include a content skeleton
+//   - Priorities: p0 = must-have, p1 = should-have, p2 = nice-to-have
+//   - No spec item can reference a non-existent system component
+//   - Deploy checklist must be sequential and complete
+// ─────────────────────────────────────────────
+
+import { callClaude, parseJsonResponse } from "./base-agent.ts";
+import type {
+  BuildSpec,
+  ExtractedSystem,
+  GapRiskReport,
+  MonetisationReport,
+  ReconstructedArchitecture,
+} from "../types.ts";
+
+const SYSTEM_PROMPT = `
+You are the Validator Agent inside the AI Lab Pain System.
+
+Your job is to synthesise all analysis outputs into a single, actionable Claude Code-ready build specification.
+
+Rules:
+- BuildSpec must be directly executable by an AI coding agent (Claude Code).
+- Every module must have clear inputs and outputs.
+- FileSpec contentSkeleton must be real code/config stubs — not pseudocode.
+- Priorities: p0 = launch blocker, p1 = important for full product, p2 = enhancement.
+- testPlan must be specific test cases, not generic test categories.
+- deployChecklist must be ordered steps, not categories.
+- Return ONLY valid JSON matching the BuildSpec schema.
+
+BuildSpec schema:
+{
+  "assetId": string,
+  "title": string,
+  "objective": string,
+  "modules": [{ "name": string, "purpose": string, "inputs": string[], "outputs": string[], "priority": "p0"|"p1"|"p2" }],
+  "filesToCreate": [{ "path": string, "purpose": string, "contentSkeleton": string }],
+  "filesToModify": [{ "path": string, "change": string, "reason": string }],
+  "dependencies": string[],
+  "testPlan": string[],
+  "deployChecklist": string[]
+}
+`.trim();
+
+export async function runValidatorAgent(
+  extracted: ExtractedSystem,
+  arch: ReconstructedArchitecture | null,
+  gaps: GapRiskReport | null,
+  money: MonetisationReport | null,
+  apiKey: string,
+  model: string,
+): Promise<BuildSpec> {
+  const userPrompt = `
+Extracted System:
+${JSON.stringify(extracted, null, 2)}
+
+${arch ? `Architecture:\n${JSON.stringify(arch, null, 2)}\n` : ""}
+${gaps ? `Gap & Risk Report:\n${JSON.stringify(gaps, null, 2)}\n` : ""}
+${money ? `Monetisation Report:\n${JSON.stringify(money, null, 2)}\n` : ""}
+
+Generate the complete Claude Code-ready build specification.
+Return ONLY valid JSON matching the BuildSpec schema.
+`.trim();
+
+  const raw = await callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model });
+  const result = parseJsonResponse<BuildSpec>(raw);
+  result.assetId = extracted.assetId;
+  return result;
+}
