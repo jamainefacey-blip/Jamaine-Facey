@@ -67,5 +67,60 @@ nextAction:
 - do not rebuild backend
 - do not mutate core backend logic`,
     },
+    {
+      kind: "doc",
+      label: "VST technical alignment",
+      content: `modules:
+- auth — /v1/webhooks/clerk
+- users — profile, safety contacts, passport
+- preferences — travel, availability, destinations
+- matching — opportunities + dev triggers
+- long-way-round — routes + stops
+- ava — query + capabilities
+- notifications — feed + read routes
+- membership — plans, subscribe, portal
+- payments — stripe webhook + payments
+- booking — flights, hotels, bookings, price alerts (partial)
+- community — reviews + moderation
+- explorer — pins + media
+- events — public + admin
+- safety — sos + check-ins
+- translation — text live, image/conversation partial
+- visa — check + destinations + embassies
+- partners — partner + campaign routes
+
+endpoints:
+- POST /v1/webhooks/clerk
+- GET|PUT /v1/preferences/travel
+- GET|POST|PATCH|DELETE /v1/preferences/availability
+- GET|POST|DELETE /v1/preferences/destinations
+- GET /v1/matching/opportunities
+- POST /v1/ava/query
+- GET /v1/notifications
+- PATCH /v1/notifications/:id/read
+- PATCH /v1/notifications/read-all
+- POST /v1/membership/subscribe
+- POST /v1/webhooks/stripe
+
+matchingLogic:
+- +20 PREFERRED/DREAM destinations
+- −∞ EXCLUDED destinations
+- +15 availability overlap
+- +10 budget match
+- tier gate: GUEST=3, PREMIUM=10, VOYAGE_ELITE=50
+
+systemReality:
+- backend complete
+- frontend near-zero
+- all core value locked behind missing UI
+
+activationBlockers:
+- no api client
+- no onboarding flow
+- no opportunities dashboard
+- no Ava chat panel
+- no notification UI
+- no action handlers`,
+    },
   ]
 }
