@@ -1,13 +1,12 @@
 // ─────────────────────────────────────────────
-// AI LAB — FIRST RUN: VST + FHI
+// AI LAB — VST + FHI PARALLEL RUN
 // Runs both assets through all pipelines in parallel.
 //
-// Usage:
-//   ANTHROPIC_API_KEY=sk-... deno run --allow-net --allow-env \
-//     ai-lab/runner/run-vst-fhi.ts
+// Runtime: Node 18+ via tsx
 //
-// Outputs saved to stdout as JSON.
-// Add --json flag for full output dump.
+// Usage:
+//   ANTHROPIC_API_KEY=sk-... npx tsx ai-lab/runner/run-vst-fhi.ts
+//   ANTHROPIC_API_KEY=sk-... npx tsx ai-lab/runner/run-vst-fhi.ts --json
 // ─────────────────────────────────────────────
 
 import { orchestrate, summariseRun } from "../orchestrator.ts";
@@ -16,7 +15,7 @@ import { VST_ASSET } from "../assets/vst-seed.ts";
 import { FHI_ASSET } from "../assets/fhi-seed.ts";
 
 async function main() {
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  const apiKey = process.env["ANTHROPIC_API_KEY"];
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY environment variable required");
 
   console.log("[AI LAB] Starting VST + FHI parallel orchestration run...\n");
@@ -27,15 +26,15 @@ async function main() {
     apiKey,
     {
       ...DEFAULT_CONFIG,
-      maxConcurrentJobs: 10,  // process both assets in parallel
-      allowMultiAsset: true,  // explicit: this runner is intentionally multi-asset
-      mode: "analysis",       // analysis only — no write output
+      maxConcurrentJobs: 10,
+      allowMultiAsset: true,
+      mode: "analysis",
     },
   );
 
   console.log("\n" + summariseRun(run));
 
-  if (Deno.args.includes("--json")) {
+  if (process.argv.includes("--json")) {
     console.log("\n--- FULL OUTPUT ---");
     console.log(JSON.stringify(run, null, 2));
   }
@@ -43,5 +42,5 @@ async function main() {
 
 main().catch((err) => {
   console.error("[AI LAB] Fatal:", err.message);
-  Deno.exit(1);
+  process.exit(1);
 });

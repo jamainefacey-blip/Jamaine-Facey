@@ -6,14 +6,13 @@
 // Builds a SHA-256 source manifest for every run.
 // Persists the full OrchestratorRun as a JSON record.
 //
-// Persistence strategy:
-//   - Deno CLI context  → writes to ai-lab/runs/<runId>.json
-//   - Edge function     → skips file write (no fs access), returns record
+// Runtime: Node 18+ (uses fs/promises + webcrypto)
 // ─────────────────────────────────────────────
 
+import { promises as fs } from "fs";
 import type { AssetId, AssetSource, OrchestratorRun, SourceManifestEntry } from "./types.ts";
 
-// ── SHA-256 hashing (Web Crypto — Deno + Edge safe) ──
+// ── SHA-256 hashing (Web Crypto — Node 18+ safe) ──
 
 async function sha256(text: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -43,29 +42,15 @@ export async function buildSourceManifest(
 
 /**
  * Persists the full OrchestratorRun to ai-lab/runs/<runId>.json.
- * Silently no-ops in environments without filesystem access (edge functions).
  */
 export async function persistRunRecord(run: OrchestratorRun): Promise<void> {
-  // Detect Deno fs availability without importing Deno types globally
-  const deno = (globalThis as Record<string, unknown>)["Deno"] as
-    | { writeTextFile?: (path: string, data: string) => Promise<void>; mkdir?: (path: string, opts: { recursive: boolean }) => Promise<void> }
-    | undefined;
-
-  if (!deno?.writeTextFile) {
-    // Edge function context — fs not available, skip
-    console.log(`[RUN-LOG] Run ${run.runId} — persisting skipped (no fs access)`);
-    return;
-  }
-
   const dir = "ai-lab/runs";
-  const path = `${dir}/${run.runId}.json`;
+  const filePath = `${dir}/${run.runId}.json`;
 
   try {
-    if (deno.mkdir) {
-      await deno.mkdir(dir, { recursive: true });
-    }
-    await deno.writeTextFile(path, JSON.stringify(run, null, 2));
-    console.log(`[RUN-LOG] Run ${run.runId} persisted → ${path}`);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(run, null, 2), "utf8");
+    console.log(`[RUN-LOG] Run ${run.runId} persisted → ${filePath}`);
   } catch (err) {
     // Never block a run over a logging failure
     console.warn(`[RUN-LOG] Failed to persist run record: ${err}`);
