@@ -1,0 +1,558 @@
+{
+  "runId": "668ca062-b5d3-4bf1-b8bd-c97518e3426c",
+  "assetIds": [
+    "vst"
+  ],
+  "pipelines": [
+    "asset-extraction",
+    "asset-reconstruction",
+    "gap-risk-analysis",
+    "monetisation",
+    "build-output"
+  ],
+  "sourceManifest": {
+    "vst": [
+      {
+        "kind": "doc",
+        "label": "VST approved seed summary",
+        "charCount": 1530,
+        "sha256": "f9fcd20d5dc3c694618635b3dda1126e496ddb45df2ee346c652d7d124bab193"
+      },
+      {
+        "kind": "doc",
+        "label": "VST technical alignment",
+        "charCount": 1463,
+        "sha256": "0c19f84112af59ee0a1f53b3bd225abb1ec62eef153698b21abd2be51b499ff5"
+      }
+    ]
+  },
+  "jobs": [
+    {
+      "jobId": "610c3d94-f8b6-43ec-88ff-dd3e47aa6235",
+      "pipelineId": "asset-extraction",
+      "assetId": "vst",
+      "status": "complete",
+      "startedAt": "2026-03-23T16:05:37.868Z",
+      "completedAt": "2026-03-23T16:05:54.387Z",
+      "output": {
+        "assetId": "vst",
+        "name": "Voyage Smart Travels",
+        "purpose": "AI-powered business travel management platform for UK SMEs and public sector.",
+        "coreEntities": [
+          {
+            "name": "User",
+            "type": "model",
+            "description": "Core user with profile and preferences",
+            "attributes": [
+              "preferences",
+              "membership",
+              "safetyContacts"
+            ]
+          },
+          {
+            "name": "Ava",
+            "type": "agent",
+            "description": "AI agent for travel opportunity queries",
+            "attributes": [
+              "query",
+              "capabilities"
+            ]
+          },
+          {
+            "name": "Matching",
+            "type": "service",
+            "description": "Scores and surfaces travel opportunities",
+            "attributes": [
+              "destinationScore",
+              "availabilityScore",
+              "tierGate"
+            ]
+          },
+          {
+            "name": "Membership",
+            "type": "model",
+            "description": "Subscription plan with tier gating",
+            "attributes": [
+              "plan",
+              "stripeSubscription",
+              "tier"
+            ]
+          },
+          {
+            "name": "Notification",
+            "type": "model",
+            "description": "User notification feed entries",
+            "attributes": [
+              "read",
+              "type",
+              "payload"
+            ]
+          }
+        ],
+        "flows": [
+          {
+            "name": "User Signup",
+            "steps": [
+              "Clerk auth event",
+              "POST /v1/webhooks/clerk",
+              "User record created",
+              "Preferences initialised"
+            ],
+            "trigger": "Clerk signup webhook",
+            "output": "User created in system",
+            "status": "complete"
+          },
+          {
+            "name": "Opportunity Matching",
+            "steps": [
+              "Nightly evaluation runs",
+              "Scores destinations/availability/budget",
+              "Applies tier gate",
+              "Populates opportunities feed"
+            ],
+            "trigger": "Nightly scheduled job",
+            "output": "Ranked opportunities per user",
+            "status": "complete"
+          },
+          {
+            "name": "Ava Query",
+            "steps": [
+              "User submits query",
+              "POST /v1/ava/query",
+              "Ava processes and responds"
+            ],
+            "trigger": "User chat input",
+            "output": "Travel opportunity response",
+            "status": "partial"
+          },
+          {
+            "name": "Membership Subscribe",
+            "steps": [
+              "POST /v1/membership/subscribe",
+              "Stripe checkout created",
+              "POST /v1/webhooks/stripe",
+              "Membership tier updated"
+            ],
+            "trigger": "User selects plan",
+            "output": "Membership activated",
+            "status": "complete"
+          },
+          {
+            "name": "Notifications Feed",
+            "steps": [
+              "GET /v1/notifications",
+              "PATCH /v1/notifications/:id/read"
+            ],
+            "trigger": "User opens notification panel",
+            "output": "Feed displayed, items marked read",
+            "status": "partial"
+          }
+        ],
+        "integrations": [
+          {
+            "name": "Clerk",
+            "type": "inbound",
+            "protocol": "webhook",
+            "status": "live"
+          },
+          {
+            "name": "Stripe",
+            "type": "bidirectional",
+            "protocol": "webhook",
+            "status": "live"
+          },
+          {
+            "name": "Translation API",
+            "type": "outbound",
+            "protocol": "http",
+            "status": "live"
+          },
+          {
+            "name": "Visa Check Service",
+            "type": "outbound",
+            "protocol": "http",
+            "status": "unknown"
+          },
+          {
+            "name": "Booking (flights/hotels)",
+            "type": "outbound",
+            "protocol": "http",
+            "status": "planned"
+          }
+        ],
+        "techStack": [
+          "Node.js (backend)",
+          "Clerk (auth)",
+          "Stripe (payments)",
+          "Next.js (frontend, near-zero)",
+          "REST API (v1)",
+          "PostgreSQL (inferred)",
+          "AI/LLM (Ava agent)",
+          "Webhook infrastructure"
+        ],
+        "knownGaps": [
+          "Frontend components entirely missing",
+          "No API client layer built",
+          "No onboarding or preferences UI",
+          "Ava chat panel not implemented",
+          "Booking module only partial"
+        ],
+        "extractedAt": "2026-03-23T16:05:54.387Z",
+        "confidence": {
+          "level": "medium",
+          "score": 72,
+          "ambiguityNotes": [
+            "Database technology not explicitly stated",
+            "LLM provider for Ava not specified",
+            "Booking integration provider unknown",
+            "Translation API vendor not named",
+            "Visa service data source not identified"
+          ]
+        }
+      }
+    },
+    {
+      "jobId": "c52fdb6a-4212-49f0-bacc-2e9807228d16",
+      "pipelineId": "asset-reconstruction",
+      "assetId": "vst",
+      "status": "complete",
+      "startedAt": "2026-03-23T16:05:54.387Z",
+      "completedAt": "2026-03-23T16:06:02.291Z",
+      "output": {
+        "assetId": "vst",
+        "systemOverview": "AI-powered business travel management platform for UK SMEs via REST API.",
+        "layers": [
+          {
+            "name": "Frontend",
+            "role": "User interface and interaction layer",
+            "components": [
+              "Next.js App",
+              "Ava Chat Panel",
+              "Notifications UI"
+            ]
+          },
+          {
+            "name": "Backend API",
+            "role": "Core REST API and business logic",
+            "components": [
+              "REST API v1",
+              "Matching Service",
+              "Webhook Handler"
+            ]
+          },
+          {
+            "name": "Data",
+            "role": "Persistence and state management",
+            "components": [
+              "PostgreSQL DB",
+              "User Models",
+              "Membership Models"
+            ]
+          },
+          {
+            "name": "Integrations",
+            "role": "External service connectors",
+            "components": [
+              "Clerk Auth",
+              "Stripe Payments",
+              "Booking/Visa APIs"
+            ]
+          }
+        ],
+        "dataFlows": [
+          {
+            "from": "Clerk",
+            "to": "Backend API",
+            "payload": "Signup webhook event",
+            "trigger": "New user registration"
+          },
+          {
+            "from": "Backend API",
+            "to": "PostgreSQL DB",
+            "payload": "User record and preferences",
+            "trigger": "Clerk webhook received"
+          },
+          {
+            "from": "Backend API",
+            "to": "Stripe",
+            "payload": "Checkout session request",
+            "trigger": "User selects membership plan"
+          },
+          {
+            "from": "Stripe",
+            "to": "Backend API",
+            "payload": "Payment confirmation webhook",
+            "trigger": "Stripe payment success"
+          },
+          {
+            "from": "Backend API",
+            "to": "Frontend",
+            "payload": "Ranked opportunities feed",
+            "trigger": "Nightly matching job completes"
+          }
+        ],
+        "missingPieces": [
+          "Frontend UI entirely unbuilt",
+          "No API client layer",
+          "Ava chat panel missing",
+          "Booking integration provider unknown",
+          "LLM provider for Ava unspecified"
+        ],
+        "confidence": {
+          "level": "medium",
+          "score": 72,
+          "ambiguityNotes": [
+            "Database type inferred as PostgreSQL",
+            "LLM provider for Ava not confirmed",
+            "Booking API vendor unidentified",
+            "Translation API vendor unnamed",
+            "Frontend layer inferred from Next.js stack"
+          ]
+        }
+      }
+    },
+    {
+      "jobId": "e4754ebf-5152-44bf-9b47-6ca6c5e5145d",
+      "pipelineId": "gap-risk-analysis",
+      "assetId": "vst",
+      "status": "complete",
+      "startedAt": "2026-03-23T16:06:02.291Z",
+      "completedAt": "2026-03-23T16:06:14.928Z",
+      "output": {
+        "assetId": "vst",
+        "gaps": [
+          {
+            "id": "G1",
+            "area": "Frontend",
+            "description": "Next.js UI entirely absent; no user-facing screens",
+            "severity": "critical",
+            "effort": "large"
+          },
+          {
+            "id": "G2",
+            "area": "Ava Agent",
+            "description": "Ava chat panel and LLM integration incomplete",
+            "severity": "high",
+            "effort": "medium"
+          },
+          {
+            "id": "G3",
+            "area": "Booking",
+            "description": "Flights/hotels booking integration only planned",
+            "severity": "high",
+            "effort": "large"
+          },
+          {
+            "id": "G4",
+            "area": "Visa Check",
+            "description": "Visa Check Service integration status unknown",
+            "severity": "medium",
+            "effort": "small"
+          },
+          {
+            "id": "G5",
+            "area": "Notifications",
+            "description": "Notification creation triggers not defined",
+            "severity": "medium",
+            "effort": "small"
+          }
+        ],
+        "risks": [
+          {
+            "id": "R1",
+            "area": "Booking",
+            "description": "No booking provider confirmed; revenue path blocked",
+            "likelihood": "high",
+            "impact": "high",
+            "mitigation": "Select and contract provider immediately"
+          },
+          {
+            "id": "R5",
+            "area": "Frontend",
+            "description": "Zero UI means no user testing or validation possible",
+            "likelihood": "high",
+            "impact": "high",
+            "mitigation": "Prioritise MVP screen set immediately"
+          },
+          {
+            "id": "R3",
+            "area": "Compliance",
+            "description": "Visa data source unverified; incorrect data risk",
+            "likelihood": "medium",
+            "impact": "high",
+            "mitigation": "Validate and certify Visa service source"
+          },
+          {
+            "id": "R4",
+            "area": "Membership",
+            "description": "Stripe webhook failure leaves tier in stale state",
+            "likelihood": "medium",
+            "impact": "high",
+            "mitigation": "Implement idempotent webhook retry handling"
+          },
+          {
+            "id": "R2",
+            "area": "Ava Agent",
+            "description": "LLM provider undefined; cost and latency unknown",
+            "likelihood": "high",
+            "impact": "medium",
+            "mitigation": "Evaluate and fix LLM provider now"
+          }
+        ],
+        "blockers": [
+          {
+            "id": "B1",
+            "description": "No frontend blocks all user flows",
+            "dependency": "Next.js UI build",
+            "resolution": "Assign frontend resource now"
+          },
+          {
+            "id": "B2",
+            "description": "Booking provider unselected",
+            "dependency": "Third-party booking API",
+            "resolution": "Evaluate and contract provider"
+          },
+          {
+            "id": "B3",
+            "description": "Ava LLM provider unspecified",
+            "dependency": "LLM vendor selection",
+            "resolution": "Decide provider and integrate"
+          },
+          {
+            "id": "B4",
+            "description": "Visa service status unknown",
+            "dependency": "Visa Check Service",
+            "resolution": "Confirm provider and test"
+          },
+          {
+            "id": "B5",
+            "description": "Opportunity feed untestable without UI",
+            "dependency": "Frontend + Matching service",
+            "resolution": "Build minimal feed screen"
+          }
+        ],
+        "score": 22,
+        "confidence": {
+          "level": "medium",
+          "score": 68,
+          "ambiguityNotes": [
+            "LLM provider for Ava unknown; integration complexity unclear",
+            "Booking provider unknown; effort estimate unreliable",
+            "Visa service data source unconfirmed",
+            "Database schema not explicitly provided",
+            "Notification trigger sources not documented"
+          ]
+        }
+      }
+    },
+    {
+      "jobId": "7128f521-3db4-404a-a97f-111131f45064",
+      "pipelineId": "monetisation",
+      "assetId": "vst",
+      "status": "complete",
+      "startedAt": "2026-03-23T16:06:14.928Z",
+      "completedAt": "2026-03-23T16:06:30.530Z",
+      "output": {
+        "assetId": "vst",
+        "positioning": "Tier-gated AI travel matching for UK SMEs and public sector, replacing manual booking overhead.",
+        "targetSegments": [
+          "UK SME travel managers",
+          "Public sector procurement",
+          "Frequent business travellers",
+          "HR/ops teams",
+          "Travel management companies"
+        ],
+        "pricingModel": {
+          "type": "freemium",
+          "tiers": [
+            {
+              "name": "Starter",
+              "price": "£0/month",
+              "features": [
+                "Basic opportunity feed",
+                "Email notifications",
+                "1 user"
+              ],
+              "targetUser": "Solo traveller / trial"
+            },
+            {
+              "name": "Business",
+              "price": "£49/seat/month",
+              "features": [
+                "Full Ava AI queries",
+                "Tier-unlocked opportunities",
+                "Up to 25 users"
+              ],
+              "targetUser": "SME travel manager"
+            },
+            {
+              "name": "Enterprise",
+              "price": "£299/month flat",
+              "features": [
+                "Unlimited users",
+                "API access",
+                "Priority matching"
+              ],
+              "targetUser": "Public sector / large SME"
+            }
+          ],
+          "currency": "GBP"
+        },
+        "revenuePaths": [
+          {
+            "name": "SaaS Subscriptions",
+            "mechanism": "Monthly recurring via Stripe tiers",
+            "estimatedMonthlyRevenue": "~£2,000–£15,000 MRR at early scale",
+            "timeToRevenue": "30 days",
+            "effort": "low"
+          },
+          {
+            "name": "Seat-based Upsell",
+            "mechanism": "In-app prompt to upgrade seat count",
+            "estimatedMonthlyRevenue": "~£500–£3,000 estimated incremental",
+            "timeToRevenue": "60 days",
+            "effort": "low"
+          },
+          {
+            "name": "White-label Licensing",
+            "mechanism": "Platform licensed to TMCs or resellers",
+            "estimatedMonthlyRevenue": "~£1,000–£8,000 estimated per partner",
+            "timeToRevenue": "6 months",
+            "effort": "medium"
+          },
+          {
+            "name": "Booking Commission",
+            "mechanism": "Affiliate/API cut per completed booking",
+            "estimatedMonthlyRevenue": "~£500–£5,000 estimated at moderate volume",
+            "timeToRevenue": "3 months",
+            "effort": "high"
+          },
+          {
+            "name": "Public Sector Contracts",
+            "mechanism": "Annual licence deal via procurement framework",
+            "estimatedMonthlyRevenue": "~£5,000–£25,000 estimated per contract",
+            "timeToRevenue": "6 months",
+            "effort": "high"
+          }
+        ],
+        "totalAddressableMarket": "UK SME business travel market estimated ~£7B annually; SaaS tooling addressable slice ~£200–400M estimated.",
+        "recommendedLaunchPath": "Launch Business tier via Stripe immediately targeting SME travel managers with waitlist.",
+        "confidence": {
+          "level": "medium",
+          "score": 58,
+          "ambiguityNotes": [
+            "Frontend unbuilt — no sellable UI yet",
+            "Booking integration provider unknown",
+            "Ava completeness unclear — core selling point",
+            "No competitor pricing benchmarks provided",
+            "Public sector compliance requirements unknown"
+          ]
+        }
+      }
+    }
+  ],
+  "startedAt": "2026-03-23T16:05:37.853Z",
+  "completedAt": "2026-03-23T16:06:30.531Z",
+  "status": "complete",
+  "mode": "analysis"
+}

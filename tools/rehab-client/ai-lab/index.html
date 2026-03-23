@@ -64,6 +64,9 @@
       letter-spacing: .12em;
       color: var(--muted);
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .panel-body { padding: 14px; }
 
@@ -151,11 +154,29 @@
       vertical-align: top;
     }
     .stage-table tr:last-child td { border-bottom: none; }
-    .t-pass { color: var(--pass); }
-    .t-fail { color: var(--fail); }
-    .t-warn { color: var(--warn); }
+    .t-pass  { color: var(--pass); }
+    .t-fail  { color: var(--fail); }
+    .t-warn  { color: var(--warn); }
     .t-muted { color: var(--muted); }
-    .err-cell { max-width: 320px; word-break: break-word; color: var(--fail); font-size: 11px; }
+    .err-cell { max-width: 260px; word-break: break-word; color: var(--fail); font-size: 11px; }
+
+    /* ── rerun button ── */
+    .btn-rerun {
+      padding: 2px 10px;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      background: rgba(248,81,73,.1);
+      color: var(--fail);
+      border: 1px solid rgba(248,81,73,.35);
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-rerun:hover { background: rgba(248,81,73,.2); }
+    .btn-rerun:disabled { opacity: .4; cursor: not-allowed; }
 
     /* ── meta row ── */
     .meta-row {
@@ -231,6 +252,38 @@
     .log-err  { color: var(--fail); }
     .log-warn { color: var(--warn); }
 
+    /* ── history list ── */
+    .history-list { list-style: none; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(48,54,61,.4);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item:hover { color: var(--accent); }
+    .history-item.active { color: var(--accent); }
+    .hist-id { color: var(--muted); font-size: 10px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hist-time { color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .hist-dur  { color: var(--muted); font-size: 10px; white-space: nowrap; min-width: 42px; text-align: right; }
+    .history-empty { font-size: 11px; color: var(--muted); }
+
+    /* ── rerun controls ── */
+    #rerun-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: rgba(248,81,73,.04);
+      border-radius: 0 0 6px 6px;
+      font-size: 11px;
+    }
+    #rerun-bar-label { color: var(--fail); flex: 1; }
+
     /* ── misc ── */
     .hidden { display: none !important; }
     .failed-lbl { font-size: 12px; color: var(--fail); }
@@ -264,7 +317,7 @@
 
   <!-- ── INPUT ── -->
   <div class="panel" id="panel-input">
-    <div class="panel-head">Asset Input</div>
+    <div class="panel-head"><span>Asset Input</span></div>
     <div class="panel-body">
       <div class="field-row">
         <div>
@@ -280,16 +333,29 @@
         <label for="source-content">Source content — seed, description, or docs</label>
         <textarea id="source-content" placeholder="Paste asset description or seed content…"></textarea>
       </div>
-      <button id="run-btn" type="button">▶ Run Pipeline</button>
+      <button id="run-btn" type="button">&#9654; Run Pipeline</button>
+    </div>
+  </div>
+
+  <!-- ── RUN HISTORY ── -->
+  <div class="panel" id="panel-history">
+    <div class="panel-head">
+      <span>Run History</span>
+      <span id="history-count" class="badge bi" style="font-size:10px"></span>
+    </div>
+    <div class="panel-body">
+      <ul class="history-list" id="history-list">
+        <li class="history-empty" id="history-loading">Loading&#8230;</li>
+      </ul>
     </div>
   </div>
 
   <!-- ── STATUS ── -->
   <div class="panel hidden" id="panel-status">
-    <div class="panel-head">Status</div>
+    <div class="panel-head"><span>Status</span></div>
     <div class="panel-body">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
-        <span id="run-badge" class="badge bi">—</span>
+        <span id="run-badge" class="badge bi">&#8212;</span>
         <span id="failed-lbl" class="failed-lbl"></span>
       </div>
       <table class="stage-table">
@@ -298,327 +364,35 @@
           <th>Result</th>
           <th>Retries</th>
           <th>Error</th>
+          <th>Action</th>
         </tr></thead>
         <tbody id="stage-tbody"></tbody>
       </table>
       <div class="meta-row" id="meta-row"></div>
     </div>
+    <!-- rerun bar — shown only when a failed stage is active -->
+    <div class="hidden" id="rerun-bar">
+      <span id="rerun-bar-label"></span>
+      <button id="rerun-bar-btn" type="button" class="btn-rerun">&#8635; Rerun Failed Stage</button>
+    </div>
   </div>
 
   <!-- ── OUTPUT ── -->
   <div class="panel hidden" id="panel-output">
-    <div class="panel-head">Pipeline Output</div>
+    <div class="panel-head"><span>Pipeline Output</span></div>
     <div class="panel-body" id="output-body"></div>
   </div>
 
   <!-- ── LOG ── -->
   <div class="panel hidden" id="panel-log">
-    <div class="panel-head">Run Log</div>
+    <div class="panel-head"><span>Run Log</span></div>
     <div class="panel-body" id="log-body"></div>
   </div>
 
 </div>
-<script>
-(function () {
-  'use strict';
-
-  // ── VST default seed ──────────────────────────────────────────────────────
-  var VST_SEED = [
-    'identity: Voyage Smart Travels (VST), Layer 2 Commercial Platform, UK jurisdiction,',
-    'Pain System asset, positioned for UK SMEs and public sector travel management.',
-    '',
-    'productDefinition: AI-powered business travel management platform. Reduces manual',
-    'booking, compliance checking, and expense reconciliation. Pricing: Starter £49/month,',
-    'Business £149/month, Enterprise custom. Target: UK SMEs, travel managers, procurement.',
-    '',
-    'currentSystem: backend confirmed working. Frontend near-zero. Major blockers are',
-    'frontend activation, not backend rebuild.',
-    '',
-    'dataModels: User, UserPreferences, UserAvailabilityWindow, UserDestinationPreference,',
-    'Membership, Notification, TravelPolicy, ApprovalWorkflow, BookingRequest, Booking,',
-    'Expense, Receipt, ComplianceCheck, AuditLog, Vendor, VendorContract, Invoice, Payment.',
-    '',
-    'confirmedFlows: user registration + onboarding, policy configuration, booking request',
-    'creation, multi-stage approval workflow, booking confirmation + notifications, expense',
-    'claim + receipt attachment, compliance check against policy, reporting + audit log.',
-    '',
-    'integrations: GDS/Amadeus (planned), Stripe (payment), calendar sync (planned),',
-    'HR system (planned), accounting export (planned).',
-    '',
-    'techStack: Next.js frontend (planned), Node.js backend, PostgreSQL, Redis, Claude API.',
-    '',
-    'knownGaps: frontend build not started, no mobile app, GDS integration incomplete,',
-    'expense OCR not built, reporting dashboard missing.'
-  ].join('\n');
-
-  document.getElementById('source-content').value = VST_SEED;
-
-  // ── DOM refs ──────────────────────────────────────────────────────────────
-  function $(id) { return document.getElementById(id); }
-
-  var btn         = $('run-btn');
-  var panelStatus = $('panel-status');
-  var panelOutput = $('panel-output');
-  var panelLog    = $('panel-log');
-
-  // ── Pipelines to run (analysis mode — build-output excluded) ─────────────
-  var PIPELINES = [
-    'asset-extraction',
-    'asset-reconstruction',
-    'gap-risk-analysis',
-    'monetisation'
-  ];
-
-  var STAGE_LABELS = {
-    'asset-extraction':     'Extraction',
-    'asset-reconstruction': 'Reconstruction',
-    'gap-risk-analysis':    'Gap & Risk',
-    'monetisation':         'Monetisation'
-  };
-
-  // ── Run ───────────────────────────────────────────────────────────────────
-  btn.addEventListener('click', function () {
-    var assetId   = $('asset-id').value.trim()    || 'vst';
-    var assetName = $('asset-name').value.trim()  || assetId;
-    var content   = $('source-content').value.trim();
-
-    if (!content) { alert('Source content is required.'); return; }
-
-    setLoading(true);
-    reset();
-
-    var payload = {
-      assetId:   assetId,
-      assetName: assetName,
-      sources:   [{ kind: 'doc', label: 'Operator input', content: content }],
-      pipelines: PIPELINES
-    };
-
-    fetch('/ai-lab/run', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    })
-    .then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok || data.error) {
-          renderError(data.error || ('HTTP ' + res.status));
-        } else {
-          renderRun(data);
-        }
-      });
-    })
-    .catch(function (err) {
-      renderError(err.message || 'Network error');
-    })
-    .finally(function () {
-      setLoading(false);
-    });
-  });
-
-  // ── Loading state ─────────────────────────────────────────────────────────
-  function setLoading(on) {
-    btn.disabled = on;
-    btn.innerHTML = on
-      ? '<span class="spin"></span>Running\u2026'
-      : '\u25b6 Run Pipeline';
-    $('header-status').textContent = on ? 'running\u2026' : 'idle';
-  }
-
-  function reset() {
-    panelStatus.classList.add('hidden');
-    panelOutput.classList.add('hidden');
-    panelLog.classList.add('hidden');
-    $('stage-tbody').innerHTML = '';
-    $('meta-row').innerHTML    = '';
-    $('output-body').innerHTML = '';
-    $('log-body').innerHTML    = '';
-    $('failed-lbl').textContent = '';
-  }
-
-  // ── Escape HTML ───────────────────────────────────────────────────────────
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function fmtTime(iso) {
-    if (!iso) return '\u2014';
-    try { return new Date(iso).toLocaleTimeString(); }
-    catch (_) { return iso; }
-  }
-
-  // ── Render full run ───────────────────────────────────────────────────────
-  function renderRun(run) {
-    var jobs   = run.jobs   || [];
-    var status = run.status || 'unknown';
-
-    // STATUS PANEL ────────────────────────────────────────────────────────────
-    panelStatus.classList.remove('hidden');
-
-    var badgeEl = $('run-badge');
-    if (status === 'complete') {
-      badgeEl.className = 'badge bp'; badgeEl.textContent = 'PASS';
-    } else if (status === 'partial') {
-      badgeEl.className = 'badge bw'; badgeEl.textContent = 'PARTIAL';
-    } else if (status === 'failed') {
-      badgeEl.className = 'badge bf'; badgeEl.textContent = 'FAIL';
-    } else {
-      badgeEl.className = 'badge bb'; badgeEl.textContent = status.toUpperCase();
-    }
-
-    var firstFailed   = null;
-    var totalRetries  = 0;
-    var tbody         = $('stage-tbody');
-    tbody.innerHTML   = '';
-
-    jobs.forEach(function (job) {
-      var retries = (job.retries || []).length;
-      totalRetries += retries;
-      var ok = job.status === 'complete';
-      if (!ok && !firstFailed) firstFailed = job.pipelineId;
-
-      var errText = job.error
-        ? '<span class="err-cell" title="' + esc(job.error) + '">'
-            + esc(job.error.length > 70 ? job.error.slice(0, 70) + '\u2026' : job.error)
-            + '</span>'
-        : '<span class="t-muted">\u2014</span>';
-
-      var row = document.createElement('tr');
-      row.innerHTML =
-        '<td>' + esc(job.pipelineId) + '</td>' +
-        '<td class="' + (ok ? 't-pass' : 't-fail') + '">' + (ok ? '\u2713 pass' : '\u2717 fail') + '</td>' +
-        '<td class="' + (retries > 0 ? 't-warn' : 't-muted') + '">' + retries + '</td>' +
-        '<td>' + errText + '</td>';
-      tbody.appendChild(row);
-    });
-
-    if (firstFailed) {
-      $('failed-lbl').textContent = '\u2191 failed at: ' + firstFailed;
-    }
-
-    // Meta row
-    var started   = run.startedAt;
-    var completed = run.completedAt;
-    var durationMs = started && completed
-      ? ((new Date(completed) - new Date(started)) / 1000).toFixed(1) + 's'
-      : '\u2014';
-
-    var meta = $('meta-row');
-    meta.innerHTML =
-      metaItem('Run ID',      run.runId || '\u2014', '') +
-      metaItem('Started',     fmtTime(started),      '') +
-      metaItem('Completed',   fmtTime(completed),    '') +
-      metaItem('Duration',    durationMs,            '') +
-      metaItem('Retries',     totalRetries,          totalRetries > 0 ? 't-warn' : 't-muted') +
-      metaItem('Mode',        run.mode || '\u2014',  '');
-
-    $('header-status').textContent = status;
-
-    // OUTPUT PANEL ────────────────────────────────────────────────────────────
-    panelOutput.classList.remove('hidden');
-    var outBody = $('output-body');
-    outBody.innerHTML = '';
-
-    jobs.forEach(function (job) {
-      var ok      = job.status === 'complete';
-      var label   = STAGE_LABELS[job.pipelineId] || job.pipelineId;
-      var retries = (job.retries || []).length;
-
-      var retryBadge = retries > 0
-        ? ' <span class="badge bw" style="font-size:10px">' + retries + ' retr' + (retries === 1 ? 'y' : 'ies') + '</span>'
-        : '';
-
-      var inner;
-      if (ok && job.output) {
-        inner = '<pre class="json-out">' + esc(JSON.stringify(job.output, null, 2)) + '</pre>';
-      } else if (job.error) {
-        inner = '<div class="err-out">' + esc(job.error) + '</div>';
-      } else {
-        inner = '<div class="err-out" style="color:var(--muted)">No output.</div>';
-      }
-
-      var details = document.createElement('details');
-      details.innerHTML =
-        '<summary>' +
-          '<span class="chevron">\u25b6</span>' +
-          '<span class="sum-label ' + (ok ? 't-pass' : 't-fail') + '">' + esc(label) + '</span>' +
-          '<span class="badge ' + (ok ? 'bp' : 'bf') + '" style="font-size:10px">' + (ok ? 'ok' : 'failed') + '</span>' +
-          retryBadge +
-        '</summary>' +
-        inner;
-      outBody.appendChild(details);
-    });
-
-    // LOG PANEL ───────────────────────────────────────────────────────────────
-    panelLog.classList.remove('hidden');
-    var logBody = $('log-body');
-    logBody.innerHTML = '';
-
-    appendLog(logBody, 'runId',     run.runId     || '\u2014', '');
-    appendLog(logBody, 'assetIds',  (run.assetIds || []).join(', '), '');
-    appendLog(logBody, 'started',   run.startedAt  || '\u2014', '');
-    appendLog(logBody, 'completed', run.completedAt || '\u2014', '');
-    appendLog(logBody, 'status',    status, '');
-
-    // Per-job errors
-    var errJobs = jobs.filter(function (j) { return j.error; });
-    if (errJobs.length) {
-      logBody.appendChild(spacer());
-      errJobs.forEach(function (j) {
-        appendLog(logBody, 'error [' + j.pipelineId + ']', j.error, 'log-err');
-      });
-    }
-
-    // Retry reasons
-    var reasons = [];
-    jobs.forEach(function (j) {
-      (j.retries || []).forEach(function (r) {
-        reasons.push('[' + j.pipelineId + '] attempt ' + r.attempt + ': ' + r.error);
-      });
-    });
-    if (reasons.length) {
-      logBody.appendChild(spacer());
-      reasons.forEach(function (r) {
-        appendLog(logBody, 'retry', r, 'log-warn');
-      });
-    }
-  }
-
-  // ── Error path ────────────────────────────────────────────────────────────
-  function renderError(msg) {
-    panelLog.classList.remove('hidden');
-    var logBody = $('log-body');
-    logBody.innerHTML = '';
-    appendLog(logBody, 'error', msg, 'log-err');
-    $('header-status').textContent = 'error';
-  }
-
-  // ── Small helpers ─────────────────────────────────────────────────────────
-  function metaItem(key, val, cls) {
-    return '<div class="meta-item"><span class="meta-k">' + esc(key) + '</span>'
-         + '<span class="' + cls + '">' + esc(String(val)) + '</span></div>';
-  }
-
-  function appendLog(container, key, val, cls) {
-    var div = document.createElement('div');
-    div.className = 'log-line';
-    div.innerHTML =
-      '<span class="log-k">' + esc(key) + '</span>' +
-      '<span class="log-v ' + cls + '">' + esc(String(val)) + '</span>';
-    container.appendChild(div);
-  }
-
-  function spacer() {
-    var d = document.createElement('div');
-    d.style.height = '8px';
-    return d;
-  }
-
-}());
+<!-- PART 2: JS injected below -->
+<script id="app-script">
+/* placeholder — JS loads in PART 2 */
 </script>
 </body>
 </html>
