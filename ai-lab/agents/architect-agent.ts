@@ -29,11 +29,12 @@ OUTPUT RULES (CRITICAL — VIOLATION BREAKS THE PIPELINE):
 - No trailing text after the closing }.
 
 BREVITY RULES (CRITICAL — reduces truncation risk):
-- Keep systemOverview to 1–2 short sentences maximum.
-- Each layer "role" must be ≤10 words. Each component name ≤5 words.
-- Each dataFlow "payload" and "trigger" ≤8 words.
-- ambiguityNotes entries ≤10 words each.
-- missingPieces entries ≤8 words each.
+- systemOverview: exactly 1 sentence, max 20 words.
+- layers: max 4 total. Each "role" ≤8 words. Each component name ≤4 words.
+- components per layer: max 3.
+- dataFlows: max 5 total. Each "payload" and "trigger" ≤6 words.
+- missingPieces: max 5 entries, each ≤6 words.
+- ambiguityNotes: max 5 entries, each ≤8 words.
 - Omit all filler, adjectives, and elaboration. Be terse.
 
 ARCHITECTURE RULES:
