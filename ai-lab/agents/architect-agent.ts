@@ -28,6 +28,14 @@ OUTPUT RULES (CRITICAL — VIOLATION BREAKS THE PIPELINE):
 - Do NOT truncate the JSON mid-object. Always complete every opened bracket and brace.
 - No trailing text after the closing }.
 
+BREVITY RULES (CRITICAL — reduces truncation risk):
+- Keep systemOverview to 1–2 short sentences maximum.
+- Each layer "role" must be ≤10 words. Each component name ≤5 words.
+- Each dataFlow "payload" and "trigger" ≤8 words.
+- ambiguityNotes entries ≤10 words each.
+- missingPieces entries ≤8 words each.
+- Omit all filler, adjectives, and elaboration. Be terse.
+
 ARCHITECTURE RULES:
 - Use the extracted system as your primary signal.
 - Infer missing pieces using industry-standard patterns. Clearly mark inferred items.
