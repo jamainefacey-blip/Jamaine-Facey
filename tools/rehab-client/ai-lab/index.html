@@ -392,7 +392,443 @@
 </div>
 <!-- PART 2: JS injected below -->
 <script id="app-script">
-/* placeholder — JS loads in PART 2 */
+(function () {
+  'use strict';
+
+  // ── constants ─────────────────────────────────────────────────────────────
+  var RUNS_INDEX = 'runs/runs-index.json';
+  var RUNS_DIR   = 'runs/';
+
+  var STAGE_LABELS = {
+    'asset-extraction':     'Extraction',
+    'asset-reconstruction': 'Reconstruction',
+    'gap-risk-analysis':    'Gap & Risk',
+    'monetisation':         'Monetisation',
+    'build-output':         'Build Output'
+  };
+
+  var PIPELINES = [
+    'asset-extraction',
+    'asset-reconstruction',
+    'gap-risk-analysis',
+    'monetisation'
+  ];
+
+  var VST_SEED = [
+    'identity: Voyage Smart Travels (VST), Layer 2 Commercial Platform, UK jurisdiction,',
+    'Pain System asset, positioned for UK SMEs and public sector travel management.',
+    '',
+    'productDefinition: AI-powered business travel management platform. Reduces manual',
+    'booking, compliance checking, and expense reconciliation. Pricing: Starter £49/month,',
+    'Business £149/month, Enterprise custom. Target: UK SMEs, travel managers, procurement.',
+    '',
+    'currentSystem: backend confirmed working. Frontend near-zero. Major blockers are',
+    'frontend activation, not backend rebuild.',
+    '',
+    'dataModels: User, UserPreferences, Membership, Notification, TravelPolicy,',
+    'ApprovalWorkflow, BookingRequest, Booking, Expense, Receipt, ComplianceCheck, AuditLog.',
+    '',
+    'confirmedFlows: user registration, policy configuration, booking request creation,',
+    'multi-stage approval workflow, booking confirmation, expense claim, compliance check.',
+    '',
+    'integrations: GDS/Amadeus (planned), Stripe (payment), calendar sync (planned),',
+    'HR system (planned), accounting export (planned).',
+    '',
+    'techStack: Next.js frontend (planned), Node.js backend, PostgreSQL, Redis, Claude API.',
+    '',
+    'knownGaps: frontend build not started, no mobile app, GDS integration incomplete,',
+    'expense OCR not built, reporting dashboard missing.'
+  ].join('\n');
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+
+  var btn          = $('run-btn');
+  var panelStatus  = $('panel-status');
+  var panelOutput  = $('panel-output');
+  var panelLog     = $('panel-log');
+  var rerunBar     = $('rerun-bar');
+  var rerunBarBtn  = $('rerun-bar-btn');
+  var rerunBarLbl  = $('rerun-bar-label');
+
+  // active state
+  var _activeRunId      = null;
+  var _activeFailedJob  = null;
+
+  // ── bootstrap ─────────────────────────────────────────────────────────────
+  $('source-content').value = VST_SEED;
+  loadHistory();
+
+  // ── history ───────────────────────────────────────────────────────────────
+  function loadHistory() {
+    fetch(RUNS_INDEX)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP ' + r.status); })
+      .then(renderHistory)
+      .catch(function () {
+        $('history-loading').textContent = 'Could not load run history.';
+      });
+  }
+
+  function renderHistory(runs) {
+    var list = $('history-list');
+    list.innerHTML = '';
+
+    if (!runs || !runs.length) {
+      var empty = document.createElement('li');
+      empty.className = 'history-empty';
+      empty.textContent = 'No runs recorded yet.';
+      list.appendChild(empty);
+      $('history-count').textContent = '0';
+      return;
+    }
+
+    $('history-count').textContent = runs.length;
+
+    runs.forEach(function (entry) {
+      var li = document.createElement('li');
+      li.className = 'history-item';
+      li.dataset.runId = entry.runId;
+
+      var statusCls = entry.status === 'complete' ? 'bp'
+                    : entry.status === 'failed'   ? 'bf'
+                    : entry.status === 'partial'  ? 'bw' : 'bi';
+
+      var dur = entry.durationMs != null
+        ? (entry.durationMs / 1000).toFixed(1) + 's'
+        : '\u2014';
+
+      var ts = entry.startedAt
+        ? fmtTime(entry.startedAt)
+        : '\u2014';
+
+      li.innerHTML =
+        '<span class="badge ' + statusCls + '" style="font-size:10px">' + esc(entry.status) + '</span>' +
+        '<span class="hist-id" title="' + esc(entry.runId) + '">' + esc(entry.runId) + '</span>' +
+        '<span class="hist-time">' + esc(ts) + '</span>' +
+        '<span class="hist-dur">' + esc(dur) + '</span>';
+
+      li.addEventListener('click', function () {
+        selectHistoryItem(li, entry.runId);
+      });
+
+      list.appendChild(li);
+    });
+  }
+
+  function selectHistoryItem(el, runId) {
+    var items = document.querySelectorAll('.history-item');
+    items.forEach(function (i) { i.classList.remove('active'); });
+    el.classList.add('active');
+    loadRun(runId);
+  }
+
+  function loadRun(runId) {
+    _activeRunId = runId;
+    reset();
+    $('header-status').textContent = 'loading\u2026';
+
+    fetch(RUNS_DIR + runId + '.json')
+      .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP ' + r.status); })
+      .then(renderRun)
+      .catch(function (err) {
+        renderError('Failed to load run ' + runId + ': ' + err);
+      });
+  }
+
+  // ── run button ────────────────────────────────────────────────────────────
+  btn.addEventListener('click', function () {
+    var assetId   = $('asset-id').value.trim()   || 'vst';
+    var assetName = $('asset-name').value.trim() || assetId;
+    var content   = $('source-content').value.trim();
+    if (!content) { alert('Source content is required.'); return; }
+
+    setLoading(true);
+    reset();
+
+    var payload = {
+      assetId:   assetId,
+      assetName: assetName,
+      sources:   [{ kind: 'doc', label: 'Operator input', content: content }],
+      pipelines: PIPELINES
+    };
+
+    fetch('/ai-lab/run', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok || data.error) renderError(data.error || 'HTTP ' + res.status);
+        else { renderRun(data); loadHistory(); }
+      });
+    })
+    .catch(function (err) { renderError(err.message || 'Network error'); })
+    .finally(function () { setLoading(false); });
+  });
+
+  // ── rerun failed stage ────────────────────────────────────────────────────
+  rerunBarBtn.addEventListener('click', function () {
+    if (!_activeFailedJob) return;
+    var assetId  = $('asset-id').value.trim()   || 'vst';
+    var content  = $('source-content').value.trim();
+
+    rerunBarBtn.disabled = true;
+    rerunBarBtn.innerHTML = '<span class="spin"></span>Rerunning\u2026';
+
+    var payload = {
+      assetId:   assetId,
+      assetName: $('asset-name').value.trim() || assetId,
+      sources:   [{ kind: 'doc', label: 'Operator input', content: content }],
+      pipelines: [_activeFailedJob.pipelineId]
+    };
+
+    fetch('/ai-lab/run', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data.error) renderError(data.error);
+      else { renderRun(data); loadHistory(); }
+    })
+    .catch(function (err) { renderError(err.message || 'Network error'); })
+    .finally(function () {
+      rerunBarBtn.disabled = false;
+      rerunBarBtn.innerHTML = '&#8635; Rerun Failed Stage';
+    });
+  });
+
+  // ── render run ────────────────────────────────────────────────────────────
+  function renderRun(run) {
+    var jobs   = run.jobs   || [];
+    var status = run.status || 'unknown';
+
+    // status badge
+    panelStatus.classList.remove('hidden');
+    var badgeEl = $('run-badge');
+    if      (status === 'complete') { badgeEl.className = 'badge bp'; badgeEl.textContent = 'PASS'; }
+    else if (status === 'partial')  { badgeEl.className = 'badge bw'; badgeEl.textContent = 'PARTIAL'; }
+    else if (status === 'failed')   { badgeEl.className = 'badge bf'; badgeEl.textContent = 'FAIL'; }
+    else                            { badgeEl.className = 'badge bb'; badgeEl.textContent = status.toUpperCase(); }
+
+    // stage table
+    var tbody        = $('stage-tbody');
+    tbody.innerHTML  = '';
+    var firstFailed  = null;
+    var totalRetries = 0;
+
+    jobs.forEach(function (job) {
+      var retries = Array.isArray(job.retries) ? job.retries.length : 0;
+      totalRetries += retries;
+      var ok = job.status === 'complete';
+      if (!ok && !firstFailed) firstFailed = job;
+
+      var errText = job.error
+        ? '<span class="err-cell" title="' + esc(job.error) + '">'
+            + esc(job.error.length > 60 ? job.error.slice(0, 60) + '\u2026' : job.error)
+            + '</span>'
+        : '<span class="t-muted">\u2014</span>';
+
+      var actionCell = !ok
+        ? '<button class="btn-rerun" data-pipeline="' + esc(job.pipelineId) + '">&#8635; Rerun</button>'
+        : '<span class="t-muted">\u2014</span>';
+
+      var row = document.createElement('tr');
+      row.innerHTML =
+        '<td>' + esc(STAGE_LABELS[job.pipelineId] || job.pipelineId) + '</td>' +
+        '<td class="' + (ok ? 't-pass' : 't-fail') + '">' + (ok ? '\u2713 pass' : '\u2717 fail') + '</td>' +
+        '<td class="' + (retries > 0 ? 't-warn' : 't-muted') + '">' + retries + '</td>' +
+        '<td>' + errText + '</td>' +
+        '<td>' + actionCell + '</td>';
+      tbody.appendChild(row);
+    });
+
+    // wire per-row rerun buttons
+    tbody.querySelectorAll('.btn-rerun').forEach(function (btnEl) {
+      btnEl.addEventListener('click', function () {
+        var pid = btnEl.dataset.pipeline;
+        var job = jobs.find(function (j) { return j.pipelineId === pid; });
+        if (job) triggerSingleRerun(job);
+      });
+    });
+
+    // failed label + rerun bar
+    if (firstFailed) {
+      $('failed-lbl').textContent = '\u2191 failed at: ' + (STAGE_LABELS[firstFailed.pipelineId] || firstFailed.pipelineId);
+      _activeFailedJob = firstFailed;
+      rerunBarLbl.textContent = 'Failed stage: ' + (STAGE_LABELS[firstFailed.pipelineId] || firstFailed.pipelineId);
+      rerunBar.classList.remove('hidden');
+    } else {
+      _activeFailedJob = null;
+      rerunBar.classList.add('hidden');
+    }
+
+    // meta row
+    var started    = run.startedAt;
+    var completed  = run.completedAt;
+    var durationMs = started && completed
+      ? ((new Date(completed) - new Date(started)) / 1000).toFixed(1) + 's'
+      : '\u2014';
+
+    $('meta-row').innerHTML =
+      metaItem('Run ID',    run.runId       || '\u2014', '') +
+      metaItem('Started',   fmtTime(started),            '') +
+      metaItem('Completed', fmtTime(completed),          '') +
+      metaItem('Duration',  durationMs,                  '') +
+      metaItem('Retries',   totalRetries, totalRetries > 0 ? 't-warn' : 't-muted') +
+      metaItem('Mode',      run.mode        || '\u2014', '');
+
+    $('header-status').textContent = status;
+
+    // output panel
+    panelOutput.classList.remove('hidden');
+    var outBody = $('output-body');
+    outBody.innerHTML = '';
+
+    jobs.forEach(function (job) {
+      var ok      = job.status === 'complete';
+      var label   = STAGE_LABELS[job.pipelineId] || job.pipelineId;
+      var retries = Array.isArray(job.retries) ? job.retries.length : 0;
+
+      var retryBadge = retries > 0
+        ? ' <span class="badge bw" style="font-size:10px">'
+            + retries + ' retr' + (retries === 1 ? 'y' : 'ies') + '</span>'
+        : '';
+
+      var inner = ok && job.output
+        ? '<pre class="json-out">' + esc(JSON.stringify(job.output, null, 2)) + '</pre>'
+        : job.error
+          ? '<div class="err-out">' + esc(job.error) + '</div>'
+          : '<div class="err-out" style="color:var(--muted)">No output.</div>';
+
+      var det = document.createElement('details');
+      det.innerHTML =
+        '<summary>' +
+          '<span class="chevron">&#9654;</span>' +
+          '<span class="sum-label ' + (ok ? 't-pass' : 't-fail') + '">' + esc(label) + '</span>' +
+          '<span class="badge ' + (ok ? 'bp' : 'bf') + '" style="font-size:10px">' + (ok ? 'ok' : 'failed') + '</span>' +
+          retryBadge +
+        '</summary>' + inner;
+      outBody.appendChild(det);
+    });
+
+    // log panel
+    panelLog.classList.remove('hidden');
+    var logBody = $('log-body');
+    logBody.innerHTML = '';
+
+    appendLog(logBody, 'runId',     run.runId       || '\u2014', '');
+    appendLog(logBody, 'assetIds',  (run.assetIds   || []).join(', '), '');
+    appendLog(logBody, 'mode',      run.mode        || '\u2014', '');
+    appendLog(logBody, 'started',   run.startedAt   || '\u2014', '');
+    appendLog(logBody, 'completed', run.completedAt || '\u2014', '');
+    appendLog(logBody, 'status',    status, '');
+
+    jobs.forEach(function (job) {
+      var retries = Array.isArray(job.retries) ? job.retries : [];
+      appendLog(logBody,
+        'job [' + (STAGE_LABELS[job.pipelineId] || job.pipelineId) + ']',
+        job.status + (job.startedAt ? '  ' + fmtTime(job.startedAt) + ' \u2192 ' + fmtTime(job.completedAt) : ''),
+        job.status === 'complete' ? '' : 'log-warn'
+      );
+      if (job.error) {
+        appendLog(logBody, '  error', job.error, 'log-err');
+      }
+      retries.forEach(function (r) {
+        appendLog(logBody,
+          '  retry #' + r.attempt,
+          r.error || 'no detail',
+          'log-warn'
+        );
+      });
+    });
+  }
+
+  // ── single-stage rerun (inline row button) ────────────────────────────────
+  function triggerSingleRerun(job) {
+    var assetId = $('asset-id').value.trim() || 'vst';
+    var content = $('source-content').value.trim();
+
+    reset();
+    $('header-status').textContent = 'rerunning\u2026';
+
+    fetch('/ai-lab/run', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        assetId:   assetId,
+        assetName: $('asset-name').value.trim() || assetId,
+        sources:   [{ kind: 'doc', label: 'Operator input', content: content }],
+        pipelines: [job.pipelineId]
+      })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.error) renderError(data.error);
+      else { renderRun(data); loadHistory(); }
+    })
+    .catch(function (err) { renderError(err.message || 'Network error'); });
+  }
+
+  // ── error path ────────────────────────────────────────────────────────────
+  function renderError(msg) {
+    panelLog.classList.remove('hidden');
+    var logBody = $('log-body');
+    logBody.innerHTML = '';
+    appendLog(logBody, 'error', msg, 'log-err');
+    $('header-status').textContent = 'error';
+  }
+
+  // ── helpers ───────────────────────────────────────────────────────────────
+  function reset() {
+    panelStatus.classList.add('hidden');
+    panelOutput.classList.add('hidden');
+    panelLog.classList.add('hidden');
+    rerunBar.classList.add('hidden');
+    $('stage-tbody').innerHTML  = '';
+    $('meta-row').innerHTML     = '';
+    $('output-body').innerHTML  = '';
+    $('log-body').innerHTML     = '';
+    $('failed-lbl').textContent = '';
+    _activeFailedJob = null;
+  }
+
+  function setLoading(on) {
+    btn.disabled    = on;
+    btn.innerHTML   = on ? '<span class="spin"></span>Running\u2026' : '&#9654; Run Pipeline';
+    $('header-status').textContent = on ? 'running\u2026' : 'idle';
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '\u2014';
+    try { return new Date(iso).toLocaleTimeString(); } catch (_) { return iso; }
+  }
+
+  function metaItem(key, val, cls) {
+    return '<div class="meta-item"><span class="meta-k">' + esc(key) + '</span>'
+         + '<span class="' + cls + '">' + esc(String(val)) + '</span></div>';
+  }
+
+  function appendLog(container, key, val, cls) {
+    var div = document.createElement('div');
+    div.className = 'log-line';
+    div.innerHTML =
+      '<span class="log-k">' + esc(key) + '</span>' +
+      '<span class="log-v ' + cls + '">' + esc(String(val)) + '</span>';
+    container.appendChild(div);
+  }
+
+}());
 </script>
 </body>
 </html>
