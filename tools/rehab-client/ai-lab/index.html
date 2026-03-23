@@ -830,5 +830,146 @@
 
 }());
 </script>
+<script id="part3-ui">
+(function () {
+  'use strict';
+
+  /* ── copy-to-clipboard utility ─────────────────────────────────────────── */
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(function () {
+      var orig = btn.textContent;
+      btn.textContent = 'copied';
+      setTimeout(function () { btn.textContent = orig; }, 1400);
+    }).catch(function () {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      var orig = btn.textContent;
+      btn.textContent = 'copied';
+      setTimeout(function () { btn.textContent = orig; }, 1400);
+    });
+  }
+
+  /* ── inject copy button styles ─────────────────────────────────────────── */
+  var s = document.createElement('style');
+  s.textContent = [
+    '.btn-copy{padding:2px 8px;font:inherit;font-size:10px;font-weight:700;',
+    'text-transform:uppercase;letter-spacing:.07em;background:rgba(88,166,255,.08);',
+    'color:var(--accent);border:1px solid rgba(88,166,255,.25);border-radius:3px;',
+    'cursor:pointer;white-space:nowrap}',
+    '.btn-copy:hover{background:rgba(88,166,255,.16)}',
+    '.panel-head .btn-copy{margin-left:auto}'
+  ].join('');
+  document.head.appendChild(s);
+
+  /* ── auto-select latest run after history renders ───────────────────────── */
+  var _origRenderHistory = null;
+  function patchRenderHistory() {
+    var script = document.getElementById('app-script');
+    if (!script) return;
+    // Hook into history list click — observe first item appearing
+    var observer = new MutationObserver(function () {
+      var first = document.querySelector('#history-list .history-item');
+      if (first) {
+        observer.disconnect();
+        first.click();
+      }
+    });
+    var list = document.getElementById('history-list');
+    if (list) observer.observe(list, { childList: true });
+  }
+  patchRenderHistory();
+
+  /* ── keyboard navigation on history list ────────────────────────────────── */
+  document.getElementById('history-list').addEventListener('keydown', function (e) {
+    var items = Array.from(document.querySelectorAll('#history-list .history-item'));
+    if (!items.length) return;
+    var active = document.querySelector('#history-list .history-item.active');
+    var idx = active ? items.indexOf(active) : -1;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      var next = items[Math.min(idx + 1, items.length - 1)];
+      if (next) next.click();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      var prev = items[Math.max(idx - 1, 0)];
+      if (prev) prev.click();
+    }
+  });
+  document.getElementById('history-list').setAttribute('tabindex', '0');
+
+  /* ── copy run ID — injected into meta-row after render ──────────────────── */
+  var metaObserver = new MutationObserver(function () {
+    var metaRow = document.getElementById('meta-row');
+    if (!metaRow || metaRow.querySelector('.btn-copy')) return;
+    var items = metaRow.querySelectorAll('.meta-item');
+    var runIdItem = null;
+    items.forEach(function (el) {
+      if (el.textContent.indexOf('Run ID') !== -1) runIdItem = el;
+    });
+    if (!runIdItem) return;
+    var valEl = runIdItem.querySelector('span:last-child');
+    if (!valEl || valEl.textContent === '\u2014') return;
+    var runId = valEl.textContent;
+    var btn = document.createElement('button');
+    btn.className = 'btn-copy';
+    btn.textContent = 'copy id';
+    btn.style.marginLeft = '8px';
+    btn.addEventListener('click', function () { copyText(runId, btn); });
+    runIdItem.appendChild(btn);
+  });
+  metaObserver.observe(document.getElementById('meta-row'), { childList: true, subtree: true });
+
+  /* ── copy JSON output per stage ─────────────────────────────────────────── */
+  document.getElementById('output-body').addEventListener('click', function (e) {
+    if (e.target.classList.contains('btn-copy') && e.target.dataset.copyTarget) {
+      var pre = document.querySelector(e.target.dataset.copyTarget);
+      if (pre) copyText(pre.textContent, e.target);
+    }
+  });
+
+  var outObserver = new MutationObserver(function () {
+    var outBody = document.getElementById('output-body');
+    outBody.querySelectorAll('details').forEach(function (det, i) {
+      if (det.querySelector('.btn-copy')) return;
+      var pre = det.querySelector('pre.json-out');
+      if (!pre) return;
+      pre.id = pre.id || ('json-out-' + i);
+      var btn = document.createElement('button');
+      btn.className = 'btn-copy';
+      btn.textContent = 'copy json';
+      btn.dataset.copyTarget = '#' + pre.id;
+      btn.style.marginLeft = 'auto';
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        copyText(pre.textContent, btn);
+      });
+      var summary = det.querySelector('summary');
+      if (summary) summary.appendChild(btn);
+    });
+  });
+  outObserver.observe(document.getElementById('output-body'), { childList: true, subtree: false });
+
+  /* ── VST preset button ──────────────────────────────────────────────────── */
+  var inputHead = document.querySelector('#panel-input .panel-head');
+  if (inputHead) {
+    var presetBtn = document.createElement('button');
+    presetBtn.className = 'btn-copy';
+    presetBtn.textContent = 'load vst preset';
+    presetBtn.addEventListener('click', function () {
+      var ta = document.getElementById('source-content');
+      if (ta && ta.value.trim() !== '') {
+        if (!confirm('Replace current content with VST preset?')) return;
+      }
+      document.getElementById('asset-id').value   = 'vst';
+      document.getElementById('asset-name').value = 'Voyage Smart Travels';
+      if (ta) ta.value = ta.dataset.vstSeed || ta.value;
+    });
+    inputHead.appendChild(presetBtn);
+  }
+
+}());
+</script>
 </body>
 </html>
