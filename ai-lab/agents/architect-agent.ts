@@ -28,6 +28,10 @@ OUTPUT RULES (CRITICAL — VIOLATION BREAKS THE PIPELINE):
 - Do NOT truncate the JSON mid-object. Always complete every opened bracket and brace.
 - No trailing text after the closing }.
 - FINAL CHECK before outputting: count all { and [ vs } and ]. If counts do not match, close all open arrays and objects before returning.
+- The JSON MUST strictly match the schema fields and nesting. Do NOT invent, omit, or rename any fields.
+- All arrays and objects must match expected structure exactly.
+- Ensure valid JSON types: no trailing commas, no undefined values, no comments.
+- If unsure about a value, return a minimal valid structure rather than a partial or malformed one.
 
 BREVITY RULES (CRITICAL — reduces truncation risk):
 - systemOverview: exactly 1 sentence, max 20 words.
