@@ -1,0 +1,9 @@
+# Backend / AI Lab — not needed in Vercel deployment bundle
+ai-lab/
+netlify/
+pages/
+components/
+pain-system-test/
+tools/hello-pain/
+tools/tool-template/
+node_modules/

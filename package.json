@@ -3,6 +3,7 @@
   "description": "Explore a library of reference examples for learning about Edge Functions on Netlify.",
   "version": "1.0.0",
   "scripts": {
+    "build": "echo 'Static site — no framework build required'",
     "ai-lab:vst": "npx tsx ai-lab/runner/run-vst-analysis.ts",
     "ai-lab:vst:json": "npx tsx ai-lab/runner/run-vst-analysis.ts --json",
     "ai-lab:vst-fhi": "npx tsx ai-lab/runner/run-vst-fhi.ts",
