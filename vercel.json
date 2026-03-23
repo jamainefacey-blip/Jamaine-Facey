@@ -3,6 +3,8 @@
   "buildCommand": "echo 'Static site — no framework build required'",
   "outputDirectory": "tools/rehab-client",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/ai-lab",      "destination": "/ai-lab/index.html" },
+    { "source": "/ai-lab/(.*)", "destination": "/ai-lab/$1" },
+    { "source": "/(.*)",        "destination": "/index.html" }
   ]
 }

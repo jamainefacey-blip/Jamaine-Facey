@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Lab — Execution Panel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --text:     #c9d1d9;
+      --muted:    #6e7681;
+      --pass:     #3fb950;
+      --fail:     #f85149;
+      --warn:     #d29922;
+      --accent:   #58a6ff;
+      --font: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 100%;
+    }
+
+    .root { max-width: 860px; margin: 0 auto; padding: 20px 16px 48px; }
+
+    /* ── header ── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .page-header h1 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--accent);
+    }
+    #header-status { font-size: 11px; color: var(--muted); }
+
+    /* ── panels ── */
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 16px;
+      background: var(--surface);
+    }
+    .panel-head {
+      padding: 7px 14px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-body { padding: 14px; }
+
+    /* ── form ── */
+    label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .field { margin-bottom: 12px; }
+    input[type="text"], textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 7px 10px;
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+    input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+
+    #run-btn {
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--accent);
+      color: #0d1117;
+      font: inherit;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #run-btn:hover:not(:disabled) { filter: brightness(1.12); }
+    #run-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── badges ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+    }
+    .bp { background: rgba(63,185,80,.12);  color: var(--pass);  border: 1px solid rgba(63,185,80,.35); }
+    .bf { background: rgba(248,81,73,.12);  color: var(--fail);  border: 1px solid rgba(248,81,73,.35); }
+    .bw { background: rgba(210,153,34,.12); color: var(--warn);  border: 1px solid rgba(210,153,34,.35); }
+    .bb { background: rgba(138,43,226,.12); color: #b388ff;      border: 1px solid rgba(138,43,226,.35); }
+    .bi { background: rgba(110,118,129,.1); color: var(--muted); border: 1px solid var(--border); }
+    .br { background: rgba(88,166,255,.1);  color: var(--accent);border: 1px solid rgba(88,166,255,.3); }
+
+    /* ── stage table ── */
+    .stage-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+    .stage-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stage-table td {
+      padding: 7px 8px;
+      border-bottom: 1px solid rgba(48,54,61,.5);
+      vertical-align: top;
+    }
+    .stage-table tr:last-child td { border-bottom: none; }
+    .t-pass { color: var(--pass); }
+    .t-fail { color: var(--fail); }
+    .t-warn { color: var(--warn); }
+    .t-muted { color: var(--muted); }
+    .err-cell { max-width: 320px; word-break: break-word; color: var(--fail); font-size: 11px; }
+
+    /* ── meta row ── */
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .meta-item { font-size: 11px; }
+    .meta-k { color: var(--muted); margin-right: 4px; }
+
+    /* ── pipeline output ── */
+    details {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    details:last-child { margin-bottom: 0; }
+    details[open] { border-color: rgba(88,166,255,.25); }
+    summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      user-select: none;
+      border-radius: 3px;
+    }
+    summary:hover { background: rgba(255,255,255,.03); }
+    summary::-webkit-details-marker { display: none; }
+    .chevron { font-size: 10px; color: var(--muted); transition: transform .15s; display: inline-block; }
+    details[open] .chevron { transform: rotate(90deg); }
+    .sum-label { flex: 1; font-weight: 600; }
+    pre.json-out {
+      margin: 0;
+      padding: 12px;
+      font: inherit;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #8b949e;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 0 0 3px 3px;
+    }
+    .err-out {
+      padding: 10px 12px;
+      font-size: 11px;
+      color: var(--fail);
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 3px 3px;
+      word-break: break-word;
+    }
+
+    /* ── log ── */
+    .log-line {
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(48,54,61,.3);
+    }
+    .log-line:last-child { border-bottom: none; }
+    .log-k { color: var(--muted); min-width: 140px; flex-shrink: 0; }
+    .log-v { word-break: break-all; }
+    .log-err  { color: var(--fail); }
+    .log-warn { color: var(--warn); }
+
+    /* ── misc ── */
+    .hidden { display: none !important; }
+    .failed-lbl { font-size: 12px; color: var(--fail); }
+    .spin {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: _spin .65s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes _spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 520px) {
+      .field-row { grid-template-columns: 1fr; }
+      .meta-row  { gap: 10px; }
+      .stage-table th:nth-child(4),
+      .stage-table td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="root">
+
+  <div class="page-header">
+    <h1>AI Lab — Execution Panel</h1>
+    <span id="header-status">idle</span>
+  </div>
+
+  <!-- ── INPUT ── -->
+  <div class="panel" id="panel-input">
+    <div class="panel-head">Asset Input</div>
+    <div class="panel-body">
+      <div class="field-row">
+        <div>
+          <label for="asset-id">Asset ID</label>
+          <input type="text" id="asset-id" value="vst" />
+        </div>
+        <div>
+          <label for="asset-name">Asset Name</label>
+          <input type="text" id="asset-name" value="Voyage Smart Travels" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="source-content">Source content — seed, description, or docs</label>
+        <textarea id="source-content" placeholder="Paste asset description or seed content…"></textarea>
+      </div>
+      <button id="run-btn" type="button">▶ Run Pipeline</button>
+    </div>
+  </div>
+
+  <!-- ── STATUS ── -->
+  <div class="panel hidden" id="panel-status">
+    <div class="panel-head">Status</div>
+    <div class="panel-body">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+        <span id="run-badge" class="badge bi">—</span>
+        <span id="failed-lbl" class="failed-lbl"></span>
+      </div>
+      <table class="stage-table">
+        <thead><tr>
+          <th>Stage</th>
+          <th>Result</th>
+          <th>Retries</th>
+          <th>Error</th>
+        </tr></thead>
+        <tbody id="stage-tbody"></tbody>
+      </table>
+      <div class="meta-row" id="meta-row"></div>
+    </div>
+  </div>
+
+  <!-- ── OUTPUT ── -->
+  <div class="panel hidden" id="panel-output">
+    <div class="panel-head">Pipeline Output</div>
+    <div class="panel-body" id="output-body"></div>
+  </div>
+
+  <!-- ── LOG ── -->
+  <div class="panel hidden" id="panel-log">
+    <div class="panel-head">Run Log</div>
+    <div class="panel-body" id="log-body"></div>
+  </div>
+
+</div>
+<script>
+(function () {
+  'use strict';
+
+  // ── VST default seed ──────────────────────────────────────────────────────
+  var VST_SEED = [
+    'identity: Voyage Smart Travels (VST), Layer 2 Commercial Platform, UK jurisdiction,',
+    'Pain System asset, positioned for UK SMEs and public sector travel management.',
+    '',
+    'productDefinition: AI-powered business travel management platform. Reduces manual',
+    'booking, compliance checking, and expense reconciliation. Pricing: Starter £49/month,',
+    'Business £149/month, Enterprise custom. Target: UK SMEs, travel managers, procurement.',
+    '',
+    'currentSystem: backend confirmed working. Frontend near-zero. Major blockers are',
+    'frontend activation, not backend rebuild.',
+    '',
+    'dataModels: User, UserPreferences, UserAvailabilityWindow, UserDestinationPreference,',
+    'Membership, Notification, TravelPolicy, ApprovalWorkflow, BookingRequest, Booking,',
+    'Expense, Receipt, ComplianceCheck, AuditLog, Vendor, VendorContract, Invoice, Payment.',
+    '',
+    'confirmedFlows: user registration + onboarding, policy configuration, booking request',
+    'creation, multi-stage approval workflow, booking confirmation + notifications, expense',
+    'claim + receipt attachment, compliance check against policy, reporting + audit log.',
+    '',
+    'integrations: GDS/Amadeus (planned), Stripe (payment), calendar sync (planned),',
+    'HR system (planned), accounting export (planned).',
+    '',
+    'techStack: Next.js frontend (planned), Node.js backend, PostgreSQL, Redis, Claude API.',
+    '',
+    'knownGaps: frontend build not started, no mobile app, GDS integration incomplete,',
+    'expense OCR not built, reporting dashboard missing.'
+  ].join('\n');
+
+  document.getElementById('source-content').value = VST_SEED;
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+
+  var btn         = $('run-btn');
+  var panelStatus = $('panel-status');
+  var panelOutput = $('panel-output');
+  var panelLog    = $('panel-log');
+
+  // ── Pipelines to run (analysis mode — build-output excluded) ─────────────
+  var PIPELINES = [
+    'asset-extraction',
+    'asset-reconstruction',
+    'gap-risk-analysis',
+    'monetisation'
+  ];
+
+  var STAGE_LABELS = {
+    'asset-extraction':     'Extraction',
+    'asset-reconstruction': 'Reconstruction',
+    'gap-risk-analysis':    'Gap & Risk',
+    'monetisation':         'Monetisation'
+  };
+
+  // ── Run ───────────────────────────────────────────────────────────────────
+  btn.addEventListener('click', function () {
+    var assetId   = $('asset-id').value.trim()    || 'vst';
+    var assetName = $('asset-name').value.trim()  || assetId;
+    var content   = $('source-content').value.trim();
+
+    if (!content) { alert('Source content is required.'); return; }
+
+    setLoading(true);
+    reset();
+
+    var payload = {
+      assetId:   assetId,
+      assetName: assetName,
+      sources:   [{ kind: 'doc', label: 'Operator input', content: content }],
+      pipelines: PIPELINES
+    };
+
+    fetch('/ai-lab/run', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok || data.error) {
+          renderError(data.error || ('HTTP ' + res.status));
+        } else {
+          renderRun(data);
+        }
+      });
+    })
+    .catch(function (err) {
+      renderError(err.message || 'Network error');
+    })
+    .finally(function () {
+      setLoading(false);
+    });
+  });
+
+  // ── Loading state ─────────────────────────────────────────────────────────
+  function setLoading(on) {
+    btn.disabled = on;
+    btn.innerHTML = on
+      ? '<span class="spin"></span>Running\u2026'
+      : '\u25b6 Run Pipeline';
+    $('header-status').textContent = on ? 'running\u2026' : 'idle';
+  }
+
+  function reset() {
+    panelStatus.classList.add('hidden');
+    panelOutput.classList.add('hidden');
+    panelLog.classList.add('hidden');
+    $('stage-tbody').innerHTML = '';
+    $('meta-row').innerHTML    = '';
+    $('output-body').innerHTML = '';
+    $('log-body').innerHTML    = '';
+    $('failed-lbl').textContent = '';
+  }
+
+  // ── Escape HTML ───────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '\u2014';
+    try { return new Date(iso).toLocaleTimeString(); }
+    catch (_) { return iso; }
+  }
+
+  // ── Render full run ───────────────────────────────────────────────────────
+  function renderRun(run) {
+    var jobs   = run.jobs   || [];
+    var status = run.status || 'unknown';
+
+    // STATUS PANEL ────────────────────────────────────────────────────────────
+    panelStatus.classList.remove('hidden');
+
+    var badgeEl = $('run-badge');
+    if (status === 'complete') {
+      badgeEl.className = 'badge bp'; badgeEl.textContent = 'PASS';
+    } else if (status === 'partial') {
+      badgeEl.className = 'badge bw'; badgeEl.textContent = 'PARTIAL';
+    } else if (status === 'failed') {
+      badgeEl.className = 'badge bf'; badgeEl.textContent = 'FAIL';
+    } else {
+      badgeEl.className = 'badge bb'; badgeEl.textContent = status.toUpperCase();
+    }
+
+    var firstFailed   = null;
+    var totalRetries  = 0;
+    var tbody         = $('stage-tbody');
+    tbody.innerHTML   = '';
+
+    jobs.forEach(function (job) {
+      var retries = (job.retries || []).length;
+      totalRetries += retries;
+      var ok = job.status === 'complete';
+      if (!ok && !firstFailed) firstFailed = job.pipelineId;
+
+      var errText = job.error
+        ? '<span class="err-cell" title="' + esc(job.error) + '">'
+            + esc(job.error.length > 70 ? job.error.slice(0, 70) + '\u2026' : job.error)
+            + '</span>'
+        : '<span class="t-muted">\u2014</span>';
+
+      var row = document.createElement('tr');
+      row.innerHTML =
+        '<td>' + esc(job.pipelineId) + '</td>' +
+        '<td class="' + (ok ? 't-pass' : 't-fail') + '">' + (ok ? '\u2713 pass' : '\u2717 fail') + '</td>' +
+        '<td class="' + (retries > 0 ? 't-warn' : 't-muted') + '">' + retries + '</td>' +
+        '<td>' + errText + '</td>';
+      tbody.appendChild(row);
+    });
+
+    if (firstFailed) {
+      $('failed-lbl').textContent = '\u2191 failed at: ' + firstFailed;
+    }
+
+    // Meta row
+    var started   = run.startedAt;
+    var completed = run.completedAt;
+    var durationMs = started && completed
+      ? ((new Date(completed) - new Date(started)) / 1000).toFixed(1) + 's'
+      : '\u2014';
+
+    var meta = $('meta-row');
+    meta.innerHTML =
+      metaItem('Run ID',      run.runId || '\u2014', '') +
+      metaItem('Started',     fmtTime(started),      '') +
+      metaItem('Completed',   fmtTime(completed),    '') +
+      metaItem('Duration',    durationMs,            '') +
+      metaItem('Retries',     totalRetries,          totalRetries > 0 ? 't-warn' : 't-muted') +
+      metaItem('Mode',        run.mode || '\u2014',  '');
+
+    $('header-status').textContent = status;
+
+    // OUTPUT PANEL ────────────────────────────────────────────────────────────
+    panelOutput.classList.remove('hidden');
+    var outBody = $('output-body');
+    outBody.innerHTML = '';
+
+    jobs.forEach(function (job) {
+      var ok      = job.status === 'complete';
+      var label   = STAGE_LABELS[job.pipelineId] || job.pipelineId;
+      var retries = (job.retries || []).length;
+
+      var retryBadge = retries > 0
+        ? ' <span class="badge bw" style="font-size:10px">' + retries + ' retr' + (retries === 1 ? 'y' : 'ies') + '</span>'
+        : '';
+
+      var inner;
+      if (ok && job.output) {
+        inner = '<pre class="json-out">' + esc(JSON.stringify(job.output, null, 2)) + '</pre>';
+      } else if (job.error) {
+        inner = '<div class="err-out">' + esc(job.error) + '</div>';
+      } else {
+        inner = '<div class="err-out" style="color:var(--muted)">No output.</div>';
+      }
+
+      var details = document.createElement('details');
+      details.innerHTML =
+        '<summary>' +
+          '<span class="chevron">\u25b6</span>' +
+          '<span class="sum-label ' + (ok ? 't-pass' : 't-fail') + '">' + esc(label) + '</span>' +
+          '<span class="badge ' + (ok ? 'bp' : 'bf') + '" style="font-size:10px">' + (ok ? 'ok' : 'failed') + '</span>' +
+          retryBadge +
+        '</summary>' +
+        inner;
+      outBody.appendChild(details);
+    });
+
+    // LOG PANEL ───────────────────────────────────────────────────────────────
+    panelLog.classList.remove('hidden');
+    var logBody = $('log-body');
+    logBody.innerHTML = '';
+
+    appendLog(logBody, 'runId',     run.runId     || '\u2014', '');
+    appendLog(logBody, 'assetIds',  (run.assetIds || []).join(', '), '');
+    appendLog(logBody, 'started',   run.startedAt  || '\u2014', '');
+    appendLog(logBody, 'completed', run.completedAt || '\u2014', '');
+    appendLog(logBody, 'status',    status, '');
+
+    // Per-job errors
+    var errJobs = jobs.filter(function (j) { return j.error; });
+    if (errJobs.length) {
+      logBody.appendChild(spacer());
+      errJobs.forEach(function (j) {
+        appendLog(logBody, 'error [' + j.pipelineId + ']', j.error, 'log-err');
+      });
+    }
+
+    // Retry reasons
+    var reasons = [];
+    jobs.forEach(function (j) {
+      (j.retries || []).forEach(function (r) {
+        reasons.push('[' + j.pipelineId + '] attempt ' + r.attempt + ': ' + r.error);
+      });
+    });
+    if (reasons.length) {
+      logBody.appendChild(spacer());
+      reasons.forEach(function (r) {
+        appendLog(logBody, 'retry', r, 'log-warn');
+      });
+    }
+  }
+
+  // ── Error path ────────────────────────────────────────────────────────────
+  function renderError(msg) {
+    panelLog.classList.remove('hidden');
+    var logBody = $('log-body');
+    logBody.innerHTML = '';
+    appendLog(logBody, 'error', msg, 'log-err');
+    $('header-status').textContent = 'error';
+  }
+
+  // ── Small helpers ─────────────────────────────────────────────────────────
+  function metaItem(key, val, cls) {
+    return '<div class="meta-item"><span class="meta-k">' + esc(key) + '</span>'
+         + '<span class="' + cls + '">' + esc(String(val)) + '</span></div>';
+  }
+
+  function appendLog(container, key, val, cls) {
+    var div = document.createElement('div');
+    div.className = 'log-line';
+    div.innerHTML =
+      '<span class="log-k">' + esc(key) + '</span>' +
+      '<span class="log-v ' + cls + '">' + esc(String(val)) + '</span>';
+    container.appendChild(div);
+  }
+
+  function spacer() {
+    var d = document.createElement('div');
+    d.style.height = '8px';
+    return d;
+  }
+
+}());
+</script>
+</body>
+</html>
