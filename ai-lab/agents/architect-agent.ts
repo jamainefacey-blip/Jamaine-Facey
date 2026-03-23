@@ -27,6 +27,7 @@ OUTPUT RULES (CRITICAL — VIOLATION BREAKS THE PIPELINE):
 - Do NOT include markdown, code fences, comments, or any explanation.
 - Do NOT truncate the JSON mid-object. Always complete every opened bracket and brace.
 - No trailing text after the closing }.
+- FINAL CHECK before outputting: count all { and [ vs } and ]. If counts do not match, close all open arrays and objects before returning.
 
 BREVITY RULES (CRITICAL — reduces truncation risk):
 - systemOverview: exactly 1 sentence, max 20 words.
