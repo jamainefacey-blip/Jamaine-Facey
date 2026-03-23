@@ -219,6 +219,16 @@ export type PipelineId =
 
 export type PipelineStatus = "pending" | "running" | "complete" | "failed";
 
+export type FailureType = "recoverable" | "non-recoverable" | "blocked";
+
+export interface RetryStep {
+  attempt: number;
+  pipelineId: string;
+  error: string;
+  failureType: FailureType;
+  timestamp: string;
+}
+
 export interface PipelineJob {
   jobId: string;
   pipelineId: PipelineId;
@@ -228,6 +238,8 @@ export interface PipelineJob {
   completedAt?: string;
   error?: string;
   output?: PipelineOutput;
+  /** Retry attempts made before final status */
+  retries?: RetryStep[];
 }
 
 export type PipelineOutput =
@@ -277,6 +289,10 @@ export interface ValidationLog {
   commitReady: boolean;
   deployReady: boolean;
   runId?: string;
+  retryCount: number;
+  retrySteps: RetryStep[];
+  recoveryActions: string[];
+  finalFailureType?: FailureType;
 }
 
 // ── Orchestrator ──────────────────────────────
@@ -296,6 +312,10 @@ export interface OrchestratorConfig {
    * true  — explicitly allow multi-asset batch runs.
    */
   allowMultiAsset: boolean;
+  /**
+   * Max retry attempts per pipeline step for recoverable failures. Default: 3.
+   */
+  maxRetries?: number;
 }
 
 export interface OrchestratorRun {

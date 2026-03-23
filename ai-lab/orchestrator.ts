@@ -12,12 +12,14 @@
 // ─────────────────────────────────────────────
 
 import type {
+  FailureType,
   OrchestratorConfig,
   OrchestratorRun,
   PipelineId,
   PipelineJob,
   PipelineOutput,
   RawAsset,
+  RetryStep,
 } from "./types.ts";
 import { DEFAULT_CONFIG, PARALLEL_SAFE_PIPELINES, PIPELINE_SEQUENCE } from "./config.ts";
 import { runExtractionPipeline } from "./pipelines/asset-extraction.ts";
@@ -27,6 +29,47 @@ import { runMonetisationPipeline } from "./pipelines/monetisation.ts";
 import { runBuildOutputPipeline } from "./pipelines/build-output.ts";
 import { buildSourceManifest, formatSourceManifest, persistRunRecord } from "./run-log.ts";
 import type { ExtractedSystem, ReconstructedArchitecture } from "./types.ts";
+
+const MAX_RETRIES_DEFAULT = 3;
+
+// ── Failure classification ────────────────────
+
+/**
+ * Classifies a pipeline error into recoverable / non-recoverable / blocked.
+ *
+ * recoverable     — transient: network, API 5xx, JSON parse failure
+ * non-recoverable — structural: missing deps, unknown pipeline, bad config
+ * blocked         — deliberate gate: safeguard, auth failure (401/403)
+ */
+export function classifyFailure(err: Error): FailureType {
+  const msg = err.message;
+
+  // Deliberate blocks — no point retrying
+  if (
+    msg.includes("Claude API error 401") ||
+    msg.includes("Claude API error 403") ||
+    msg.includes("ANTHROPIC_API_KEY") ||
+    msg.includes("SAFEGUARD")
+  ) return "blocked";
+
+  // Structural failures — retrying cannot help
+  if (
+    msg.includes("requires asset-extraction output") ||
+    msg.includes("requires asset-reconstruction output") ||
+    msg.includes("Unknown pipeline:") ||
+    msg.includes("No assets provided") ||
+    msg.includes("allowMultiAsset is false")
+  ) return "non-recoverable";
+
+  // Everything else is treated as recoverable (network, 5xx, JSON truncation, etc.)
+  return "recoverable";
+}
+
+// ── Retry helpers ─────────────────────────────
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 // ── ID generation (Deno/edge-safe) ───────────
 
@@ -118,19 +161,65 @@ export async function runAsset(
     };
     jobs.push(job);
 
-    try {
-      const output = await dispatchPipeline(pipelineId, asset, outputs, apiKey, config.claudeModel);
-      outputs.set(pipelineId, output);
-      job.status = "complete";
-      job.completedAt = now();
-      job.output = output;
-    } catch (err) {
-      job.status = "failed";
-      job.completedAt = now();
-      job.error = err instanceof Error ? err.message : String(err);
+    const maxRetries = config.maxRetries ?? MAX_RETRIES_DEFAULT;
+    const retries: RetryStep[] = [];
+    let attempt = 0;
+    let succeeded = false;
+
+    while (attempt <= maxRetries) {
+      try {
+        const output = await dispatchPipeline(pipelineId, asset, outputs, apiKey, config.claudeModel);
+        outputs.set(pipelineId, output);
+        job.status = "complete";
+        job.completedAt = now();
+        job.output = output;
+        succeeded = true;
+        break;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        const failureType = classifyFailure(error);
+
+        retries.push({
+          attempt: attempt + 1,
+          pipelineId,
+          error: error.message,
+          failureType,
+          timestamp: now(),
+        });
+
+        if (failureType !== "recoverable" || attempt >= maxRetries) {
+          // Not retryable or exhausted — record final failure
+          job.status = "failed";
+          job.completedAt = now();
+          job.error = error.message;
+          job.retries = retries;
+
+          const label = failureType !== "recoverable"
+            ? `${failureType} failure`
+            : `max retries (${maxRetries}) exhausted`;
+          console.error(
+            `[ORCHESTRATOR] ${label} in ${pipelineId} for ${asset.id}: ${error.message}`,
+          );
+          break;
+        }
+
+        // Recoverable — log and wait before retrying
+        const delayMs = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s
+        console.warn(
+          `[RETRY] ${pipelineId} attempt ${attempt + 1}/${maxRetries} failed (recoverable): ${error.message}. Retrying in ${delayMs}ms…`,
+        );
+        await sleep(delayMs);
+        attempt++;
+      }
+    }
+
+    if (retries.length > 0) {
+      job.retries = retries;
+    }
+
+    if (!succeeded) {
       // Non-blocking for parallel-safe pipelines; fatal for serial dependencies
       if (!PARALLEL_SAFE_PIPELINES.includes(pipelineId)) {
-        console.error(`[ORCHESTRATOR] Fatal failure in ${pipelineId} for ${asset.id}:`, job.error);
         break;
       }
     }

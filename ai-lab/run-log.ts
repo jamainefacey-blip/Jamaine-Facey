@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────
 
 import { promises as fs } from "fs";
-import type { AssetId, AssetSource, OrchestratorRun, SourceManifestEntry, ValidationCheck, ValidationLog } from "./types.ts";
+import type { AssetId, AssetSource, FailureType, OrchestratorRun, RetryStep, SourceManifestEntry, ValidationCheck, ValidationLog } from "./types.ts";
 
 // ── SHA-256 hashing (Web Crypto — Node 18+ safe) ──
 
@@ -75,6 +75,20 @@ export function buildValidationLog(taskName: string, run: OrchestratorRun): Vali
 
   const stepsExecuted = run.jobs.map((j) => `${j.pipelineId} → ${j.status}`);
 
+  // Aggregate retry metadata from all jobs
+  const allRetrySteps: RetryStep[] = run.jobs.flatMap((j) => j.retries ?? []);
+  const retryCount = allRetrySteps.length;
+  const recoveryActions: string[] = allRetrySteps
+    .filter((r) => r.failureType === "recoverable")
+    .map((r) => `Retry ${r.attempt} of ${r.pipelineId}: ${r.error.slice(0, 80)}`);
+
+  // Determine finalFailureType from the last failed job's last retry
+  let finalFailureType: FailureType | undefined;
+  const lastFailedJob = [...run.jobs].reverse().find((j) => j.status === "failed");
+  if (lastFailedJob?.retries?.length) {
+    finalFailureType = lastFailedJob.retries[lastFailedJob.retries.length - 1].failureType;
+  }
+
   const allChecksPass = validationChecks.every((c) => c.passed);
   const hasErrors = errors.length > 0;
 
@@ -83,9 +97,7 @@ export function buildValidationLog(taskName: string, run: OrchestratorRun): Vali
     run.status === "failed" ? "FAIL" :
     "BLOCKED";
 
-  // commitReady: all executed pipelines passed, no errors
   const commitReady = status === "PASS" && !hasErrors;
-  // deployReady: commit ready AND at least one pipeline completed
   const deployReady = commitReady && run.jobs.some((j) => j.status === "complete");
 
   return {
@@ -99,6 +111,10 @@ export function buildValidationLog(taskName: string, run: OrchestratorRun): Vali
     commitReady,
     deployReady,
     runId: run.runId,
+    retryCount,
+    retrySteps: allRetrySteps,
+    recoveryActions,
+    finalFailureType,
   };
 }
 
@@ -129,15 +145,25 @@ export async function writeValidationLog(log: ValidationLog): Promise<string> {
  */
 export function printValidationSummary(log: ValidationLog): void {
   const line = (label: string, value: string | boolean) =>
-    console.log(`  ${label.padEnd(20)} ${value}`);
+    console.log(`  ${label.padEnd(22)} ${value}`);
+
+  const recoverySucceeded = log.retryCount > 0 && log.status === "PASS";
 
   console.log("\n─────────────────────────── VALIDATION SUMMARY ───────────────────────────");
   line("Status:", log.status);
   line("Commit Ready:", log.commitReady ? "✓ YES" : "✗ NO");
   line("Deploy Ready:", log.deployReady ? "✓ YES" : "✗ NO");
+  line("Total Retries:", String(log.retryCount));
+  line("Recovery:", log.retryCount === 0 ? "n/a" : recoverySucceeded ? "✓ succeeded" : "✗ failed");
+  if (log.finalFailureType) line("Failure Type:", log.finalFailureType);
+
   console.log("\n  Checks:");
   for (const c of log.validationChecks) {
     console.log(`    ${c.passed ? "✓" : "✗"} ${c.name}${c.detail ? ` (${c.detail})` : ""}`);
+  }
+  if (log.recoveryActions.length > 0) {
+    console.log("\n  Recovery Actions:");
+    for (const a of log.recoveryActions) console.log(`    ↺ ${a}`);
   }
   if (log.errors.length > 0) {
     console.log("\n  Errors:");

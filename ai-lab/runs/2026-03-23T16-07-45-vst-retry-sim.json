@@ -1,0 +1,39 @@
+{
+  "taskName": "vst-retry-sim",
+  "timestamp": "2026-03-23T16:07:45.586Z",
+  "status": "PASS",
+  "stepsExecuted": [
+    "asset-extraction → complete",
+    "asset-reconstruction → complete"
+  ],
+  "errors": [],
+  "fixesApplied": [],
+  "validationChecks": [
+    {
+      "name": "asset-extraction [vst]",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "name": "asset-reconstruction [vst]",
+      "passed": true,
+      "detail": "ok"
+    }
+  ],
+  "commitReady": true,
+  "deployReady": true,
+  "runId": "test-retry-sim",
+  "retryCount": 1,
+  "retrySteps": [
+    {
+      "attempt": 1,
+      "pipelineId": "asset-reconstruction",
+      "error": "Failed to parse agent JSON response.",
+      "failureType": "recoverable",
+      "timestamp": "2026-03-23T16:07:45.586Z"
+    }
+  ],
+  "recoveryActions": [
+    "Retry 1 of asset-reconstruction: Failed to parse agent JSON response."
+  ]
+}
