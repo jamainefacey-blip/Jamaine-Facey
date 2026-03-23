@@ -48,5 +48,5 @@ export const ASSET_REGISTRY: Record<string, string> = {
 /** Claude API prompt limits (chars) */
 export const PROMPT_LIMITS = {
   maxInputChars: 180_000,
-  maxOutputTokens: 4096,
+  maxOutputTokens: 6000,
 };

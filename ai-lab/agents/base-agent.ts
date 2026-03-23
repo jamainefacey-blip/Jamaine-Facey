@@ -84,6 +84,13 @@ export function parseJsonResponse<T>(raw: string): T {
   const firstBrace = raw.indexOf("{");
   const lastBrace  = raw.lastIndexOf("}");
 
+  if (firstBrace !== -1 && lastBrace <= firstBrace) {
+    console.error(
+      `[parseJsonResponse] Truncated JSON: no closing brace found. Raw (first 500 chars):\n${raw.slice(0, 500)}`
+    );
+    throw new Error("Truncated JSON: no closing brace found");
+  }
+
   if (firstBrace !== -1 && lastBrace > firstBrace) {
     const extracted = raw.slice(firstBrace, lastBrace + 1);
     try {
