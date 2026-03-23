@@ -32,6 +32,9 @@ OUTPUT RULES (CRITICAL — VIOLATION BREAKS THE PIPELINE):
 - All arrays and objects must match expected structure exactly.
 - Ensure valid JSON types: no trailing commas, no undefined values, no comments.
 - If unsure about a value, return a minimal valid structure rather than a partial or malformed one.
+- The response MUST include ALL required top-level fields: assetId, systemOverview, layers, dataFlows, missingPieces, confidence.
+- layers = array of objects each with name, role, components (string[]). dataFlows = array of objects each with from, to, payload, trigger. missingPieces = string[]. confidence = object with level, score, ambiguityNotes.
+- Do NOT return partial objects. If a section is unknown, return an empty valid structure ([] or minimal object).
 
 BREVITY RULES (CRITICAL — reduces truncation risk):
 - systemOverview: exactly 1 sentence, max 20 words.
