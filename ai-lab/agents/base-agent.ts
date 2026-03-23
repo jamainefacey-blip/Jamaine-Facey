@@ -59,17 +59,61 @@ export async function callClaude(opts: AgentCallOptions): Promise<string> {
 }
 
 /**
- * Parse JSON from a Claude response that may be wrapped in markdown fences.
+ * Parse JSON from a Claude response that may be wrapped in markdown fences,
+ * have leading/trailing text, or be slightly malformed.
+ *
+ * Strategy (in order):
+ *   1. Strip ```json / ``` fences, then try JSON.parse on full cleaned string.
+ *   2. Extract the FIRST {...} block from the raw string and try that.
+ *   3. Walk backwards from the last } to find the longest valid JSON object.
+ *   4. Regex fallback — grab anything matching a top-level {...} block.
+ *   5. Throw with logged context only if all attempts fail.
  */
 export function parseJsonResponse<T>(raw: string): T {
-  // Strip ```json ... ``` or ``` ... ``` wrappers
-  const cleaned = raw
-    .replace(/^```(?:json)?\n?/m, "")
-    .replace(/\n?```$/m, "")
+  // ── Pass 1: strip markdown fences ──────────────────────────────────────
+  const fenceStripped = raw
+    .replace(/^```(?:json)?\s*/m, "")
+    .replace(/\s*```\s*$/m, "")
     .trim();
+
   try {
-    return JSON.parse(cleaned) as T;
-  } catch {
-    throw new Error(`Failed to parse agent JSON response: ${cleaned.slice(0, 200)}`);
+    return JSON.parse(fenceStripped) as T;
+  } catch { /* fall through */ }
+
+  // ── Pass 2: extract first { ... } block (handles leading/trailing text) ─
+  const firstBrace = raw.indexOf("{");
+  const lastBrace  = raw.lastIndexOf("}");
+
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const extracted = raw.slice(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(extracted) as T;
+    } catch { /* fall through */ }
+
+    // ── Pass 3: trim to last valid closing brace (handles truncated output) ─
+    let candidate = extracted;
+    for (let end = candidate.length - 1; end > 0; end--) {
+      if (candidate[end] === "}") {
+        try {
+          return JSON.parse(candidate.slice(0, end + 1)) as T;
+        } catch { /* keep trimming */ }
+      }
+    }
   }
+
+  // ── Pass 4: regex fallback — grab top-level JSON object block ───────────
+  const jsonBlockMatch = raw.match(/\{[\s\S]*\}/);
+  if (jsonBlockMatch) {
+    try {
+      return JSON.parse(jsonBlockMatch[0]) as T;
+    } catch { /* fall through */ }
+  }
+
+  // ── All passes failed ────────────────────────────────────────────────────
+  console.error(
+    `[parseJsonResponse] All parse attempts failed. Raw response (first 500 chars):\n${raw.slice(0, 500)}`
+  );
+  throw new Error(
+    `Failed to parse agent JSON response. Raw (first 200): ${raw.slice(0, 200)}`
+  );
 }
