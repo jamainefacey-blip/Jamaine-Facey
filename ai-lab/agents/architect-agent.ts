@@ -12,7 +12,8 @@
 //   - All inferences must be traceable to source signals
 // ─────────────────────────────────────────────
 
-import { callClaude, parseJsonResponse } from "./base-agent.ts";
+import { callClaude } from "./base-agent.ts";
+import { validateAgentOutput, validateReconstructedArchitecture } from "../agent-validator.ts";
 import type { ExtractedSystem, ReconstructedArchitecture } from "../types.ts";
 
 const SYSTEM_PROMPT = `
@@ -84,8 +85,19 @@ Reconstruct the full architecture.
 Return ONLY valid JSON matching the ReconstructedArchitecture schema.
 `.trim();
 
-  const raw = await callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model });
-  const result = parseJsonResponse<ReconstructedArchitecture>(raw);
-  result.assetId = extracted.assetId;
-  return result;
+  const { output: arch, retryCount, retryReasons } = await validateAgentOutput<ReconstructedArchitecture>({
+    callFn: () => callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model }),
+    validateFn: validateReconstructedArchitecture,
+    label: "architect",
+    maxRetries: 3,
+  });
+
+  if (retryCount > 0) {
+    console.warn(
+      `[ARCHITECT] Passed after ${retryCount} retry(ies). Reasons: ${retryReasons.join(" | ")}`,
+    );
+  }
+
+  arch.assetId = extracted.assetId;
+  return arch;
 }
