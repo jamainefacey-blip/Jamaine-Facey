@@ -1,5 +1,6 @@
 [dev]
 framework = "#static"
+publish   = "tools/rehab-client"
 
 [build]
 command = "node tools/build-ai-lab-index.js"
@@ -15,10 +16,16 @@ from = "/img/og/:text"
 to = "https://res.cloudinary.com/netlify/image/upload/c_fit,g_west,h_400,co_rgb:FFFFFFFF,l_text:netlify.com:Pacaembu-Bold.ttf_57::text,w_1053,x_46/v1619123320/netlify.com/default-og-background-learn-more.png"
 status = 200
 
-# AI Lab execution panel — must be declared before the SPA catch-all
+# AI Lab execution panel — declared before SPA catch-all; both with and without
+# trailing slash so Safari's automatic slash-append doesn't fall through.
 [[redirects]]
-from = "/ai-lab"
-to = "/ai-lab/index.html"
+from   = "/ai-lab"
+to     = "/ai-lab/index.html"
+status = 200
+
+[[redirects]]
+from   = "/ai-lab/"
+to     = "/ai-lab/index.html"
 status = 200
 
 # SPA fallback — hash routing is client-side, but this ensures any bare

@@ -25,6 +25,17 @@
   # Remove the comment below if you later add a build step (e.g. Vite).
   # command = ""
 
+# ── AI Lab panel — must precede SPA catch-all ─────────────────────────────────
+[[redirects]]
+  from   = "/ai-lab"
+  to     = "/ai-lab/index.html"
+  status = 200
+
+[[redirects]]
+  from   = "/ai-lab/"
+  to     = "/ai-lab/index.html"
+  status = 200
+
 # ── SPA fallback ──────────────────────────────────────────────────────────────
 # This app uses hash-based routing (#dashboard, #plan, #session/w3-s2, etc.)
 # which the browser resolves entirely client-side — the server never sees the
