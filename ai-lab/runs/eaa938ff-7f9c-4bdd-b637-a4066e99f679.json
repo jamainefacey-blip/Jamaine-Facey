@@ -1,0 +1,210 @@
+{
+  "runId": "eaa938ff-7f9c-4bdd-b637-a4066e99f679",
+  "assetIds": [
+    "vst"
+  ],
+  "pipelines": [
+    "asset-extraction",
+    "asset-reconstruction",
+    "gap-risk-analysis",
+    "monetisation",
+    "build-output"
+  ],
+  "sourceManifest": {
+    "vst": [
+      {
+        "kind": "doc",
+        "label": "VST approved seed summary",
+        "charCount": 1530,
+        "sha256": "f9fcd20d5dc3c694618635b3dda1126e496ddb45df2ee346c652d7d124bab193"
+      },
+      {
+        "kind": "doc",
+        "label": "VST technical alignment",
+        "charCount": 1463,
+        "sha256": "0c19f84112af59ee0a1f53b3bd225abb1ec62eef153698b21abd2be51b499ff5"
+      }
+    ]
+  },
+  "jobs": [
+    {
+      "jobId": "feab63bc-8d17-46a0-9f82-e0ef968a6062",
+      "pipelineId": "asset-extraction",
+      "assetId": "vst",
+      "status": "complete",
+      "startedAt": "2026-03-23T15:56:01.556Z",
+      "completedAt": "2026-03-23T15:56:17.077Z",
+      "output": {
+        "assetId": "vst",
+        "name": "Voyage Smart Travels",
+        "purpose": "AI-powered business travel management platform for UK SMEs and public sector.",
+        "coreEntities": [
+          {
+            "name": "User",
+            "type": "model",
+            "description": "Core user account with profile and preferences",
+            "attributes": [
+              "UserPreferences",
+              "UserAvailabilityWindow",
+              "UserDestinationPreference"
+            ]
+          },
+          {
+            "name": "Ava",
+            "type": "agent",
+            "description": "AI agent for opportunity queries",
+            "attributes": [
+              "POST /v1/ava/query",
+              "query",
+              "capabilities"
+            ]
+          },
+          {
+            "name": "Matching",
+            "type": "service",
+            "description": "Scores and gates travel opportunities by tier",
+            "attributes": [
+              "destination scoring",
+              "availability overlap",
+              "tier gate"
+            ]
+          },
+          {
+            "name": "Membership",
+            "type": "model",
+            "description": "Subscription plans with Stripe integration",
+            "attributes": [
+              "Starter",
+              "Business",
+              "Enterprise"
+            ]
+          },
+          {
+            "name": "Notification",
+            "type": "model",
+            "description": "User notification feed and read state",
+            "attributes": [
+              "feed",
+              "read",
+              "read-all"
+            ]
+          }
+        ],
+        "flows": [
+          {
+            "name": "User Signup",
+            "steps": [
+              "Clerk signup event",
+              "POST /v1/webhooks/clerk",
+              "User record created",
+              "Preferences setup triggered"
+            ],
+            "trigger": "Clerk signup webhook",
+            "output": "User provisioned in system",
+            "status": "complete"
+          },
+          {
+            "name": "Opportunity Matching",
+            "steps": [
+              "Nightly evaluation runs",
+              "Score destinations/availability/budget",
+              "Apply tier gate",
+              "Populate opportunities feed"
+            ],
+            "trigger": "Nightly scheduled job",
+            "output": "Ranked opportunities per user",
+            "status": "complete"
+          },
+          {
+            "name": "Ava Query",
+            "steps": [
+              "User submits query",
+              "POST /v1/ava/query",
+              "Ava processes and responds"
+            ],
+            "trigger": "User chat input",
+            "output": "Ava response returned",
+            "status": "partial"
+          },
+          {
+            "name": "Membership Subscribe",
+            "steps": [
+              "User selects plan",
+              "POST /v1/membership/subscribe",
+              "Stripe processes payment",
+              "POST /v1/webhooks/stripe updates membership"
+            ],
+            "trigger": "User subscription action",
+            "output": "Membership tier activated",
+            "status": "complete"
+          },
+          {
+            "name": "Weekly Travel Radar",
+            "steps": [
+              "Scheduled radar job runs",
+              "RadarSignal generated",
+              "Notification dispatched to user"
+            ],
+            "trigger": "Weekly scheduled job",
+            "output": "Radar notifications sent",
+            "status": "complete"
+          }
+        ],
+        "integrations": [
+          {
+            "name": "Clerk",
+            "type": "inbound",
+            "protocol": "webhook",
+            "status": "live"
+          },
+          {
+            "name": "Stripe",
+            "type": "bidirectional",
+            "protocol": "webhook",
+            "status": "live"
+          }
+        ],
+        "techStack": [
+          "Node.js (backend)",
+          "Clerk (auth)",
+          "Stripe (payments)",
+          "REST API (v1)",
+          "Next.js (frontend, near-zero)",
+          "PostgreSQL (inferred)"
+        ],
+        "knownGaps": [
+          "Frontend components directory empty",
+          "No API client layer exists",
+          "No onboarding or preferences UI",
+          "No Ava chat panel built",
+          "No notification bell or dashboard UI"
+        ],
+        "extractedAt": "2026-03-23T15:56:17.077Z",
+        "confidence": {
+          "level": "medium",
+          "score": 68,
+          "ambiguityNotes": [
+            "Database technology not explicitly stated",
+            "Frontend framework inferred as Next.js",
+            "Booking module marked partial — scope unclear",
+            "Translation module partial — no detail provided",
+            "Community/explorer/safety/visa backend status unverified"
+          ]
+        }
+      }
+    },
+    {
+      "jobId": "4052e1c2-ced4-4abd-890c-aded8d7946b3",
+      "pipelineId": "asset-reconstruction",
+      "assetId": "vst",
+      "status": "failed",
+      "startedAt": "2026-03-23T15:56:17.077Z",
+      "completedAt": "2026-03-23T15:56:24.550Z",
+      "error": "Failed to parse agent JSON response. Raw (first 200): {\"assetId\":\"vst\",\"systemOverview\":\"AI-powered business travel management platform for UK SMEs via REST API.\",\"layers\":[{\"name\":\"Frontend\",\"role\":\"UI layer, near-zero built\",\"components\":[\"Next.js App\""
+    }
+  ],
+  "startedAt": "2026-03-23T15:56:01.540Z",
+  "completedAt": "2026-03-23T15:56:24.551Z",
+  "status": "partial",
+  "mode": "analysis"
+}
