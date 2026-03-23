@@ -100,6 +100,15 @@ export function buildValidationLog(taskName: string, run: OrchestratorRun): Vali
   const commitReady = status === "PASS" && !hasErrors;
   const deployReady = commitReady && run.jobs.some((j) => j.status === "complete");
 
+  // Per-stage validation summary and first failed stage
+  const validationSummary: Record<string, "pass" | "fail"> = {};
+  let failedStage: string | undefined;
+  for (const job of run.jobs) {
+    const result: "pass" | "fail" = job.status === "complete" ? "pass" : "fail";
+    validationSummary[job.pipelineId] = result;
+    if (result === "fail" && !failedStage) failedStage = job.pipelineId;
+  }
+
   return {
     taskName,
     timestamp: run.completedAt ?? new Date().toISOString(),
@@ -115,6 +124,8 @@ export function buildValidationLog(taskName: string, run: OrchestratorRun): Vali
     retrySteps: allRetrySteps,
     recoveryActions,
     finalFailureType,
+    failedStage,
+    validationSummary,
   };
 }
 
@@ -156,6 +167,14 @@ export function printValidationSummary(log: ValidationLog): void {
   line("Total Retries:", String(log.retryCount));
   line("Recovery:", log.retryCount === 0 ? "n/a" : recoverySucceeded ? "✓ succeeded" : "✗ failed");
   if (log.finalFailureType) line("Failure Type:", log.finalFailureType);
+  if (log.failedStage) line("Failed Stage:", log.failedStage);
+
+  if (Object.keys(log.validationSummary).length > 0) {
+    console.log("\n  Stage Summary:");
+    for (const [stage, result] of Object.entries(log.validationSummary)) {
+      console.log(`    ${result === "pass" ? "✓" : "✗"} ${stage} — ${result.toUpperCase()}`);
+    }
+  }
 
   console.log("\n  Checks:");
   for (const c of log.validationChecks) {

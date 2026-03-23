@@ -12,7 +12,8 @@
 //   - Do not invent features not present in the system
 // ─────────────────────────────────────────────
 
-import { callClaude, parseJsonResponse } from "./base-agent.ts";
+import { callClaude } from "./base-agent.ts";
+import { validateAgentOutput, validateMonetisationOutput } from "../agent-validator.ts";
 import type { ExtractedSystem, MonetisationReport, ReconstructedArchitecture } from "../types.ts";
 
 const SYSTEM_PROMPT = `
@@ -87,8 +88,17 @@ Design the full monetisation strategy.
 Return ONLY valid JSON matching the MonetisationReport schema.
 `.trim();
 
-  const raw = await callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model });
-  const result = parseJsonResponse<MonetisationReport>(raw);
+  const { output: result, retryCount, retryReasons } = await validateAgentOutput<MonetisationReport>({
+    callFn: () => callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model }),
+    validateFn: validateMonetisationOutput,
+    label: "monetisation",
+    maxRetries: 3,
+  });
+
+  if (retryCount > 0) {
+    console.warn(`[MONETISATION] Passed after ${retryCount} retry(ies). Reasons: ${retryReasons.join(" | ")}`);
+  }
+
   result.assetId = extracted.assetId;
   return result;
 }

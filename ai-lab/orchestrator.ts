@@ -58,7 +58,9 @@ export function classifyFailure(err: Error): FailureType {
     msg.includes("requires asset-reconstruction output") ||
     msg.includes("Unknown pipeline:") ||
     msg.includes("No assets provided") ||
-    msg.includes("allowMultiAsset is false")
+    msg.includes("allowMultiAsset is false") ||
+    // Agent already exhausted its own internal retries — orchestrator retrying again is wasteful
+    msg.startsWith("VALIDATION_EXHAUSTED:")
   ) return "non-recoverable";
 
   // Everything else is treated as recoverable (network, 5xx, JSON truncation, etc.)

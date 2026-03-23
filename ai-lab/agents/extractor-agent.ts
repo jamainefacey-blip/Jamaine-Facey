@@ -11,7 +11,8 @@
 //   - Do not touch product logic
 // ─────────────────────────────────────────────
 
-import { callClaude, parseJsonResponse } from "./base-agent.ts";
+import { callClaude } from "./base-agent.ts";
+import { validateAgentOutput, validateExtractionOutput } from "../agent-validator.ts";
 import type { ExtractedSystem, RawAsset } from "../types.ts";
 
 const SYSTEM_PROMPT = `
@@ -88,8 +89,17 @@ Extract the full structured system from the above sources.
 Return ONLY valid JSON matching the ExtractedSystem schema.
 `.trim();
 
-  const raw = await callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model });
-  const result = parseJsonResponse<ExtractedSystem>(raw);
+  const { output: result, retryCount, retryReasons } = await validateAgentOutput<ExtractedSystem>({
+    callFn: () => callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model }),
+    validateFn: validateExtractionOutput,
+    label: "extractor",
+    maxRetries: 3,
+  });
+
+  if (retryCount > 0) {
+    console.warn(`[EXTRACTOR] Passed after ${retryCount} retry(ies). Reasons: ${retryReasons.join(" | ")}`);
+  }
+
   result.assetId = asset.id;
   result.extractedAt = new Date().toISOString();
   return result;

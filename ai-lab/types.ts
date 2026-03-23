@@ -293,6 +293,10 @@ export interface ValidationLog {
   retrySteps: RetryStep[];
   recoveryActions: string[];
   finalFailureType?: FailureType;
+  /** First pipeline stage that failed, if any */
+  failedStage?: string;
+  /** Per-stage pass/fail summary keyed by pipelineId */
+  validationSummary: Record<string, "pass" | "fail">;
 }
 
 // ── Orchestrator ──────────────────────────────

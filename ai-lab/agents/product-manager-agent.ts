@@ -12,7 +12,8 @@
 //   - No vague findings — every item must be named
 // ─────────────────────────────────────────────
 
-import { callClaude, parseJsonResponse } from "./base-agent.ts";
+import { callClaude } from "./base-agent.ts";
+import { validateAgentOutput, validateGapRiskOutput } from "../agent-validator.ts";
 import type { ExtractedSystem, GapRiskReport } from "../types.ts";
 
 const SYSTEM_PROMPT = `
@@ -75,8 +76,17 @@ Perform a complete gap and risk analysis.
 Return ONLY valid JSON matching the GapRiskReport schema.
 `.trim();
 
-  const raw = await callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model });
-  const result = parseJsonResponse<GapRiskReport>(raw);
+  const { output: result, retryCount, retryReasons } = await validateAgentOutput<GapRiskReport>({
+    callFn: () => callClaude({ systemPrompt: SYSTEM_PROMPT, userPrompt, apiKey, model }),
+    validateFn: validateGapRiskOutput,
+    label: "product-manager",
+    maxRetries: 3,
+  });
+
+  if (retryCount > 0) {
+    console.warn(`[PRODUCT-MANAGER] Passed after ${retryCount} retry(ies). Reasons: ${retryReasons.join(" | ")}`);
+  }
+
   result.assetId = extracted.assetId;
   return result;
 }
