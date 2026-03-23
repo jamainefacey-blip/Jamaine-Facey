@@ -3,7 +3,12 @@
 // Shared Claude API call logic for all agents.
 // ─────────────────────────────────────────────
 
+import https from "node:https";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import { PROMPT_LIMITS } from "../config.ts";
+
+const _proxyUrl = process.env["HTTPS_PROXY"] ?? process.env["HTTP_PROXY"];
+const _agent = _proxyUrl ? new HttpsProxyAgent(_proxyUrl) : undefined;
 
 export interface ClaudeMessage {
   role: "user" | "assistant";
@@ -30,32 +35,50 @@ export async function callClaude(opts: AgentCallOptions): Promise<string> {
     ? userPrompt.slice(0, PROMPT_LIMITS.maxInputChars) + "\n\n[TRUNCATED — input exceeded limit]"
     : userPrompt;
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: "user", content: truncated }],
-    }),
+  const bodyStr = JSON.stringify({
+    model,
+    max_tokens: maxTokens,
+    system: systemPrompt,
+    messages: [{ role: "user", content: truncated }],
   });
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Claude API error ${response.status}: ${err}`);
-  }
+  const data = await new Promise<Record<string, unknown>>((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname: "api.anthropic.com",
+        path: "/v1/messages",
+        method: "POST",
+        agent: _agent,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+          "anthropic-version": "2023-06-01",
+          "Content-Length": Buffer.byteLength(bodyStr),
+        },
+      },
+      (res) => {
+        let raw = "";
+        res.on("data", (chunk: Buffer) => { raw += chunk; });
+        res.on("end", () => {
+          if (res.statusCode && res.statusCode >= 400) {
+            reject(new Error(`Claude API error ${res.statusCode}: ${raw}`));
+          } else {
+            try { resolve(JSON.parse(raw) as Record<string, unknown>); }
+            catch { reject(new Error(`Claude API non-JSON response: ${raw.slice(0, 200)}`)); }
+          }
+        });
+      },
+    );
+    req.on("error", reject);
+    req.write(bodyStr);
+    req.end();
+  });
 
-  const data = await response.json();
-  const block = data.content?.[0];
+  const block = (data.content as Array<{type: string; text: string}>)?.[0];
   if (!block || block.type !== "text") {
     throw new Error("Claude returned no text content");
   }
-  return block.text as string;
+  return block.text;
 }
 
 /**

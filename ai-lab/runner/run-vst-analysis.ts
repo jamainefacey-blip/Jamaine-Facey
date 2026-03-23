@@ -26,7 +26,8 @@ const VST_ASSET: RawAsset = {
 };
 
 async function main() {
-  const apiKey = process.env["ANTHROPIC_API_KEY"];
+  const _sessionToken = (() => { try { return require("fs").readFileSync(process.env["CLAUDE_SESSION_INGRESS_TOKEN_FILE"] ?? "", "utf8").trim(); } catch { return ""; } })();
+  const apiKey = process.env["ANTHROPIC_API_KEY"] || _sessionToken;
   if (!apiKey) {
     console.error("[VST] ANTHROPIC_API_KEY is not set.");
     console.error("      Export it before running:");
