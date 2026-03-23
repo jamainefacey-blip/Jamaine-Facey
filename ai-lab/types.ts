@@ -257,6 +257,28 @@ export interface AgentTask {
   error?: string;
 }
 
+// ── Validation Log ────────────────────────────
+// Structured per-run log with pass/fail tracking.
+
+export interface ValidationCheck {
+  name: string;
+  passed: boolean;
+  detail?: string;
+}
+
+export interface ValidationLog {
+  taskName: string;
+  timestamp: string;
+  status: "PASS" | "FAIL" | "BLOCKED";
+  stepsExecuted: string[];
+  errors: string[];
+  fixesApplied: string[];
+  validationChecks: ValidationCheck[];
+  commitReady: boolean;
+  deployReady: boolean;
+  runId?: string;
+}
+
 // ── Orchestrator ──────────────────────────────
 
 export interface OrchestratorConfig {

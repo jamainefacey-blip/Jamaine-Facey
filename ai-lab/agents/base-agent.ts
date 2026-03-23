@@ -3,12 +3,12 @@
 // Shared Claude API call logic for all agents.
 // ─────────────────────────────────────────────
 
-import https from "node:https";
+import https, { type Agent } from "node:https";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { PROMPT_LIMITS } from "../config.ts";
 
 const _proxyUrl = process.env["HTTPS_PROXY"] ?? process.env["HTTP_PROXY"];
-const _agent = _proxyUrl ? new HttpsProxyAgent(_proxyUrl) : undefined;
+const _agent: Agent | undefined = _proxyUrl ? (new HttpsProxyAgent(_proxyUrl) as unknown as Agent) : undefined;
 
 export interface ClaudeMessage {
   role: "user" | "assistant";
@@ -136,6 +136,28 @@ export function parseJsonResponse<T>(raw: string): T {
   if (jsonBlockMatch) {
     try {
       return JSON.parse(jsonBlockMatch[0]) as T;
+    } catch { /* fall through */ }
+  }
+
+  // ── Pass 5: force-close truncated JSON by balancing open brackets ────────
+  if (firstBrace !== -1) {
+    const fragment = raw.slice(firstBrace);
+    const closes: string[] = [];
+    let inString = false;
+    let escape = false;
+    for (const ch of fragment) {
+      if (escape) { escape = false; continue; }
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === "{") closes.push("}");
+      else if (ch === "[") closes.push("]");
+      else if (ch === "}" || ch === "]") closes.pop();
+    }
+    // Strip trailing comma before we close, then append missing closers
+    const patched = fragment.replace(/,\s*$/, "") + closes.reverse().join("");
+    try {
+      return JSON.parse(patched) as T;
     } catch { /* fall through */ }
   }
 

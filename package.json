@@ -9,6 +9,7 @@
     "ai-lab:run": "npx tsx ai-lab/runner/run-asset.ts"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "https-proxy-agent": "^5.0.1",
     "tsx": "^4.19.2"
   },

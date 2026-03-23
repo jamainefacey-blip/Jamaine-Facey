@@ -14,6 +14,7 @@
 // ─────────────────────────────────────────────
 
 import { orchestrate, summariseRun } from "../orchestrator.ts";
+import { buildValidationLog, printValidationSummary, writeValidationLog } from "../run-log.ts";
 import { DEFAULT_CONFIG, PIPELINE_SEQUENCE } from "../config.ts";
 import { VST_ASSET as VST_SEED } from "../assets/vst-seed.ts";
 import type { RawAsset } from "../types.ts";
@@ -52,6 +53,11 @@ async function main() {
   );
 
   console.log("\n" + summariseRun(run));
+
+  // Build, write, and print validation log
+  const validationLog = buildValidationLog("vst-analysis", run);
+  await writeValidationLog(validationLog);
+  printValidationSummary(validationLog);
 
   if (process.argv.includes("--json")) {
     console.log("\n--- FULL JSON OUTPUT ---");
