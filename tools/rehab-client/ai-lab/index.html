@@ -109,6 +109,19 @@
     }
     .route-object-label { font-size: 0.7rem; color: #444; margin-bottom: 4px; text-transform: uppercase; }
 
+    /* Fail guard panel */
+    #fail-guard-panel {
+      display: none; background: #1a0808; border: 2px solid #8a2020; border-radius: 4px;
+      padding: 16px; margin-bottom: 16px;
+    }
+    #fail-guard-panel.active { display: block; }
+    .fail-guard-title { color: #ff5f5f; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+    .fail-condition-code { color: #ff7f7f; font-size: 1rem; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.06em; }
+    .fail-condition-desc { color: #c07070; font-size: 0.78rem; line-height: 1.5; margin-bottom: 8px; }
+    .contract-violations { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3a1010; }
+    .contract-violation { font-size: 0.73rem; color: #ff9f9f; padding: 1px 0; }
+    .contract-violation::before { content: "✗  "; }
+
     /* Action status */
     #action-status {
       margin-top: 12px; padding: 8px 12px; border-radius: 3px; font-size: 0.78rem;
@@ -141,6 +154,13 @@
     <div class="btn-row" style="margin-top:12px;">
       <button id="run-btn" onclick="runPipeline()">RUN</button>
     </div>
+  </div>
+
+  <div id="fail-guard-panel">
+    <div class="fail-guard-title">Behaviour Enforcement — FAIL</div>
+    <div class="fail-condition-code" id="fail-code"></div>
+    <div class="fail-condition-desc" id="fail-desc"></div>
+    <div class="contract-violations" id="contract-violations"></div>
   </div>
 
   <div class="panel" id="results-panel" style="display:none;">
@@ -402,6 +422,10 @@
       document.getElementById("output-sections").innerHTML = "";
       document.getElementById("stage-track").innerHTML = "";
       document.getElementById("routing-panel").style.display = "none";
+      document.getElementById("fail-guard-panel").classList.remove("active");
+      document.getElementById("fail-code").textContent = "";
+      document.getElementById("fail-desc").textContent = "";
+      document.getElementById("contract-violations").innerHTML = "";
       document.getElementById("action-status").className = "";
       document.getElementById("action-status-msg").textContent = "";
       document.getElementById("dl-json-btn").disabled = true;
@@ -415,7 +439,11 @@
       let payload;
       try {
         payload = JSON.parse(rawPayload);
+        _errTrack.last = null; _errTrack.count = 0; // reset on clean parse
       } catch (e) {
+        // F1 — same error twice
+        if (_errTrack.last === e.message) { _errTrack.count++; } else { _errTrack.last = e.message; _errTrack.count = 1; }
+        if (_errTrack.count >= 2) { failGuard("F1", "JSON parse failed twice: " + e.message); btn.disabled = false; return; }
         rawLog("PARSE ERROR: " + e.message, "status-err");
         setBanner("FAIL — Invalid JSON: " + e.message, "fail");
         btn.disabled = false;
@@ -437,6 +465,9 @@
         btn.disabled = false;
         return;
       }
+
+      // behaviourCheck — F4 lane check + F5 payload integrity
+      if (!behaviourCheck(pipelineId, payload)) { btn.disabled = false; return; }
 
       rawLog("Pipeline: " + pipelineId, "status-run");
       rawLog("Keys accepted: " + Object.keys(payload).join(", "), "status-run");
@@ -461,6 +492,8 @@
             routing: routeResult,
             timestamp: new Date().toISOString()
           };
+          // contractValidator — post-run OUTPUT CONTRACT check
+          if (!contractValidator(lastResult)) { btn.disabled = false; return; }
           document.getElementById("dl-json-btn").disabled = false;
           document.getElementById("dl-txt-btn").disabled = false;
           btn.disabled = false;
@@ -480,6 +513,81 @@
       }
       nextStep();
     }
+
+    // ── BEHAVIOUR ENFORCEMENT LAYER ──────────────────────────────────────────
+    // Enforces CLAUDE.md v2 rules. Wraps runPipeline() pre/post.
+    // Does NOT alter pipeline logic, routing, or action layers.
+
+    const FAIL_CONDITIONS = {
+      F1: "Command failed twice with the same error.",
+      F2: "Test cannot be run — no observable result available.",
+      F3: "Change would modify a baseline-locked file without approval.",
+      F4: "Task requires mixing lanes without explicit permission.",
+      F5: "Output cannot be verified — no stages ran or result is empty.",
+      F6: "Fix cycle limit (2) reached without passing.",
+      F7: "File write would overwrite data store (not append)."
+    };
+
+    const VALID_STATUSES   = ["COMPLETE", "BLOCKED", "PARTIAL", "FAIL"];
+    const ALLOWED_PIPELINES = Object.keys(PIPELINES); // AI_LAB lane only
+    const _errTrack = { last: null, count: 0 };
+
+    // Stop pipeline, surface fail condition in UI. Always returns false.
+    function failGuard(conditionId, reason) {
+      const panel = document.getElementById("fail-guard-panel");
+      const codeEl = document.getElementById("fail-code");
+      const descEl = document.getElementById("fail-desc");
+      const msg = reason || FAIL_CONDITIONS[conditionId] || "Unknown condition.";
+      panel.classList.add("active");
+      codeEl.textContent = "FAIL CONDITION " + conditionId;
+      descEl.textContent = msg;
+      rawLog("FAIL GUARD [" + conditionId + "]: " + msg, "status-err");
+      setBanner("FAIL — " + conditionId + ": " + msg, "fail");
+      return false;
+    }
+
+    // Pre-run: validate lane ownership and payload integrity.
+    function behaviourCheck(pipelineId, payload) {
+      // F4 — pipeline must belong to AI_LAB lane
+      if (!ALLOWED_PIPELINES.includes(pipelineId)) {
+        return failGuard("F4", "Pipeline '" + pipelineId + "' not in AI_LAB lane.");
+      }
+      // F5 — payload must be a non-null, non-empty object
+      if (!payload || typeof payload !== "object" || Array.isArray(payload) || Object.keys(payload).length === 0) {
+        return failGuard("F5", "Payload is empty or not a valid object. Output unverifiable.");
+      }
+      rawLog("BEHAVIOUR: pre-run check passed", "status-ok");
+      return true;
+    }
+
+    // Post-run: validate lastResult against OUTPUT CONTRACT.
+    function contractValidator(output) {
+      const violations = [];
+      if (!output)                                              violations.push("output is null");
+      if (!output || !output.pipeline)                         violations.push("pipeline field missing");
+      if (!output || !output.stages || !output.stages.length)  violations.push("stages empty — unverifiable (F5)");
+      if (output && output.stages && !output.stages.every(s => s.ok !== undefined))
+                                                               violations.push("stage results incomplete");
+      if (!output || !output.routing)                          violations.push("routing result missing");
+      if (!output || !output.routing || !output.routing.route) violations.push("route not determined");
+      if (!output || !output.timestamp)                        violations.push("timestamp missing");
+
+      const derivedStatus = (output && output.stages && output.stages.every(s => s.ok))
+        ? "COMPLETE" : "FAIL";
+      if (!VALID_STATUSES.includes(derivedStatus))
+        violations.push("STATUS '" + derivedStatus + "' not in: " + VALID_STATUSES.join("|"));
+
+      if (violations.length) {
+        const el = document.getElementById("contract-violations");
+        el.innerHTML = violations.map(v => "<div class='contract-violation'>" + v + "</div>").join("");
+        const isCritical = violations.some(v => /F5|stages empty|routing/.test(v));
+        return failGuard(isCritical ? "F5" : "F6", "CONTRACT VIOLATIONS (" + violations.length + "): " + violations.join("; "));
+      }
+
+      rawLog("CONTRACT: validated — STATUS: " + derivedStatus, "status-ok");
+      return true;
+    }
+    // ── END BEHAVIOUR ENFORCEMENT LAYER ──────────────────────────────────────
 
     // ── ROUTING LAYER ────────────────────────────────────────────────────────
     // Reads monetisation signals from pipeline output; selects one of A/B/C/D.
