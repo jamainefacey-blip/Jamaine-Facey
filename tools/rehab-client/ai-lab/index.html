@@ -253,6 +253,7 @@
       <div class="op-row"><span class="op-key">Action executed</span><span class="op-val" id="rs-action"></span></div>
       <div class="op-row"><span class="op-key">Contract</span><span class="op-val" id="rs-contract"></span></div>
       <div class="op-row"><span class="op-key">Run at</span><span class="op-val muted" id="rs-timestamp"></span></div>
+      <div class="op-row"><span class="op-key">Saved at</span><span class="op-val muted" id="rs-saved"></span></div>
     </div>
   </div>
 
@@ -481,7 +482,11 @@
       document.getElementById("stage-track").innerHTML = "";
       document.getElementById("routing-panel").style.display = "none";
       document.getElementById("run-summary-panel").style.display = "none";
+      ["rs-pipeline","rs-stages","rs-route","rs-action","rs-saved","rs-timestamp"].forEach(id => { document.getElementById(id).textContent = ""; });
+      document.getElementById("rs-contract").textContent = ""; document.getElementById("rs-contract").className = "op-val";
       document.getElementById("action-status-detail").style.display = "none";
+      ["as-outcome","as-file","as-saved","as-route","as-id"].forEach(id => { document.getElementById(id).textContent = ""; });
+      document.getElementById("as-outcome").className = "op-val";
       document.getElementById("fail-guard-panel").classList.remove("active");
       document.getElementById("fail-code").textContent = "";
       document.getElementById("fail-desc").textContent = "";
@@ -887,6 +892,8 @@
         ? actionData.message + " → " + actionData.file
         : "FAIL: " + (actionData.error || "unknown");
       el.className = "op-val " + (actionData.ok ? "summary-contract-ok" : "summary-contract-fail");
+      const savedEl = document.getElementById("rs-saved");
+      if (savedEl) savedEl.textContent = (actionData.ok && actionData.savedAt) ? actionData.savedAt.replace("T", " ").slice(0, 19) : "—";
     }
 
     // Populates structured action-status fields from server response + route context.
@@ -898,9 +905,11 @@
       const objId = obj.name || obj.traveler || obj.query || obj.email || "—";
       const saved = actionData.savedAt
         ? actionData.savedAt.replace("T", " ").slice(0, 19)
-        : (obj.timestamp ? obj.timestamp.replace("T", " ").slice(0, 19) : "—");
+        : "—";
 
-      document.getElementById("as-outcome").textContent = actionData.message;
+      const outcomeEl = document.getElementById("as-outcome");
+      outcomeEl.textContent = actionData.message;
+      outcomeEl.className   = "op-val highlight";
       document.getElementById("as-file").textContent    = actionData.file;
       document.getElementById("as-saved").textContent   = saved;
       document.getElementById("as-route").textContent   = routeResult.route + " — " + def.name;
