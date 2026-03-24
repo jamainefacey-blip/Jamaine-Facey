@@ -1,0 +1,31 @@
+{
+  "name": "Pain System — Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+
+  "forwardPorts": [3000, 4444],
+  "portsAttributes": {
+    "3000": { "label": "VST (Next.js)", "onAutoForward": "notify" },
+    "4444": { "label": "AI Lab (Node)", "onAutoForward": "notify" }
+  },
+
+  "postCreateCommand": "npm install -g pnpm && pnpm install",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ],
+      "settings": {
+        "editor.formatOnSave": false,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "remoteEnv": {
+    "AI_LAB_PORT": "4444",
+    "VST_PORT": "3000"
+  }
+}

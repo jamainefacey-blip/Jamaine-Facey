@@ -1,0 +1,90 @@
+name: Validate
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  validate-json:
+    name: Validate JSON stores
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check package.json
+        run: python3 -c "import json, sys; json.load(open('package.json')); print('package.json OK')"
+
+      - name: Validate data store files (if present)
+        run: |
+          find tools/rehab-client/ai-lab/data -name "*.json" 2>/dev/null | while read f; do
+            python3 -c "
+          import json, sys
+          path = '$f'
+          try:
+              with open(path) as fh:
+                  content = fh.read().strip()
+              if not content:
+                  print(f'SKIP {path} — empty file')
+                  sys.exit(0)
+              # Data files are newline-delimited JSON objects — validate each line
+              for i, line in enumerate(content.splitlines(), 1):
+                  line = line.strip()
+                  if line:
+                      json.loads(line)
+              print(f'OK {path}')
+          except Exception as e:
+              print(f'FAIL {path}: {e}')
+              sys.exit(1)
+          "
+          done
+          echo "Data store validation complete"
+
+  baseline-guard:
+    name: Baseline lock check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check baseline-locked files not modified on non-feature branches
+        run: |
+          BASELINE_COMMIT="e6a0552"
+          PROTECTED=(
+            "tools/rehab-client/ai-lab/server.js"
+          )
+          # Only warn — do not fail CI — modification of these files requires
+          # explicit approval recorded in the task. This step surfaces the delta.
+          for f in "${PROTECTED[@]}"; do
+            if git cat-file -e "${BASELINE_COMMIT}:${f}" 2>/dev/null; then
+              DIFF=$(git diff "${BASELINE_COMMIT}" -- "$f" 2>/dev/null | wc -l)
+              if [ "$DIFF" -gt "0" ]; then
+                echo "WARN: baseline-locked file modified since e6a0552: $f (+${DIFF} diff lines)"
+              else
+                echo "OK: $f unchanged from baseline"
+              fi
+            else
+              echo "INFO: $f not present at baseline commit — skipping"
+            fi
+          done
+
+  node-install:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Check AI Lab server syntax
+        run: node --check tools/rehab-client/ai-lab/server.js && echo "server.js syntax OK"
