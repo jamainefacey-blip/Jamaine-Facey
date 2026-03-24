@@ -6,6 +6,7 @@ export default function SignInPage() {
   const [form, setForm] = useState({ email: '', company: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [emailSent, setEmailSent] = useState<boolean | null>(null);
 
   function update(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -29,6 +30,7 @@ export default function SignInPage() {
       } else {
         setStatus('success');
         setMessage('Access request received. A link will be sent to your work email shortly.');
+        setEmailSent(data.emailSent ?? null);
       }
     } catch {
       setStatus('error');
@@ -50,6 +52,11 @@ export default function SignInPage() {
             </div>
             <h2 className="text-white font-semibold text-lg mb-2">Check your email</h2>
             <p className="text-[#8A99B8] text-sm">{message}</p>
+            {emailSent === false && (
+              <p className="mt-3 text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded px-3 py-2">
+                Your request was saved. Email confirmation is temporarily unavailable — our team will still follow up.
+              </p>
+            )}
             <a href="/" className="mt-6 inline-block text-sm text-[#1D6FF2] hover:underline">
               Return to homepage
             </a>

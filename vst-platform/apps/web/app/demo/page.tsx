@@ -6,6 +6,7 @@ export default function DemoPage() {
   const [form, setForm] = useState({ name: '', email: '', company: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errMsg, setErrMsg] = useState('');
+  const [emailSent, setEmailSent] = useState<boolean | null>(null);
 
   function update(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -28,6 +29,7 @@ export default function DemoPage() {
         setErrMsg(data.error ?? 'Submission failed. Please try again.');
       } else {
         setStatus('success');
+        setEmailSent(data.emailSent ?? null);
       }
     } catch {
       setStatus('error');
@@ -51,6 +53,11 @@ export default function DemoPage() {
             <p className="text-[#8A99B8] text-sm">
               A member of our team will contact you within one business day to schedule your session.
             </p>
+            {emailSent === false && (
+              <p className="mt-3 text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded px-3 py-2">
+                Your request was saved. Email confirmation is temporarily unavailable — our team will still follow up.
+              </p>
+            )}
             <a href="/" className="mt-6 inline-block text-sm text-[#1D6FF2] hover:underline">
               Return to homepage
             </a>
