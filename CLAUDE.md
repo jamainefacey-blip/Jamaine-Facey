@@ -130,8 +130,25 @@ Stop immediately and return `STATUS: FAIL` if any of the following occur:
 | F5 | Output cannot be verified (no test, no log, no observable result) |
 | F6 | Fix cycle limit (2) reached without passing tests |
 | F7 | A file write would overwrite data (not append) in data/ stores |
+| F8 | Task specifies a layer and a modification targets a different layer |
 
 On FAIL: state condition number + exact reason. Do not attempt workarounds.
+
+---
+
+## SCOPE LOCK
+
+If a task specifies a layer (UI / PIPELINE / ROUTING / ACTION / STORAGE):
+- ONLY that layer may be modified
+- Any cross-layer modification = F8
+
+Forbidden without explicit instruction:
+- .gitignore changes
+- file tracking changes
+- storage behaviour changes
+- repo structure changes
+
+If uncertain → STOP and ask. Never assume optimisation permission.
 
 ---
 
