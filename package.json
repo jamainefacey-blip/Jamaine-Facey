@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "build": "echo 'Static site — no framework build required'",
+    "dev": "next dev -p 3000",
+    "build:vst": "next build",
+    "preview:vst": "next build && next start -p 3000",
     "preview:ai-lab": "npx serve tools/rehab-client/ai-lab -p 4444 --no-clipboard",
     "ai-lab:vst": "npx tsx ai-lab/runner/run-vst-analysis.ts",
     "ai-lab:vst:json": "npx tsx ai-lab/runner/run-vst-analysis.ts --json",
@@ -12,8 +15,11 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "https-proxy-agent": "^5.0.1",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "typescript": "6.0.2"
   },
   "repository": {
     "type": "git",

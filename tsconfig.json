@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "pages/_app.tsx",
+    "pages/index.tsx",
+    "pages/how-it-works.tsx",
+    "pages/business-travel.tsx",
+    "pages/pricing.tsx",
+    "pages/compliance.tsx",
+    "pages/demo.tsx",
+    "pages/login.tsx",
+    "pages/signup.tsx",
+    "components/vst/**/*.tsx",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "ai-lab/**", "tools/**"]
+}
