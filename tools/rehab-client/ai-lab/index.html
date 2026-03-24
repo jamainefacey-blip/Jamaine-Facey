@@ -6,11 +6,11 @@
   <title>AI Lab — Execution Panel</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e0e0e0; min-height: 100vh; padding: 24px; }
+    body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e0e0e0; min-height: 100vh; padding: 24px; max-width: 960px; margin: 0 auto; }
     h1 { color: #7fff7f; font-size: 1rem; letter-spacing: 0.1em; margin-bottom: 4px; }
     .meta { color: #555; font-size: 0.75rem; margin-bottom: 24px; }
     .panel { background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; padding: 16px; margin-bottom: 16px; }
-    .panel-title { color: #7fb3ff; font-size: 0.8rem; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .panel-title { color: #7fb3ff; font-size: 0.8rem; letter-spacing: 0.08em; margin-bottom: 12px; text-transform: uppercase; }
     label { display: block; color: #888; font-size: 0.75rem; margin-bottom: 4px; }
     select, textarea {
       width: 100%; background: #0d0d0d; border: 1px solid #333; border-radius: 3px;
@@ -18,22 +18,76 @@
     }
     select { height: 36px; margin-bottom: 12px; }
     textarea { resize: vertical; min-height: 120px; margin-bottom: 12px; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     button {
       background: #1a3a1a; border: 1px solid #3a6a3a; border-radius: 3px;
       color: #7fff7f; cursor: pointer; font-family: inherit; font-size: 0.85rem;
-      padding: 8px 20px;
+      padding: 8px 20px; white-space: nowrap;
     }
     button:hover { background: #2a4a2a; }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
-    #output {
+    button.btn-secondary { background: #1a1a2e; border-color: #3a3a6a; color: #9fb3ff; }
+    button.btn-secondary:hover { background: #2a2a4a; }
+    button.btn-secondary:disabled { opacity: 0.3; }
+    .hint { color: #555; font-size: 0.72rem; margin-top: 4px; }
+
+    /* Stage progress */
+    .stage-track { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+    .stage-pill {
+      font-size: 0.7rem; padding: 3px 8px; border-radius: 2px;
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #555;
+      transition: all 0.2s;
+    }
+    .stage-pill.running  { border-color: #ffdf7f; color: #ffdf7f; background: #1a1800; }
+    .stage-pill.ok       { border-color: #3a6a3a; color: #7fff7f; background: #0a1a0a; }
+    .stage-pill.fail     { border-color: #6a1a1a; color: #ff7f7f; background: #1a0a0a; }
+
+    /* Output sections */
+    .output-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 640px) { .output-sections { grid-template-columns: 1fr; } }
+    .output-section {
+      background: #0d0d0d; border: 1px solid #222; border-radius: 3px; padding: 12px;
+    }
+    .output-section-title {
+      font-size: 0.7rem; letter-spacing: 0.08em; margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid #1e1e1e; text-transform: uppercase;
+    }
+    .section-extraction  .output-section-title { color: #7fb3ff; }
+    .section-reconstruction .output-section-title { color: #b3ff7f; }
+    .section-gap         .output-section-title { color: #ffb37f; }
+    .section-monetisation .output-section-title { color: #d97fff; }
+    .output-section p { font-size: 0.78rem; color: #b0b0b0; line-height: 1.6; margin-bottom: 6px; }
+    .output-section p:last-child { margin-bottom: 0; }
+    .output-section .field { margin-bottom: 5px; }
+    .output-section .field-key { color: #666; font-size: 0.7rem; }
+    .output-section .field-val { color: #d0d0d0; font-size: 0.8rem; }
+    .tag {
+      display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 2px;
+      margin: 1px 2px 1px 0;
+    }
+    .tag-ok   { background: #0a1a0a; border: 1px solid #3a6a3a; color: #7fff7f; }
+    .tag-warn { background: #1a1400; border: 1px solid #6a5a00; color: #ffdf7f; }
+    .tag-risk { background: #1a0a0a; border: 1px solid #6a1a1a; color: #ff9f9f; }
+    .tag-info { background: #0d0d1a; border: 1px solid #2a2a6a; color: #9fb3ff; }
+
+    /* Raw log */
+    #raw-log {
       background: #080808; border: 1px solid #1e1e1e; border-radius: 3px;
-      color: #a0a0a0; font-size: 0.8rem; min-height: 160px; padding: 12px;
-      white-space: pre-wrap; word-break: break-word;
+      color: #606060; font-size: 0.75rem; max-height: 120px; overflow-y: auto;
+      padding: 10px; white-space: pre-wrap; word-break: break-word;
     }
     .status-ok  { color: #7fff7f; }
     .status-err { color: #ff7f7f; }
     .status-run { color: #ffdf7f; }
-    .hint { color: #555; font-size: 0.72rem; margin-top: 4px; }
+
+    /* Status banner */
+    #status-banner {
+      display: none; font-size: 0.8rem; padding: 8px 12px; border-radius: 3px;
+      margin-bottom: 12px; border: 1px solid #2a2a2a;
+    }
+    #status-banner.ok   { background: #0a1a0a; border-color: #3a6a3a; color: #7fff7f; display: block; }
+    #status-banner.fail { background: #1a0a0a; border-color: #6a1a1a; color: #ff7f7f; display: block; }
+    #status-banner.run  { background: #1a1800; border-color: #6a5a00; color: #ffdf7f; display: block; }
   </style>
 </head>
 <body>
@@ -41,7 +95,7 @@
   <div class="meta">port 4444 | pain system | ai_lab lane</div>
 
   <div class="panel">
-    <div class="panel-title">PIPELINE RUNNER</div>
+    <div class="panel-title">Pipeline Runner</div>
 
     <label for="pipeline">Pipeline</label>
     <select id="pipeline">
@@ -54,12 +108,29 @@
     <textarea id="payload" spellcheck="false" placeholder='{"key": "value"}'></textarea>
     <div class="hint">Valid JSON only. No pattern restrictions applied.</div>
 
-    <button id="run-btn" onclick="runPipeline()">RUN</button>
+    <div class="btn-row" style="margin-top:12px;">
+      <button id="run-btn" onclick="runPipeline()">RUN</button>
+    </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-title">OUTPUT</div>
-    <div id="output">Ready.</div>
+  <div class="panel" id="results-panel" style="display:none;">
+    <div class="panel-title">Results</div>
+
+    <div id="status-banner"></div>
+
+    <div class="stage-track" id="stage-track"></div>
+
+    <div class="output-sections" id="output-sections"></div>
+
+    <div class="btn-row" style="margin-bottom:12px;">
+      <button class="btn-secondary" id="dl-json-btn" onclick="downloadJSON()" disabled>Download JSON</button>
+      <button class="btn-secondary" id="dl-txt-btn" onclick="downloadReport()" disabled>Download Report (text)</button>
+    </div>
+
+    <details>
+      <summary style="font-size:0.72rem;color:#444;cursor:pointer;margin-bottom:6px;">Raw log</summary>
+      <div id="raw-log"></div>
+    </details>
   </div>
 
   <script>
@@ -81,79 +152,318 @@
       }
     };
 
-    // Pre-fill example on pipeline change
+    let lastResult = null;
+
     document.getElementById("pipeline").addEventListener("change", function () {
       const pipe = PIPELINES[this.value];
       if (pipe) document.getElementById("payload").value = JSON.stringify(pipe.example, null, 2);
     });
 
-    // Init with first example
     (function init() {
-      const first = PIPELINES["vst-trip"];
-      document.getElementById("payload").value = JSON.stringify(first.example, null, 2);
+      document.getElementById("payload").value = JSON.stringify(PIPELINES["vst-trip"].example, null, 2);
     })();
 
-    function log(msg, cls) {
-      const out = document.getElementById("output");
+    function rawLog(msg, cls) {
+      const el = document.getElementById("raw-log");
       const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
-      out.innerHTML += `<span class="${cls || ''}">[${ts}] ${msg}</span>\n`;
+      el.innerHTML += `<span class="${cls || ''}">[${ts}] ${msg}</span>\n`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setBanner(text, state) {
+      const b = document.getElementById("status-banner");
+      b.className = state;
+      b.textContent = text;
+    }
+
+    function buildStagePills(flow) {
+      const track = document.getElementById("stage-track");
+      track.innerHTML = "";
+      flow.forEach((stage, i) => {
+        const p = document.createElement("span");
+        p.className = "stage-pill";
+        p.id = "pill-" + i;
+        p.textContent = stage;
+        track.appendChild(p);
+      });
+    }
+
+    function setPill(index, state) {
+      const p = document.getElementById("pill-" + index);
+      if (p) p.className = "stage-pill " + state;
+    }
+
+    // Derive structured output sections from pipeline + payload
+    function buildOutputSections(pipelineId, payload, stagesOk) {
+      const sections = document.getElementById("output-sections");
+      sections.innerHTML = "";
+
+      const data = deriveOutputData(pipelineId, payload, stagesOk);
+
+      const defs = [
+        { key: "extraction",     label: "Extraction",     cls: "section-extraction" },
+        { key: "reconstruction", label: "Reconstruction", cls: "section-reconstruction" },
+        { key: "gap",            label: "Gap & Risk",     cls: "section-gap" },
+        { key: "monetisation",   label: "Monetisation",   cls: "section-monetisation" }
+      ];
+
+      defs.forEach(({ key, label, cls }) => {
+        const sec = document.createElement("div");
+        sec.className = "output-section " + cls;
+
+        const title = document.createElement("div");
+        title.className = "output-section-title";
+        title.textContent = label;
+        sec.appendChild(title);
+
+        const fields = data[key] || [];
+        fields.forEach(item => {
+          if (item.type === "field") {
+            const d = document.createElement("div");
+            d.className = "field";
+            d.innerHTML = `<div class="field-key">${item.key}</div><div class="field-val">${item.val}</div>`;
+            sec.appendChild(d);
+          } else if (item.type === "tags") {
+            const d = document.createElement("div");
+            d.style.marginBottom = "6px";
+            item.tags.forEach(t => {
+              const span = document.createElement("span");
+              span.className = "tag " + (t.cls || "tag-info");
+              span.textContent = t.label;
+              d.appendChild(span);
+            });
+            sec.appendChild(d);
+          } else if (item.type === "text") {
+            const p = document.createElement("p");
+            p.textContent = item.val;
+            sec.appendChild(p);
+          }
+        });
+
+        sections.appendChild(sec);
+      });
+    }
+
+    function deriveOutputData(pipelineId, payload, stagesOk) {
+      const allOk = stagesOk.every(Boolean);
+      const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+
+      if (pipelineId === "vst-trip") {
+        const dates = payload.dates || {};
+        const depart = dates.depart || "—";
+        const ret    = dates.return || dates["return"] || "—";
+        const nights = calcNights(depart, ret);
+        return {
+          extraction: [
+            { type: "field", key: "Traveler",    val: payload.traveler || "—" },
+            { type: "field", key: "Destination", val: payload.destination || "—" },
+            { type: "field", key: "Depart",      val: depart },
+            { type: "field", key: "Return",      val: ret },
+            { type: "field", key: "Purpose",     val: payload.purpose || "—" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Duration",    val: nights > 0 ? nights + " nights" : "—" },
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Approved" : "Incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "field", key: "Policy check", val: allOk ? "Passed" : "Review required" },
+            { type: "tags", tags: [
+              { label: nights > 5 ? "Extended trip" : "Standard duration", cls: nights > 5 ? "tag-warn" : "tag-ok" },
+              { label: payload.purpose ? "Purpose declared" : "Purpose missing", cls: payload.purpose ? "tag-ok" : "tag-warn" }
+            ]},
+            { type: "text", val: allOk ? "No compliance gaps detected. Trip request meets policy criteria." : "One or more stages failed. Manual review required before approval." }
+          ],
+          monetisation: [
+            { type: "field", key: "Category",    val: "Corporate Travel" },
+            { type: "field", key: "Tier signal", val: nights > 5 ? "Premium route candidate" : "Standard route" },
+            { type: "field", key: "Upsell",      val: nights > 3 ? "Lounge access / hotel upgrade eligible" : "—" },
+            { type: "text", val: "Route: " + (payload.traveler || "traveler") + " → " + (payload.destination || "destination") + ". Log for reporting and forecasting." }
+          ]
+        };
+      }
+
+      if (pipelineId === "vst-lead") {
+        return {
+          extraction: [
+            { type: "field", key: "Name",     val: payload.name || "—" },
+            { type: "field", key: "Email",    val: payload.email || "—" },
+            { type: "field", key: "Company",  val: payload.company || "—" },
+            { type: "field", key: "Interest", val: payload.interest || "—" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Lead stored & notified" : "Pipeline incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "tags", tags: [
+              { label: payload.company ? "Company present" : "Company missing", cls: payload.company ? "tag-ok" : "tag-warn" },
+              { label: payload.interest ? "Interest tagged" : "Interest missing", cls: payload.interest ? "tag-ok" : "tag-warn" }
+            ]},
+            { type: "text", val: allOk ? "Lead capture complete. CRM notification sent." : "Lead capture incomplete. Check API and store stages." }
+          ],
+          monetisation: [
+            { type: "field", key: "Lead type",   val: payload.interest || "unspecified" },
+            { type: "field", key: "Follow-up",   val: payload.company ? "Account-level outreach" : "Individual outreach" },
+            { type: "text", val: "Route to sales pipeline for qualification and booking conversion." }
+          ]
+        };
+      }
+
+      if (pipelineId === "vst-ava") {
+        return {
+          extraction: [
+            { type: "field", key: "Query",   val: payload.query || "—" },
+            { type: "field", key: "Context", val: payload.context || "general" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Response rendered" : "Evaluation incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "tags", tags: [
+              { label: payload.context ? "Context provided" : "No context", cls: payload.context ? "tag-ok" : "tag-warn" }
+            ]},
+            { type: "text", val: allOk ? "Ava evaluation complete. Response ready for render." : "Evaluation did not complete. Review evaluate/explain stages." }
+          ],
+          monetisation: [
+            { type: "field", key: "Query type", val: payload.context || "general" },
+            { type: "text", val: "Log query for Ava training data and policy coverage analysis." }
+          ]
+        };
+      }
+
+      return { extraction: [], reconstruction: [], gap: [], monetisation: [] };
+    }
+
+    function calcNights(depart, ret) {
+      try {
+        const d = new Date(depart), r = new Date(ret);
+        const diff = (r - d) / (1000 * 60 * 60 * 24);
+        return isNaN(diff) ? 0 : Math.max(0, Math.round(diff));
+      } catch (e) { return 0; }
     }
 
     function runPipeline() {
       const pipelineId = document.getElementById("pipeline").value;
       const rawPayload = document.getElementById("payload").value.trim();
-      const out = document.getElementById("output");
       const btn = document.getElementById("run-btn");
+      const resultsPanel = document.getElementById("results-panel");
 
-      out.textContent = "";
+      document.getElementById("raw-log").textContent = "";
+      document.getElementById("output-sections").innerHTML = "";
+      document.getElementById("stage-track").innerHTML = "";
+      document.getElementById("dl-json-btn").disabled = true;
+      document.getElementById("dl-txt-btn").disabled = true;
+      lastResult = null;
+
+      resultsPanel.style.display = "block";
       btn.disabled = true;
+      setBanner("Running…", "run");
 
-      // Parse — no restrictive pattern; accept any valid JSON
       let payload;
       try {
         payload = JSON.parse(rawPayload);
       } catch (e) {
-        log("PARSE ERROR: " + e.message, "status-err");
-        log("Fix: Ensure payload is valid JSON. No regex patterns enforced.", "status-err");
+        rawLog("PARSE ERROR: " + e.message, "status-err");
+        setBanner("FAIL — Invalid JSON: " + e.message, "fail");
         btn.disabled = false;
         return;
       }
 
       const pipe = PIPELINES[pipelineId];
       if (!pipe) {
-        log("Unknown pipeline: " + pipelineId, "status-err");
+        rawLog("Unknown pipeline: " + pipelineId, "status-err");
+        setBanner("FAIL — Unknown pipeline", "fail");
         btn.disabled = false;
         return;
       }
 
-      // Validate required keys
       const missing = pipe.requiredKeys.filter(k => !(k in payload));
       if (missing.length) {
-        log("VALIDATION ERROR: missing required keys: " + missing.join(", "), "status-err");
-        log("Required: " + pipe.requiredKeys.join(", "), "status-err");
+        rawLog("VALIDATION ERROR: missing keys: " + missing.join(", "), "status-err");
+        setBanner("FAIL — Missing required keys: " + missing.join(", "), "fail");
         btn.disabled = false;
         return;
       }
 
-      log("Pipeline: " + pipelineId, "status-run");
-      log("Payload accepted. Keys: " + Object.keys(payload).join(", "), "status-run");
-      log("---", "");
+      rawLog("Pipeline: " + pipelineId, "status-run");
+      rawLog("Keys accepted: " + Object.keys(payload).join(", "), "status-run");
 
-      // Execute flow steps with async simulation
+      buildStagePills(pipe.flow);
+
+      const stagesOk = new Array(pipe.flow.length).fill(false);
       let step = 0;
+
       function nextStep() {
         if (step >= pipe.flow.length) {
-          log("---", "");
-          log("STATUS: COMPLETE", "status-ok");
-          log("PIPELINE: " + pipelineId + " passed all " + pipe.flow.length + " stages.", "status-ok");
+          rawLog("STATUS: COMPLETE — all " + pipe.flow.length + " stages passed", "status-ok");
+          setBanner("COMPLETE — " + pipelineId + " passed all " + pipe.flow.length + " stages", "ok");
+          buildOutputSections(pipelineId, payload, stagesOk);
+          lastResult = { pipeline: pipelineId, payload, stages: pipe.flow.map((s, i) => ({ stage: s, ok: stagesOk[i] })), timestamp: new Date().toISOString() };
+          document.getElementById("dl-json-btn").disabled = false;
+          document.getElementById("dl-txt-btn").disabled = false;
           btn.disabled = false;
           return;
         }
-        const stage = pipe.flow[step++];
-        log("STAGE [" + step + "/" + pipe.flow.length + "]: " + stage.toUpperCase() + " ... ok", "status-ok");
-        setTimeout(nextStep, 200);
+        const idx = step;
+        const stage = pipe.flow[idx];
+        setPill(idx, "running");
+        rawLog("STAGE [" + (idx + 1) + "/" + pipe.flow.length + "]: " + stage.toUpperCase() + " …", "status-run");
+        setTimeout(() => {
+          stagesOk[idx] = true;
+          setPill(idx, "ok");
+          rawLog("STAGE [" + (idx + 1) + "/" + pipe.flow.length + "]: " + stage.toUpperCase() + " — ok", "status-ok");
+          step++;
+          nextStep();
+        }, 220);
       }
       nextStep();
+    }
+
+    function downloadJSON() {
+      if (!lastResult) return;
+      const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: "application/json" });
+      triggerDownload(blob, "ai-lab-" + lastResult.pipeline + "-result.json");
+    }
+
+    function downloadReport() {
+      if (!lastResult) return;
+      const r = lastResult;
+      const lines = [
+        "AI LAB — PIPELINE REPORT",
+        "========================",
+        "Pipeline:  " + r.pipeline,
+        "Timestamp: " + r.timestamp,
+        "",
+        "INPUT",
+        "-----",
+        ...Object.entries(r.payload).map(([k, v]) => k + ": " + JSON.stringify(v)),
+        "",
+        "STAGES",
+        "------",
+        ...r.stages.map((s, i) => "[" + (i + 1) + "] " + s.stage.toUpperCase().padEnd(14) + (s.ok ? "PASS" : "FAIL")),
+        "",
+        "RESULT",
+        "------",
+        r.stages.every(s => s.ok) ? "COMPLETE — all stages passed." : "INCOMPLETE — one or more stages failed.",
+        ""
+      ];
+      const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+      triggerDownload(blob, "ai-lab-" + r.pipeline + "-report.txt");
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
