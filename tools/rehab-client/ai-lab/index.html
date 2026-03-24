@@ -142,6 +142,17 @@
     #action-status.action-run  { display:block; background:#1a1800; border-color:#6a5a00; color:#ffdf7f; }
     .action-status-label { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:6px; }
 
+    /* Operator queue status */
+    #operator-queue-status {
+      display: none; margin-top: 16px; padding: 12px 14px; border-radius: 3px;
+      font-size: 0.78rem; border: 1px solid #2a2a2a;
+    }
+    #operator-queue-status.oq-pending { display:block; background:#0d0d1a; border-color:#3a3a8a; color:#9fb3ff; }
+    #operator-queue-status.oq-ok      { display:block; background:#0a1a0a; border-color:#3a6a3a; color:#7fff7f; }
+    #operator-queue-status.oq-fail    { display:block; background:#1a0a0a; border-color:#6a1a1a; color:#ff7f7f; }
+    .oq-label { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:6px; }
+    .oq-task-id { font-size:0.7rem; color:#555; margin-top:5px; word-break:break-all; }
+
     /* Operator field rows — shared by action-status detail + run summary */
     .op-grid  { display:grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 8px; }
     @media (max-width:520px) { .op-grid { grid-template-columns: 1fr; } }
@@ -255,6 +266,13 @@
       <div class="op-row"><span class="op-key">Contract</span><span class="op-val" id="rs-contract"></span></div>
       <div class="op-row"><span class="op-key">Run at</span><span class="op-val muted" id="rs-timestamp"></span></div>
       <div class="op-row"><span class="op-key">Saved at</span><span class="op-val muted" id="rs-saved"></span></div>
+      <div class="op-row"><span class="op-key">Operator queue</span><span class="op-val" id="rs-operator"></span></div>
+    </div>
+
+    <div id="operator-queue-status">
+      <div class="oq-label">Operator Queue</div>
+      <div id="oq-msg"></div>
+      <div class="oq-task-id" id="oq-task-id"></div>
     </div>
   </div>
 
@@ -605,6 +623,7 @@
           // contractValidator — post-run OUTPUT CONTRACT check
           if (!contractValidator(lastResult)) { btn.disabled = false; return; }
           buildRunSummary(lastResult);
+          submitToOperator(lastResult);
           document.getElementById("dl-json-btn").disabled = false;
           document.getElementById("dl-txt-btn").disabled = false;
           btn.disabled = false;
@@ -1014,6 +1033,84 @@
       document.getElementById("action-status-detail").style.display = "grid";
     }
     // ── END OPERATOR VISIBILITY LAYER ─────────────────────────────────────────
+
+    // ── OPERATOR INTAKE LAYER ─────────────────────────────────────────────────
+    // Submits completed, validated pipeline results to server-operator.js queue.
+    // Does NOT replace /api/action — that still fires via executeAction().
+    // Runs only after contractValidator() passes.
+
+    const OPERATOR_URL = "http://localhost:4445";
+    const LANE_MAP = { "vst": "VST", "fhi": "FHI" };
+
+    function deriveTaskLane(pipelineId) {
+      const prefix = pipelineId.split("-")[0];
+      return LANE_MAP[prefix] || "AI_LAB";
+    }
+
+    function setOperatorStatus(msg, state, taskId) {
+      const el    = document.getElementById("operator-queue-status");
+      const msgEl = document.getElementById("oq-msg");
+      const tidEl = document.getElementById("oq-task-id");
+      el.className = "oq-" + state;
+      msgEl.textContent = msg;
+      tidEl.textContent = taskId ? "task_id: " + taskId : "";
+    }
+
+    function updateSummaryOperator(ok, taskId) {
+      const el = document.getElementById("rs-operator");
+      if (!el) return;
+      el.textContent = ok ? ("queued — " + taskId) : "FAIL — operator unreachable";
+      el.className   = "op-val " + (ok ? "summary-contract-ok" : "summary-contract-fail");
+    }
+
+    function submitToOperator(result) {
+      const lane  = deriveTaskLane(result.pipeline);
+      const route = result.routing ? result.routing.route : "?";
+      const allOk = result.stages.every(s => s.ok);
+      const title = result.pipeline + " — route " + route + " — " + (allOk ? "COMPLETE" : "FAIL");
+
+      setOperatorStatus("Submitting to operator queue…", "pending", null);
+      rawLog("OPERATOR: submitting task — lane=" + lane + " pipeline=" + result.pipeline, "status-run");
+
+      const taskPayload = {
+        lane,
+        title,
+        payload: {
+          pipeline:   result.pipeline,
+          route:      route,
+          contract:   allOk ? "COMPLETE" : "FAIL",
+          stages:     result.stages,
+          routing:    result.routing || null,
+          input:      result.payload,
+          timestamp:  result.timestamp
+        }
+      };
+
+      fetch(OPERATOR_URL + "/api/task", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(taskPayload)
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          setOperatorStatus("Queued — pending_approval", "ok", data.task_id);
+          updateSummaryOperator(true, data.task_id);
+          rawLog("OPERATOR OK: task_id=" + data.task_id + " state=pending_approval", "status-ok");
+        } else {
+          setOperatorStatus("Queue failed: " + data.error, "fail", null);
+          updateSummaryOperator(false, null);
+          rawLog("OPERATOR FAIL: " + data.error, "status-err");
+        }
+      })
+      .catch(err => {
+        const msg = "Operator unreachable — run 'node tools/rehab-client/ai-lab/server-operator.js'. Error: " + err.message;
+        setOperatorStatus(msg, "fail", null);
+        updateSummaryOperator(false, null);
+        rawLog("OPERATOR FAIL: " + err.message, "status-err");
+      });
+    }
+    // ── END OPERATOR INTAKE LAYER ─────────────────────────────────────────────
 
     function downloadJSON() {
       if (!lastResult) return;
