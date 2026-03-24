@@ -7,7 +7,9 @@
     "open:ai-lab": "node tools/rehab-client/ai-lab/server.js",
     "restart:ai-lab": "pkill -f 'node tools/rehab-client/ai-lab/server' || true && node tools/rehab-client/ai-lab/server.js",
     "check:vst": "curl -I http://localhost:3000 || true",
-    "check:ai-lab": "curl -I http://localhost:4444 || true"
+    "check:ai-lab": "curl -I http://localhost:4444 || true",
+    "open:operator": "node tools/rehab-client/ai-lab/server-operator.js",
+    "check:operator": "curl -s http://localhost:4445/api/queue || true"
   },
   "repository": {
     "type": "git",
