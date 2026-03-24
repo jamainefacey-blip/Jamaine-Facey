@@ -94,7 +94,7 @@ const server = http.createServer((req, res) => {
         console.log("[action]", label, "→ data/" + file);
 
         res.writeHead(200, { "Content-Type": "application/json", ...CORS });
-        res.end(JSON.stringify({ ok: true, message: label, file: "data/" + file }));
+        res.end(JSON.stringify({ ok: true, message: label, file: "data/" + file, savedAt: entry.savedAt }));
       } catch (e) {
         console.error("[action] error:", e.message);
         res.writeHead(500, { "Content-Type": "application/json", ...CORS });

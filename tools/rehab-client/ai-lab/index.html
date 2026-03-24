@@ -124,13 +124,28 @@
 
     /* Action status */
     #action-status {
-      margin-top: 12px; padding: 8px 12px; border-radius: 3px; font-size: 0.78rem;
+      margin-top: 12px; padding: 10px 12px; border-radius: 3px; font-size: 0.78rem;
       display: none; border: 1px solid #2a2a2a;
     }
     #action-status.action-ok   { display:block; background:#0a1a0a; border-color:#3a6a3a; color:#7fff7f; }
     #action-status.action-fail { display:block; background:#1a0a0a; border-color:#6a1a1a; color:#ff7f7f; }
     #action-status.action-run  { display:block; background:#1a1800; border-color:#6a5a00; color:#ffdf7f; }
-    .action-status-label { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:2px; }
+    .action-status-label { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:6px; }
+
+    /* Operator field rows — shared by action-status detail + run summary */
+    .op-grid  { display:grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 8px; }
+    @media (max-width:520px) { .op-grid { grid-template-columns: 1fr; } }
+    .op-row   { display:flex; flex-direction:column; }
+    .op-key   { font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1px; }
+    .op-val   { font-size:0.78rem; color:#d0d0d0; word-break:break-all; }
+    .op-val.highlight { color:#7fff7f; }
+    .op-val.muted     { color:#666; }
+
+    /* Run summary panel */
+    #run-summary-panel { display:none; }
+    #run-summary-panel .panel-title { color:#d97fff; }
+    .summary-contract-ok   { color:#7fff7f; }
+    .summary-contract-fail { color:#ff7f7f; }
   </style>
 </head>
 <body>
@@ -195,6 +210,25 @@
     <div id="action-status">
       <div class="action-status-label">Action Status</div>
       <div id="action-status-msg"></div>
+      <div class="op-grid" id="action-status-detail" style="display:none;">
+        <div class="op-row"><span class="op-key">Outcome</span><span class="op-val" id="as-outcome"></span></div>
+        <div class="op-row"><span class="op-key">File written</span><span class="op-val" id="as-file"></span></div>
+        <div class="op-row"><span class="op-key">Saved at</span><span class="op-val" id="as-saved"></span></div>
+        <div class="op-row"><span class="op-key">Route</span><span class="op-val" id="as-route"></span></div>
+        <div class="op-row"><span class="op-key">Object ID</span><span class="op-val muted" id="as-id"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="run-summary-panel">
+    <div class="panel-title">Run Summary</div>
+    <div class="op-grid">
+      <div class="op-row"><span class="op-key">Pipeline</span><span class="op-val highlight" id="rs-pipeline"></span></div>
+      <div class="op-row"><span class="op-key">Stages passed</span><span class="op-val" id="rs-stages"></span></div>
+      <div class="op-row"><span class="op-key">Route selected</span><span class="op-val" id="rs-route"></span></div>
+      <div class="op-row"><span class="op-key">Action executed</span><span class="op-val" id="rs-action"></span></div>
+      <div class="op-row"><span class="op-key">Contract</span><span class="op-val" id="rs-contract"></span></div>
+      <div class="op-row"><span class="op-key">Run at</span><span class="op-val muted" id="rs-timestamp"></span></div>
     </div>
   </div>
 
@@ -422,6 +456,8 @@
       document.getElementById("output-sections").innerHTML = "";
       document.getElementById("stage-track").innerHTML = "";
       document.getElementById("routing-panel").style.display = "none";
+      document.getElementById("run-summary-panel").style.display = "none";
+      document.getElementById("action-status-detail").style.display = "none";
       document.getElementById("fail-guard-panel").classList.remove("active");
       document.getElementById("fail-code").textContent = "";
       document.getElementById("fail-desc").textContent = "";
@@ -494,6 +530,7 @@
           };
           // contractValidator — post-run OUTPUT CONTRACT check
           if (!contractValidator(lastResult)) { btn.disabled = false; return; }
+          buildRunSummary(lastResult);
           document.getElementById("dl-json-btn").disabled = false;
           document.getElementById("dl-txt-btn").disabled = false;
           btn.disabled = false;
@@ -740,9 +777,12 @@
           const msg = data.message + " → saved to " + data.file;
           setActionStatus(msg, "ok");
           rawLog("ACTION OK: " + msg, "status-ok");
+          setActionStatusFull(routeResult, data);
+          updateSummaryAction(data);
         } else {
           setActionStatus("Action failed: " + data.error, "fail");
           rawLog("ACTION FAIL: " + data.error, "status-err");
+          updateSummaryAction(data);
         }
       })
       .catch(err => {
@@ -752,6 +792,54 @@
       });
     }
     // ── END ACTION LAYER ──────────────────────────────────────────────────────
+
+    // ── OPERATOR VISIBILITY LAYER ─────────────────────────────────────────────
+    // Read-only display. Does not alter pipeline, routing, action, or enforcement.
+
+    function buildRunSummary(result) {
+      const allOk   = result.stages.every(s => s.ok);
+      const passed  = result.stages.filter(s => s.ok).length;
+      const total   = result.stages.length;
+      const routeDef = ROUTE_DEFS[result.routing.route];
+
+      document.getElementById("rs-pipeline").textContent  = result.pipeline;
+      document.getElementById("rs-stages").textContent    = passed + " / " + total + " passed";
+      document.getElementById("rs-route").textContent     = result.routing.route + " — " + routeDef.name;
+      document.getElementById("rs-action").textContent    = "pending…";   // updated by updateSummaryAction
+      document.getElementById("rs-contract").className    = "op-val " + (allOk ? "summary-contract-ok" : "summary-contract-fail");
+      document.getElementById("rs-contract").textContent  = allOk ? "COMPLETE — passed" : "FAIL";
+      document.getElementById("rs-timestamp").textContent = result.timestamp.replace("T", " ").slice(0, 19);
+      document.getElementById("run-summary-panel").style.display = "block";
+    }
+
+    function updateSummaryAction(actionData) {
+      const el = document.getElementById("rs-action");
+      if (!el) return;
+      el.textContent = actionData.ok
+        ? actionData.message + " → " + actionData.file
+        : "FAIL: " + (actionData.error || "unknown");
+      el.className = "op-val " + (actionData.ok ? "summary-contract-ok" : "summary-contract-fail");
+    }
+
+    // Populates structured action-status fields from server response + route context.
+    function setActionStatusFull(routeResult, actionData) {
+      if (!actionData.ok) return; // failure already handled by setActionStatus
+
+      const def   = ROUTE_DEFS[routeResult.route];
+      const obj   = routeResult.object || {};
+      const objId = obj.name || obj.traveler || obj.query || obj.email || "—";
+      const saved = actionData.savedAt
+        ? actionData.savedAt.replace("T", " ").slice(0, 19)
+        : (obj.timestamp ? obj.timestamp.replace("T", " ").slice(0, 19) : "—");
+
+      document.getElementById("as-outcome").textContent = actionData.message;
+      document.getElementById("as-file").textContent    = actionData.file;
+      document.getElementById("as-saved").textContent   = saved;
+      document.getElementById("as-route").textContent   = routeResult.route + " — " + def.name;
+      document.getElementById("as-id").textContent      = objId;
+      document.getElementById("action-status-detail").style.display = "grid";
+    }
+    // ── END OPERATOR VISIBILITY LAYER ─────────────────────────────────────────
 
     function downloadJSON() {
       if (!lastResult) return;
