@@ -88,6 +88,26 @@
     #status-banner.ok   { background: #0a1a0a; border-color: #3a6a3a; color: #7fff7f; display: block; }
     #status-banner.fail { background: #1a0a0a; border-color: #6a1a1a; color: #ff7f7f; display: block; }
     #status-banner.run  { background: #1a1800; border-color: #6a5a00; color: #ffdf7f; display: block; }
+
+    /* Routing result */
+    #routing-panel { display: none; }
+    .route-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.85rem; font-weight: bold; letter-spacing: 0.06em;
+      padding: 6px 14px; border-radius: 3px; margin-bottom: 12px;
+    }
+    .route-A { background: #0d0d1a; border: 1px solid #3a3a8a; color: #9fb3ff; }
+    .route-B { background: #0a1a0a; border: 1px solid #3a6a3a; color: #7fff7f; }
+    .route-C { background: #1a1400; border: 1px solid #8a6a00; color: #ffdf7f; }
+    .route-D { background: #141414; border: 1px solid #3a3a3a; color: #888; }
+    .route-label { font-size: 0.7rem; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .route-reason { font-size: 0.78rem; color: #a0a0a0; margin-bottom: 12px; line-height: 1.6; }
+    .route-object {
+      background: #080808; border: 1px solid #1e1e1e; border-radius: 3px;
+      font-size: 0.75rem; color: #8a9abf; padding: 10px;
+      white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
+    }
+    .route-object-label { font-size: 0.7rem; color: #444; margin-bottom: 4px; text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -131,6 +151,16 @@
       <summary style="font-size:0.72rem;color:#444;cursor:pointer;margin-bottom:6px;">Raw log</summary>
       <div id="raw-log"></div>
     </details>
+  </div>
+
+  <div class="panel" id="routing-panel">
+    <div class="panel-title">Routing Result</div>
+    <div class="route-label">Selected Route</div>
+    <div id="route-badge"></div>
+    <div class="route-label">Reason</div>
+    <div class="route-reason" id="route-reason"></div>
+    <div class="route-object-label">Output Object Preview</div>
+    <div class="route-object" id="route-object"></div>
   </div>
 
   <script>
@@ -356,6 +386,7 @@
       document.getElementById("raw-log").textContent = "";
       document.getElementById("output-sections").innerHTML = "";
       document.getElementById("stage-track").innerHTML = "";
+      document.getElementById("routing-panel").style.display = "none";
       document.getElementById("dl-json-btn").disabled = true;
       document.getElementById("dl-txt-btn").disabled = true;
       lastResult = null;
@@ -403,7 +434,15 @@
           rawLog("STATUS: COMPLETE — all " + pipe.flow.length + " stages passed", "status-ok");
           setBanner("COMPLETE — " + pipelineId + " passed all " + pipe.flow.length + " stages", "ok");
           buildOutputSections(pipelineId, payload, stagesOk);
-          lastResult = { pipeline: pipelineId, payload, stages: pipe.flow.map((s, i) => ({ stage: s, ok: stagesOk[i] })), timestamp: new Date().toISOString() };
+          const routeResult = determineRoute(pipelineId, payload);
+          rawLog("ROUTE: " + routeResult.route + " — " + ROUTE_DEFS[routeResult.route].name, "status-run");
+          buildRoutingPanel(routeResult);
+          lastResult = {
+            pipeline: pipelineId, payload,
+            stages: pipe.flow.map((s, i) => ({ stage: s, ok: stagesOk[i] })),
+            routing: routeResult,
+            timestamp: new Date().toISOString()
+          };
           document.getElementById("dl-json-btn").disabled = false;
           document.getElementById("dl-txt-btn").disabled = false;
           btn.disabled = false;
@@ -423,6 +462,131 @@
       }
       nextStep();
     }
+
+    // ── ROUTING LAYER ────────────────────────────────────────────────────────
+    // Reads monetisation signals from pipeline output; selects one of A/B/C/D.
+    // Does NOT alter pipeline logic, stages, or existing output sections.
+
+    const ROUTE_DEFS = {
+      A: { code: "A", name: "LEAD CAPTURE",       cls: "route-A" },
+      B: { code: "B", name: "BOOKING FLOW",        cls: "route-B" },
+      C: { code: "C", name: "ENTERPRISE FLAG",     cls: "route-C" },
+      D: { code: "D", name: "INTERNAL ANALYSIS",   cls: "route-D" }
+    };
+
+    function determineRoute(pipelineId, payload) {
+      const ts = new Date().toISOString();
+
+      // Enterprise signals — checked first (highest priority)
+      const enterpriseSignals = [
+        payload.tier, payload.compliance, payload.enterprise, payload.public_sector,
+        payload.context, payload.interest, payload.purpose
+      ].map(v => String(v || "").toLowerCase());
+      const isEnterprise = enterpriseSignals.some(s =>
+        /enterprise|public.?sector|government|compliance|procurement|tender|authority/.test(s)
+      );
+
+      // Trip / booking signals
+      const isBooking = pipelineId === "vst-trip" ||
+        ["destination", "dates", "depart", "return", "trip", "travel", "booking", "itinerary"]
+          .some(k => k in payload);
+
+      // Lead / enquiry signals
+      const isLead = pipelineId === "vst-lead" ||
+        ["name", "email", "company", "interest", "enquiry", "contact"]
+          .some(k => k in payload);
+
+      if (isEnterprise) {
+        const flags = [];
+        if (/compliance/.test(enterpriseSignals.join(" "))) flags.push("compliance-heavy");
+        if (/public.?sector|government/.test(enterpriseSignals.join(" "))) flags.push("public-sector");
+        if (/procurement|tender/.test(enterpriseSignals.join(" "))) flags.push("procurement");
+        return {
+          route: "C",
+          reason: "Enterprise or compliance signal detected in payload. Escalation required before routing to booking or sales.",
+          object: {
+            route: "C — ENTERPRISE FLAG",
+            tag: "HIGH VALUE",
+            pipeline: pipelineId,
+            complianceFlags: flags.length ? flags : ["enterprise-detected"],
+            escalateTo: "enterprise-sales",
+            payload,
+            timestamp: ts
+          }
+        };
+      }
+
+      if (isBooking) {
+        const dates = payload.dates || {};
+        return {
+          route: "B",
+          reason: "Trip request with destination and dates detected. Routing to booking API for itinerary generation.",
+          object: {
+            route: "B — BOOKING FLOW",
+            pipeline: pipelineId,
+            traveler: payload.traveler || null,
+            destination: payload.destination || null,
+            depart: dates.depart || null,
+            return: dates.return || null,
+            purpose: payload.purpose || null,
+            constraints: payload.constraints || null,
+            bookingApiReady: true,
+            timestamp: ts
+          }
+        };
+      }
+
+      if (isLead) {
+        return {
+          route: "A",
+          reason: "Contact or enquiry intent detected. Structured lead object generated for CRM integration.",
+          object: {
+            route: "A — LEAD CAPTURE",
+            pipeline: pipelineId,
+            name: payload.name || null,
+            email: payload.email || null,
+            company: payload.company || null,
+            interest: payload.interest || null,
+            crmReady: true,
+            followUp: payload.company ? "account-level" : "individual",
+            timestamp: ts
+          }
+        };
+      }
+
+      // No clear commercial signal
+      return {
+        route: "D",
+        reason: "No clear commercial signal detected. Output stored for internal analysis and policy logging.",
+        object: {
+          route: "D — INTERNAL ANALYSIS",
+          pipeline: pipelineId,
+          mode: "analysis",
+          query: payload.query || null,
+          context: payload.context || null,
+          storeOnly: true,
+          timestamp: ts
+        }
+      };
+    }
+
+    function buildRoutingPanel(routeResult) {
+      const panel = document.getElementById("routing-panel");
+      const def = ROUTE_DEFS[routeResult.route];
+
+      const badge = document.getElementById("route-badge");
+      badge.innerHTML = "";
+      const b = document.createElement("div");
+      b.className = "route-badge " + def.cls;
+      b.textContent = def.code + " — " + def.name;
+      badge.appendChild(b);
+
+      document.getElementById("route-reason").textContent = routeResult.reason;
+      document.getElementById("route-object").textContent = JSON.stringify(routeResult.object, null, 2);
+
+      panel.style.display = "block";
+    }
+    // ── END ROUTING LAYER ────────────────────────────────────────────────────
 
     function downloadJSON() {
       if (!lastResult) return;
@@ -450,6 +614,14 @@
         "RESULT",
         "------",
         r.stages.every(s => s.ok) ? "COMPLETE — all stages passed." : "INCOMPLETE — one or more stages failed.",
+        "",
+        "ROUTING",
+        "-------",
+        "Route:  " + (r.routing ? r.routing.route + " — " + ROUTE_DEFS[r.routing.route].name : "—"),
+        "Reason: " + (r.routing ? r.routing.reason : "—"),
+        "",
+        "Route Object:",
+        r.routing ? JSON.stringify(r.routing.object, null, 2) : "—",
         ""
       ];
       const blob = new Blob([lines.join("\n")], { type: "text/plain" });
