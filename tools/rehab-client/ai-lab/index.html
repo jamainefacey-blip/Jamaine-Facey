@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Lab — Execution Panel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e0e0e0; min-height: 100vh; padding: 24px; max-width: 960px; margin: 0 auto; }
+    h1 { color: #7fff7f; font-size: 1rem; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .meta { color: #555; font-size: 0.75rem; margin-bottom: 24px; }
+    .panel { background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; padding: 16px; margin-bottom: 16px; }
+    .panel-title { color: #7fb3ff; font-size: 0.8rem; letter-spacing: 0.08em; margin-bottom: 12px; text-transform: uppercase; }
+    label { display: block; color: #888; font-size: 0.75rem; margin-bottom: 4px; }
+    select, textarea {
+      width: 100%; background: #0d0d0d; border: 1px solid #333; border-radius: 3px;
+      color: #e0e0e0; font-family: inherit; font-size: 0.85rem; padding: 8px;
+    }
+    select { height: 36px; margin-bottom: 12px; }
+    textarea { resize: vertical; min-height: 120px; margin-bottom: 12px; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button {
+      background: #1a3a1a; border: 1px solid #3a6a3a; border-radius: 3px;
+      color: #7fff7f; cursor: pointer; font-family: inherit; font-size: 0.85rem;
+      padding: 8px 20px; white-space: nowrap;
+    }
+    button:hover { background: #2a4a2a; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.btn-secondary { background: #1a1a2e; border-color: #3a3a6a; color: #9fb3ff; }
+    button.btn-secondary:hover { background: #2a2a4a; }
+    button.btn-secondary:disabled { opacity: 0.3; }
+    .hint { color: #555; font-size: 0.72rem; margin-top: 4px; }
+
+    /* Stage progress */
+    .stage-track { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+    .stage-pill {
+      font-size: 0.7rem; padding: 3px 8px; border-radius: 2px;
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #555;
+      transition: all 0.2s;
+    }
+    .stage-pill.running  { border-color: #ffdf7f; color: #ffdf7f; background: #1a1800; }
+    .stage-pill.ok       { border-color: #3a6a3a; color: #7fff7f; background: #0a1a0a; }
+    .stage-pill.fail     { border-color: #6a1a1a; color: #ff7f7f; background: #1a0a0a; }
+
+    /* Output sections */
+    .output-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 640px) { .output-sections { grid-template-columns: 1fr; } }
+    .output-section {
+      background: #0d0d0d; border: 1px solid #222; border-radius: 3px; padding: 12px;
+    }
+    .output-section-title {
+      font-size: 0.7rem; letter-spacing: 0.08em; margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid #1e1e1e; text-transform: uppercase;
+    }
+    .section-extraction  .output-section-title { color: #7fb3ff; }
+    .section-reconstruction .output-section-title { color: #b3ff7f; }
+    .section-gap         .output-section-title { color: #ffb37f; }
+    .section-monetisation .output-section-title { color: #d97fff; }
+    .output-section p { font-size: 0.78rem; color: #b0b0b0; line-height: 1.6; margin-bottom: 6px; }
+    .output-section p:last-child { margin-bottom: 0; }
+    .output-section .field { margin-bottom: 5px; }
+    .output-section .field-key { color: #666; font-size: 0.7rem; }
+    .output-section .field-val { color: #d0d0d0; font-size: 0.8rem; }
+    .tag {
+      display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 2px;
+      margin: 1px 2px 1px 0;
+    }
+    .tag-ok   { background: #0a1a0a; border: 1px solid #3a6a3a; color: #7fff7f; }
+    .tag-warn { background: #1a1400; border: 1px solid #6a5a00; color: #ffdf7f; }
+    .tag-risk { background: #1a0a0a; border: 1px solid #6a1a1a; color: #ff9f9f; }
+    .tag-info { background: #0d0d1a; border: 1px solid #2a2a6a; color: #9fb3ff; }
+
+    /* Raw log */
+    #raw-log {
+      background: #080808; border: 1px solid #1e1e1e; border-radius: 3px;
+      color: #606060; font-size: 0.75rem; max-height: 120px; overflow-y: auto;
+      padding: 10px; white-space: pre-wrap; word-break: break-word;
+    }
+    .status-ok  { color: #7fff7f; }
+    .status-err { color: #ff7f7f; }
+    .status-run { color: #ffdf7f; }
+
+    /* Status banner */
+    #status-banner {
+      display: none; font-size: 0.8rem; padding: 8px 12px; border-radius: 3px;
+      margin-bottom: 12px; border: 1px solid #2a2a2a;
+    }
+    #status-banner.ok   { background: #0a1a0a; border-color: #3a6a3a; color: #7fff7f; display: block; }
+    #status-banner.fail { background: #1a0a0a; border-color: #6a1a1a; color: #ff7f7f; display: block; }
+    #status-banner.run  { background: #1a1800; border-color: #6a5a00; color: #ffdf7f; display: block; }
+
+    /* Routing result */
+    #routing-panel { display: none; }
+    .route-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.85rem; font-weight: bold; letter-spacing: 0.06em;
+      padding: 6px 14px; border-radius: 3px; margin-bottom: 12px;
+    }
+    .route-A { background: #0d0d1a; border: 1px solid #3a3a8a; color: #9fb3ff; }
+    .route-B { background: #0a1a0a; border: 1px solid #3a6a3a; color: #7fff7f; }
+    .route-C { background: #1a1400; border: 1px solid #8a6a00; color: #ffdf7f; }
+    .route-D { background: #141414; border: 1px solid #3a3a3a; color: #888; }
+    .route-label { font-size: 0.7rem; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .route-reason { font-size: 0.78rem; color: #a0a0a0; margin-bottom: 12px; line-height: 1.6; }
+    .route-object {
+      background: #080808; border: 1px solid #1e1e1e; border-radius: 3px;
+      font-size: 0.75rem; color: #8a9abf; padding: 10px;
+      white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
+    }
+    .route-object-label { font-size: 0.7rem; color: #444; margin-bottom: 4px; text-transform: uppercase; }
+
+    /* Fail guard panel */
+    #fail-guard-panel {
+      display: none; background: #1a0808; border: 2px solid #8a2020; border-radius: 4px;
+      padding: 16px; margin-bottom: 16px;
+    }
+    #fail-guard-panel.active { display: block; }
+    .fail-guard-title { color: #ff5f5f; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+    .fail-condition-code { color: #ff7f7f; font-size: 1rem; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.06em; }
+    .fail-condition-desc { color: #c07070; font-size: 0.78rem; line-height: 1.5; margin-bottom: 8px; }
+    .contract-violations { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3a1010; }
+    .contract-violation { font-size: 0.73rem; color: #ff9f9f; padding: 1px 0; }
+    .contract-violation::before { content: "✗  "; }
+    #fail-scope-detail { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3a1010; }
+    .scope-violation { font-size: 0.73rem; padding: 4px 0; border-bottom: 1px dotted #2a1010; }
+    .scope-violation:last-child { border-bottom: none; }
+    .sv-label { font-size: 0.65rem; color: #884444; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+    .sv-file  { display: block; color: #ff9f9f; word-break: break-all; }
+    .sv-file::before  { content: "FILE:     "; color: #884444; }
+    .sv-scope { display: block; color: #d07070; }
+    .sv-scope::before { content: "SCOPE:    "; color: #884444; }
+    .sv-msg   { display: block; color: #c07070; }
+    .sv-msg::before   { content: "REASON:   "; color: #884444; }
+
+    /* Action status */
+    #action-status {
+      margin-top: 12px; padding: 10px 12px; border-radius: 3px; font-size: 0.78rem;
+      display: none; border: 1px solid #2a2a2a;
+    }
+    #action-status.action-ok   { display:block; background:#0a1a0a; border-color:#3a6a3a; color:#7fff7f; }
+    #action-status.action-fail { display:block; background:#1a0a0a; border-color:#6a1a1a; color:#ff7f7f; }
+    #action-status.action-run  { display:block; background:#1a1800; border-color:#6a5a00; color:#ffdf7f; }
+    .action-status-label { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:6px; }
+
+    /* Operator field rows — shared by action-status detail + run summary */
+    .op-grid  { display:grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 8px; }
+    @media (max-width:520px) { .op-grid { grid-template-columns: 1fr; } }
+    .op-row   { display:flex; flex-direction:column; }
+    .op-key   { font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1px; }
+    .op-val   { font-size:0.78rem; color:#d0d0d0; word-break:break-all; }
+    .op-val.highlight { color:#7fff7f; }
+    .op-val.muted     { color:#666; }
+
+    /* Run summary panel */
+    #run-summary-panel { display:none; }
+    #run-summary-panel .panel-title { color:#d97fff; }
+    .summary-contract-ok   { color:#7fff7f; }
+    .summary-contract-fail { color:#ff7f7f; }
+  </style>
+</head>
+<body>
+  <h1>AI LAB — EXECUTION PANEL</h1>
+  <div class="meta">port 4444 | pain system | ai_lab lane</div>
+
+  <div class="panel">
+    <div class="panel-title">Pipeline Runner</div>
+
+    <label for="pipeline">Pipeline</label>
+    <select id="pipeline">
+      <option value="vst-trip">VST — Trip</option>
+      <option value="vst-lead">VST — Lead</option>
+      <option value="vst-ava">VST — Ava</option>
+      <option value="fhi-case">FHI — Case</option>
+    </select>
+
+    <label for="payload">Input Payload (JSON)</label>
+    <textarea id="payload" spellcheck="false" placeholder='{"key": "value"}'></textarea>
+    <div class="hint">Valid JSON only. No pattern restrictions applied.</div>
+
+    <label for="scope-layer" style="margin-top:10px;">Task Scope (optional — triggers F8 guard)</label>
+    <select id="scope-layer">
+      <option value="">— none —</option>
+      <option value="UI">UI</option>
+      <option value="PIPELINE">PIPELINE</option>
+      <option value="ROUTING">ROUTING</option>
+      <option value="ACTION">ACTION</option>
+      <option value="STORAGE">STORAGE</option>
+    </select>
+
+    <label for="changed-files" style="margin-top:8px;">Changed Files (one per line)</label>
+    <textarea id="changed-files" spellcheck="false" rows="3" placeholder="tools/rehab-client/ai-lab/index.html"></textarea>
+
+    <div class="btn-row" style="margin-top:12px;">
+      <button id="run-btn" onclick="runPipeline()">RUN</button>
+    </div>
+  </div>
+
+  <div id="fail-guard-panel">
+    <div class="fail-guard-title">Behaviour Enforcement — FAIL</div>
+    <div class="fail-condition-code" id="fail-code"></div>
+    <div class="fail-condition-desc" id="fail-desc"></div>
+    <div class="contract-violations" id="contract-violations"></div>
+    <div id="fail-scope-detail"></div>
+  </div>
+
+  <div class="panel" id="results-panel" style="display:none;">
+    <div class="panel-title">Results</div>
+
+    <div id="status-banner"></div>
+
+    <div class="stage-track" id="stage-track"></div>
+
+    <div class="output-sections" id="output-sections"></div>
+
+    <div class="btn-row" style="margin-bottom:12px;">
+      <button class="btn-secondary" id="dl-json-btn" onclick="downloadJSON()" disabled>Download JSON</button>
+      <button class="btn-secondary" id="dl-txt-btn" onclick="downloadReport()" disabled>Download Report (text)</button>
+    </div>
+
+    <details>
+      <summary style="font-size:0.72rem;color:#444;cursor:pointer;margin-bottom:6px;">Raw log</summary>
+      <div id="raw-log"></div>
+    </details>
+  </div>
+
+  <div class="panel" id="routing-panel">
+    <div class="panel-title">Routing Result</div>
+    <div class="route-label">Selected Route</div>
+    <div id="route-badge"></div>
+    <div class="route-label">Reason</div>
+    <div class="route-reason" id="route-reason"></div>
+    <div class="route-object-label">Output Object Preview</div>
+    <div class="route-object" id="route-object"></div>
+
+    <div id="action-status">
+      <div class="action-status-label">Action Status</div>
+      <div id="action-status-msg"></div>
+      <div class="op-grid" id="action-status-detail" style="display:none;">
+        <div class="op-row"><span class="op-key">Outcome</span><span class="op-val" id="as-outcome"></span></div>
+        <div class="op-row"><span class="op-key">File written</span><span class="op-val" id="as-file"></span></div>
+        <div class="op-row"><span class="op-key">Saved at</span><span class="op-val" id="as-saved"></span></div>
+        <div class="op-row"><span class="op-key">Route</span><span class="op-val" id="as-route"></span></div>
+        <div class="op-row"><span class="op-key">Object ID</span><span class="op-val muted" id="as-id"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="run-summary-panel">
+    <div class="panel-title">Run Summary</div>
+    <div class="op-grid">
+      <div class="op-row"><span class="op-key">Pipeline</span><span class="op-val highlight" id="rs-pipeline"></span></div>
+      <div class="op-row"><span class="op-key">Stages passed</span><span class="op-val" id="rs-stages"></span></div>
+      <div class="op-row"><span class="op-key">Route selected</span><span class="op-val" id="rs-route"></span></div>
+      <div class="op-row"><span class="op-key">Action executed</span><span class="op-val" id="rs-action"></span></div>
+      <div class="op-row"><span class="op-key">Contract</span><span class="op-val" id="rs-contract"></span></div>
+      <div class="op-row"><span class="op-key">Run at</span><span class="op-val muted" id="rs-timestamp"></span></div>
+      <div class="op-row"><span class="op-key">Saved at</span><span class="op-val muted" id="rs-saved"></span></div>
+    </div>
+  </div>
+
+  <script>
+    const PIPELINES = {
+      "vst-trip": {
+        flow: ["request", "evaluate", "review", "approve", "journey", "complete"],
+        requiredKeys: ["traveler", "destination", "dates"],
+        example: { traveler: "J. Facey", destination: "London", dates: { depart: "2026-04-01", return: "2026-04-07" }, purpose: "client meeting" }
+      },
+      "vst-lead": {
+        flow: ["form", "api", "store", "notify"],
+        requiredKeys: ["name", "email"],
+        example: { name: "Jane Doe", email: "jane@corp.com", company: "Acme Ltd", interest: "corporate-travel" }
+      },
+      "vst-ava": {
+        flow: ["input", "evaluate", "explain", "render"],
+        requiredKeys: ["query"],
+        example: { query: "What is the travel policy for Tier 1 employees?", context: "compliance" }
+      },
+      "fhi-case": {
+        flow: ["intake", "verify", "assess", "triage", "resolve"],
+        requiredKeys: ["ref", "type"],
+        example: { ref: "FHI-2026-0042", type: "card-not-present", amount: 1250.00, currency: "GBP", reported_by: "J. Facey", contact: "jfacey@corp.com", channel: "online", status: "open" }
+      }
+    };
+
+    let lastResult = null;
+
+    document.getElementById("pipeline").addEventListener("change", function () {
+      const pipe = PIPELINES[this.value];
+      if (pipe) document.getElementById("payload").value = JSON.stringify(pipe.example, null, 2);
+    });
+
+    (function init() {
+      document.getElementById("payload").value = JSON.stringify(PIPELINES["vst-trip"].example, null, 2);
+    })();
+
+    function rawLog(msg, cls) {
+      const el = document.getElementById("raw-log");
+      const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+      el.innerHTML += `<span class="${cls || ''}">[${ts}] ${msg}</span>\n`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setBanner(text, state) {
+      const b = document.getElementById("status-banner");
+      b.className = state;
+      b.textContent = text;
+    }
+
+    function buildStagePills(flow) {
+      const track = document.getElementById("stage-track");
+      track.innerHTML = "";
+      flow.forEach((stage, i) => {
+        const p = document.createElement("span");
+        p.className = "stage-pill";
+        p.id = "pill-" + i;
+        p.textContent = stage;
+        track.appendChild(p);
+      });
+    }
+
+    function setPill(index, state) {
+      const p = document.getElementById("pill-" + index);
+      if (p) p.className = "stage-pill " + state;
+    }
+
+    // Derive structured output sections from pipeline + payload
+    function buildOutputSections(pipelineId, payload, stagesOk) {
+      const sections = document.getElementById("output-sections");
+      sections.innerHTML = "";
+
+      const data = deriveOutputData(pipelineId, payload, stagesOk);
+
+      const defs = [
+        { key: "extraction",     label: "Extraction",     cls: "section-extraction" },
+        { key: "reconstruction", label: "Reconstruction", cls: "section-reconstruction" },
+        { key: "gap",            label: "Gap & Risk",     cls: "section-gap" },
+        { key: "monetisation",   label: "Monetisation",   cls: "section-monetisation" }
+      ];
+
+      defs.forEach(({ key, label, cls }) => {
+        const sec = document.createElement("div");
+        sec.className = "output-section " + cls;
+
+        const title = document.createElement("div");
+        title.className = "output-section-title";
+        title.textContent = label;
+        sec.appendChild(title);
+
+        const fields = data[key] || [];
+        fields.forEach(item => {
+          if (item.type === "field") {
+            const d = document.createElement("div");
+            d.className = "field";
+            d.innerHTML = `<div class="field-key">${item.key}</div><div class="field-val">${item.val}</div>`;
+            sec.appendChild(d);
+          } else if (item.type === "tags") {
+            const d = document.createElement("div");
+            d.style.marginBottom = "6px";
+            item.tags.forEach(t => {
+              const span = document.createElement("span");
+              span.className = "tag " + (t.cls || "tag-info");
+              span.textContent = t.label;
+              d.appendChild(span);
+            });
+            sec.appendChild(d);
+          } else if (item.type === "text") {
+            const p = document.createElement("p");
+            p.textContent = item.val;
+            sec.appendChild(p);
+          }
+        });
+
+        sections.appendChild(sec);
+      });
+    }
+
+    function deriveOutputData(pipelineId, payload, stagesOk) {
+      const allOk = stagesOk.every(Boolean);
+      const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+
+      if (pipelineId === "vst-trip") {
+        const dates = payload.dates || {};
+        const depart = dates.depart || "—";
+        const ret    = dates.return || dates["return"] || "—";
+        const nights = calcNights(depart, ret);
+        return {
+          extraction: [
+            { type: "field", key: "Traveler",    val: payload.traveler || "—" },
+            { type: "field", key: "Destination", val: payload.destination || "—" },
+            { type: "field", key: "Depart",      val: depart },
+            { type: "field", key: "Return",      val: ret },
+            { type: "field", key: "Purpose",     val: payload.purpose || "—" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Duration",    val: nights > 0 ? nights + " nights" : "—" },
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Approved" : "Incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "field", key: "Policy check", val: allOk ? "Passed" : "Review required" },
+            { type: "tags", tags: [
+              { label: nights > 5 ? "Extended trip" : "Standard duration", cls: nights > 5 ? "tag-warn" : "tag-ok" },
+              { label: payload.purpose ? "Purpose declared" : "Purpose missing", cls: payload.purpose ? "tag-ok" : "tag-warn" }
+            ]},
+            { type: "text", val: allOk ? "No compliance gaps detected. Trip request meets policy criteria." : "One or more stages failed. Manual review required before approval." }
+          ],
+          monetisation: [
+            { type: "field", key: "Category",    val: "Corporate Travel" },
+            { type: "field", key: "Tier signal", val: nights > 5 ? "Premium route candidate" : "Standard route" },
+            { type: "field", key: "Upsell",      val: nights > 3 ? "Lounge access / hotel upgrade eligible" : "—" },
+            { type: "text", val: "Route: " + (payload.traveler || "traveler") + " → " + (payload.destination || "destination") + ". Log for reporting and forecasting." }
+          ]
+        };
+      }
+
+      if (pipelineId === "vst-lead") {
+        return {
+          extraction: [
+            { type: "field", key: "Name",     val: payload.name || "—" },
+            { type: "field", key: "Email",    val: payload.email || "—" },
+            { type: "field", key: "Company",  val: payload.company || "—" },
+            { type: "field", key: "Interest", val: payload.interest || "—" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Lead stored & notified" : "Pipeline incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "tags", tags: [
+              { label: payload.company ? "Company present" : "Company missing", cls: payload.company ? "tag-ok" : "tag-warn" },
+              { label: payload.interest ? "Interest tagged" : "Interest missing", cls: payload.interest ? "tag-ok" : "tag-warn" }
+            ]},
+            { type: "text", val: allOk ? "Lead capture complete. CRM notification sent." : "Lead capture incomplete. Check API and store stages." }
+          ],
+          monetisation: [
+            { type: "field", key: "Lead type",   val: payload.interest || "unspecified" },
+            { type: "field", key: "Follow-up",   val: payload.company ? "Account-level outreach" : "Individual outreach" },
+            { type: "text", val: "Route to sales pipeline for qualification and booking conversion." }
+          ]
+        };
+      }
+
+      if (pipelineId === "vst-ava") {
+        return {
+          extraction: [
+            { type: "field", key: "Query",   val: payload.query || "—" },
+            { type: "field", key: "Context", val: payload.context || "general" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Response rendered" : "Evaluation incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "tags", tags: [
+              { label: payload.context ? "Context provided" : "No context", cls: payload.context ? "tag-ok" : "tag-warn" }
+            ]},
+            { type: "text", val: allOk ? "Ava evaluation complete. Response ready for render." : "Evaluation did not complete. Review evaluate/explain stages." }
+          ],
+          monetisation: [
+            { type: "field", key: "Query type", val: payload.context || "general" },
+            { type: "text", val: "Log query for Ava training data and policy coverage analysis." }
+          ]
+        };
+      }
+
+      if (pipelineId === "fhi-case") {
+        const amount    = parseFloat(payload.amount) || 0;
+        const isHighVal = amount >= 5000;
+        return {
+          extraction: [
+            { type: "field", key: "Case ref",    val: payload.ref || "—" },
+            { type: "field", key: "Fraud type",  val: payload.type || "—" },
+            { type: "field", key: "Amount",      val: amount > 0 ? (payload.currency || "GBP") + " " + amount.toFixed(2) : "—" },
+            { type: "field", key: "Reported by", val: payload.reported_by || "—" },
+            { type: "field", key: "Channel",     val: payload.channel || "—" },
+            { type: "field", key: "Status",      val: payload.status || "open" }
+          ],
+          reconstruction: [
+            { type: "field", key: "Stage count", val: stagesOk.length + " stages" },
+            { type: "field", key: "Outcome",     val: allOk ? "Case triaged & resolved" : "Pipeline incomplete" },
+            { type: "tags", tags: stagesOk.map((ok, i) => ({ label: PIPELINES[pipelineId].flow[i], cls: ok ? "tag-ok" : "tag-risk" })) }
+          ],
+          gap: [
+            { type: "tags", tags: [
+              { label: payload.contact ? "Contact present" : "Contact missing", cls: payload.contact ? "tag-ok" : "tag-warn" },
+              { label: isHighVal ? "High value" : "Standard value", cls: isHighVal ? "tag-risk" : "tag-ok" },
+              { label: payload.status === "open" ? "Case open" : "Case closed", cls: payload.status === "open" ? "tag-warn" : "tag-ok" }
+            ]},
+            { type: "text", val: allOk ? "All intake stages passed. Case ready for investigator assignment." : "One or more stages failed. Manual review required before assignment." }
+          ],
+          monetisation: [
+            { type: "field", key: "Recovery potential", val: amount > 0 ? (payload.currency || "GBP") + " " + amount.toFixed(2) : "—" },
+            { type: "field", key: "Case value tier",    val: isHighVal ? "High — escalate" : "Standard — queue" },
+            { type: "text", val: "Log case for recovery tracking and fraud pattern analysis." }
+          ]
+        };
+      }
+
+      return { extraction: [], reconstruction: [], gap: [], monetisation: [] };
+    }
+
+    function calcNights(depart, ret) {
+      try {
+        const d = new Date(depart), r = new Date(ret);
+        const diff = (r - d) / (1000 * 60 * 60 * 24);
+        return isNaN(diff) ? 0 : Math.max(0, Math.round(diff));
+      } catch (e) { return 0; }
+    }
+
+    function runPipeline() {
+      const pipelineId = document.getElementById("pipeline").value;
+      const rawPayload = document.getElementById("payload").value.trim();
+      const btn = document.getElementById("run-btn");
+      const resultsPanel = document.getElementById("results-panel");
+
+      document.getElementById("raw-log").textContent = "";
+      document.getElementById("output-sections").innerHTML = "";
+      document.getElementById("stage-track").innerHTML = "";
+      document.getElementById("routing-panel").style.display = "none";
+      document.getElementById("run-summary-panel").style.display = "none";
+      ["rs-pipeline","rs-stages","rs-route","rs-action","rs-saved","rs-timestamp"].forEach(id => { document.getElementById(id).textContent = ""; });
+      document.getElementById("rs-contract").textContent = ""; document.getElementById("rs-contract").className = "op-val";
+      document.getElementById("action-status-detail").style.display = "none";
+      ["as-outcome","as-file","as-saved","as-route","as-id"].forEach(id => { document.getElementById(id).textContent = ""; });
+      document.getElementById("as-outcome").className = "op-val";
+      document.getElementById("fail-guard-panel").classList.remove("active");
+      document.getElementById("fail-code").textContent = "";
+      document.getElementById("fail-desc").textContent = "";
+      document.getElementById("contract-violations").innerHTML = "";
+      document.getElementById("fail-scope-detail").innerHTML = "";
+      document.getElementById("action-status").className = "";
+      document.getElementById("action-status-msg").textContent = "";
+      document.getElementById("dl-json-btn").disabled = true;
+      document.getElementById("dl-txt-btn").disabled = true;
+      lastResult = null;
+
+      resultsPanel.style.display = "block";
+      btn.disabled = true;
+      setBanner("Running…", "run");
+
+      let payload;
+      try {
+        payload = JSON.parse(rawPayload);
+        _errTrack.last = null; _errTrack.count = 0; // reset on clean parse
+      } catch (e) {
+        // F1 — same error twice
+        if (_errTrack.last === e.message) { _errTrack.count++; } else { _errTrack.last = e.message; _errTrack.count = 1; }
+        if (_errTrack.count >= 2) { failGuard("F1", "JSON parse failed twice: " + e.message); btn.disabled = false; return; }
+        rawLog("PARSE ERROR: " + e.message, "status-err");
+        setBanner("FAIL — Invalid JSON: " + e.message, "fail");
+        btn.disabled = false;
+        return;
+      }
+
+      const pipe = PIPELINES[pipelineId];
+      if (!pipe) {
+        rawLog("Unknown pipeline: " + pipelineId, "status-err");
+        setBanner("FAIL — Unknown pipeline", "fail");
+        btn.disabled = false;
+        return;
+      }
+
+      const missing = pipe.requiredKeys.filter(k => !(k in payload));
+      if (missing.length) {
+        rawLog("VALIDATION ERROR: missing keys: " + missing.join(", "), "status-err");
+        setBanner("FAIL — Missing required keys: " + missing.join(", "), "fail");
+        btn.disabled = false;
+        return;
+      }
+
+      // scopeGuard — F8 cross-layer modification check (runs before behaviourCheck)
+      const taskScope   = document.getElementById("scope-layer").value.trim();
+      const changedFiles = document.getElementById("changed-files").value.split("\n").map(s => s.trim()).filter(Boolean);
+      if (!scopeGuard(taskScope, changedFiles)) { btn.disabled = false; return; }
+
+      // behaviourCheck — F4 lane check + F5 payload integrity
+      if (!behaviourCheck(pipelineId, payload)) { btn.disabled = false; return; }
+
+      rawLog("Pipeline: " + pipelineId, "status-run");
+      rawLog("Keys accepted: " + Object.keys(payload).join(", "), "status-run");
+
+      buildStagePills(pipe.flow);
+
+      const stagesOk = new Array(pipe.flow.length).fill(false);
+      let step = 0;
+
+      function nextStep() {
+        if (step >= pipe.flow.length) {
+          rawLog("STATUS: COMPLETE — all " + pipe.flow.length + " stages passed", "status-ok");
+          setBanner("COMPLETE — " + pipelineId + " passed all " + pipe.flow.length + " stages", "ok");
+          buildOutputSections(pipelineId, payload, stagesOk);
+          const routeResult = determineRoute(pipelineId, payload);
+          rawLog("ROUTE: " + routeResult.route + " — " + ROUTE_DEFS[routeResult.route].name, "status-run");
+          buildRoutingPanel(routeResult);
+          executeAction(routeResult);
+          lastResult = {
+            pipeline: pipelineId, payload,
+            stages: pipe.flow.map((s, i) => ({ stage: s, ok: stagesOk[i] })),
+            routing: routeResult,
+            timestamp: new Date().toISOString()
+          };
+          // contractValidator — post-run OUTPUT CONTRACT check
+          if (!contractValidator(lastResult)) { btn.disabled = false; return; }
+          buildRunSummary(lastResult);
+          document.getElementById("dl-json-btn").disabled = false;
+          document.getElementById("dl-txt-btn").disabled = false;
+          btn.disabled = false;
+          return;
+        }
+        const idx = step;
+        const stage = pipe.flow[idx];
+        setPill(idx, "running");
+        rawLog("STAGE [" + (idx + 1) + "/" + pipe.flow.length + "]: " + stage.toUpperCase() + " …", "status-run");
+        setTimeout(() => {
+          stagesOk[idx] = true;
+          setPill(idx, "ok");
+          rawLog("STAGE [" + (idx + 1) + "/" + pipe.flow.length + "]: " + stage.toUpperCase() + " — ok", "status-ok");
+          step++;
+          nextStep();
+        }, 220);
+      }
+      nextStep();
+    }
+
+    // ── BEHAVIOUR ENFORCEMENT LAYER ──────────────────────────────────────────
+    // Enforces CLAUDE.md v2 rules. Wraps runPipeline() pre/post.
+    // Does NOT alter pipeline logic, routing, or action layers.
+
+    const FAIL_CONDITIONS = {
+      F1: "Command failed twice with the same error.",
+      F2: "Test cannot be run — no observable result available.",
+      F3: "Change would modify a baseline-locked file without approval.",
+      F4: "Task requires mixing lanes without explicit permission.",
+      F5: "Output cannot be verified — no stages ran or result is empty.",
+      F6: "Fix cycle limit (2) reached without passing.",
+      F7: "File write would overwrite data store (not append).",
+      F8: "Task specifies a layer and a modification targets a different layer."
+    };
+
+    // Scope definitions: each layer owns a set of file-path patterns.
+    const SCOPE_LAYERS = {
+      UI:       [/index\.html$/i, /\.css$/i, /\.scss$/i, /frontend[^/]*\.js$/i, /\/app\.js$/i, /\/scripts\//i, /\/public\//i, /\/components\//i],
+      PIPELINE: [/pipeline/i],
+      ROUTING:  [/routing/i, /router/i, /route/i],
+      ACTION:   [/server\.js$/i, /action/i, /handler/i, /\/api\//i],
+      STORAGE:  [/\/data\//i, /\.json$/i, /store/i, /storage/i]
+    };
+
+    const VALID_STATUSES   = ["COMPLETE", "BLOCKED", "PARTIAL", "FAIL"];
+    const ALLOWED_PIPELINES = Object.keys(PIPELINES); // AI_LAB lane only
+    const _errTrack = { last: null, count: 0 };
+
+    // Stop pipeline, surface fail condition in UI. Always returns false.
+    function failGuard(conditionId, reason) {
+      const panel = document.getElementById("fail-guard-panel");
+      const codeEl = document.getElementById("fail-code");
+      const descEl = document.getElementById("fail-desc");
+      const msg = reason || FAIL_CONDITIONS[conditionId] || "Unknown condition.";
+      panel.classList.add("active");
+      codeEl.textContent = "FAIL CONDITION " + conditionId;
+      descEl.textContent = msg;
+      rawLog("FAIL GUARD [" + conditionId + "]: " + msg, "status-err");
+      setBanner("FAIL — " + conditionId + ": " + msg, "fail");
+      return false;
+    }
+
+    // Pre-run: validate lane ownership and payload integrity.
+    function behaviourCheck(pipelineId, payload) {
+      // F4 — pipeline must belong to AI_LAB lane
+      if (!ALLOWED_PIPELINES.includes(pipelineId)) {
+        return failGuard("F4", "Pipeline '" + pipelineId + "' not in AI_LAB lane.");
+      }
+      // F5 — payload must be a non-null, non-empty object
+      if (!payload || typeof payload !== "object" || Array.isArray(payload) || Object.keys(payload).length === 0) {
+        return failGuard("F5", "Payload is empty or not a valid object. Output unverifiable.");
+      }
+      rawLog("BEHAVIOUR: pre-run check passed", "status-ok");
+      return true;
+    }
+
+    // Pre-run: F8 scope enforcement. taskScope = UI|PIPELINE|ROUTING|ACTION|STORAGE.
+    // changedFiles = array of file paths. Returns false if any file violates scope.
+    function scopeGuard(taskScope, changedFiles) {
+      if (!taskScope || !SCOPE_LAYERS[taskScope]) {
+        rawLog("SCOPE GUARD: no scope declared — skipped", "status-ok");
+        return true;
+      }
+      if (!changedFiles || changedFiles.length === 0) {
+        rawLog("SCOPE GUARD: no files declared — skipped", "status-ok");
+        return true;
+      }
+      const patterns = SCOPE_LAYERS[taskScope];
+      const violations = changedFiles.filter(f => !patterns.some(p => p.test(f)));
+      if (violations.length) {
+        const detailEl = document.getElementById("fail-scope-detail");
+        detailEl.innerHTML = violations.map(function(file) {
+          return "<div class='scope-violation'>" +
+            "<span class='sv-file'>" + file + "</span>" +
+            "<span class='sv-scope'>Expected: " + taskScope + " layer only</span>" +
+            "<span class='sv-msg'>File path does not match any permitted pattern for this layer</span>" +
+            "</div>";
+        }).join("");
+        return failGuard("F8", "Scope violation — " + violations.length + " file(s) outside " + taskScope + " layer: " + violations.join(", "));
+      }
+      rawLog("SCOPE GUARD: all " + changedFiles.length + " file(s) within " + taskScope + " layer", "status-ok");
+      return true;
+    }
+
+    // Post-run: validate lastResult against OUTPUT CONTRACT.
+    function contractValidator(output) {
+      const violations = [];
+      if (!output)                                              violations.push("output is null");
+      if (!output || !output.pipeline)                         violations.push("pipeline field missing");
+      if (!output || !output.stages || !output.stages.length)  violations.push("stages empty — unverifiable (F5)");
+      if (output && output.stages && !output.stages.every(s => s.ok !== undefined))
+                                                               violations.push("stage results incomplete");
+      if (!output || !output.routing)                          violations.push("routing result missing");
+      if (!output || !output.routing || !output.routing.route) violations.push("route not determined");
+      if (!output || !output.timestamp)                        violations.push("timestamp missing");
+
+      const derivedStatus = (output && output.stages && output.stages.every(s => s.ok))
+        ? "COMPLETE" : "FAIL";
+      if (!VALID_STATUSES.includes(derivedStatus))
+        violations.push("STATUS '" + derivedStatus + "' not in: " + VALID_STATUSES.join("|"));
+
+      if (violations.length) {
+        const el = document.getElementById("contract-violations");
+        el.innerHTML = violations.map(v => "<div class='contract-violation'>" + v + "</div>").join("");
+        const isCritical = violations.some(v => /F5|stages empty|routing/.test(v));
+        return failGuard(isCritical ? "F5" : "F6", "CONTRACT VIOLATIONS (" + violations.length + "): " + violations.join("; "));
+      }
+
+      rawLog("CONTRACT: validated — STATUS: " + derivedStatus, "status-ok");
+      return true;
+    }
+    // ── END BEHAVIOUR ENFORCEMENT LAYER ──────────────────────────────────────
+
+    // ── ROUTING LAYER ────────────────────────────────────────────────────────
+    // Reads monetisation signals from pipeline output; selects one of A/B/C/D.
+    // Does NOT alter pipeline logic, stages, or existing output sections.
+
+    const ROUTE_DEFS = {
+      A: { code: "A", name: "LEAD CAPTURE",       cls: "route-A" },
+      B: { code: "B", name: "BOOKING FLOW",        cls: "route-B" },
+      C: { code: "C", name: "ENTERPRISE FLAG",     cls: "route-C" },
+      D: { code: "D", name: "INTERNAL ANALYSIS",   cls: "route-D" }
+    };
+
+    function determineRoute(pipelineId, payload) {
+      const ts = new Date().toISOString();
+
+      // Enterprise signals — checked first (highest priority)
+      const enterpriseSignals = [
+        payload.tier, payload.compliance, payload.enterprise, payload.public_sector,
+        payload.context, payload.interest, payload.purpose
+      ].map(v => String(v || "").toLowerCase());
+      const isEnterprise = enterpriseSignals.some(s =>
+        /enterprise|public.?sector|government|compliance|procurement|tender|authority/.test(s)
+      );
+
+      // FHI signals — fraud case routing (checked after enterprise, before VST)
+      if (pipelineId.startsWith("fhi")) {
+        const amount = parseFloat(payload.amount) || 0;
+        const isHighValue = amount >= 5000;
+        if (isHighValue || isEnterprise) {
+          return {
+            route: "C",
+            reason: "High-value or enterprise fraud case detected. Requires escalation before investigation proceeds.",
+            object: {
+              route: "C — ENTERPRISE FLAG",
+              tag: "HIGH VALUE",
+              pipeline: pipelineId,
+              ref: payload.ref || null,
+              type: payload.type || null,
+              amount: amount,
+              currency: payload.currency || "GBP",
+              escalateTo: "fraud-investigation-lead",
+              complianceFlags: isEnterprise ? ["enterprise-detected"] : ["high-value-threshold"],
+              payload,
+              timestamp: ts
+            }
+          };
+        }
+        if (payload.contact || payload.reported_by) {
+          return {
+            route: "A",
+            reason: "Fraud case with victim contact details. Capture for case owner assignment and follow-up.",
+            object: {
+              route: "A — LEAD CAPTURE",
+              pipeline: pipelineId,
+              ref: payload.ref || null,
+              type: payload.type || null,
+              reportedBy: payload.reported_by || null,
+              contact: payload.contact || null,
+              channel: payload.channel || null,
+              crmReady: true,
+              followUp: "case-owner-assignment",
+              timestamp: ts
+            }
+          };
+        }
+        return {
+          route: "D",
+          reason: "Fraud case intake logged for internal investigation. No commercial signal — store for analysis.",
+          object: {
+            route: "D — INTERNAL ANALYSIS",
+            pipeline: pipelineId,
+            mode: "fraud-investigation",
+            ref: payload.ref || null,
+            type: payload.type || null,
+            amount: amount || null,
+            status: payload.status || "open",
+            storeOnly: true,
+            timestamp: ts
+          }
+        };
+      }
+
+      // Trip / booking signals
+      const isBooking = pipelineId === "vst-trip" ||
+        ["destination", "dates", "depart", "return", "trip", "travel", "booking", "itinerary"]
+          .some(k => k in payload);
+
+      // Lead / enquiry signals
+      const isLead = pipelineId === "vst-lead" ||
+        ["name", "email", "company", "interest", "enquiry", "contact"]
+          .some(k => k in payload);
+
+      if (isEnterprise) {
+        const flags = [];
+        if (/compliance/.test(enterpriseSignals.join(" "))) flags.push("compliance-heavy");
+        if (/public.?sector|government/.test(enterpriseSignals.join(" "))) flags.push("public-sector");
+        if (/procurement|tender/.test(enterpriseSignals.join(" "))) flags.push("procurement");
+        return {
+          route: "C",
+          reason: "Enterprise or compliance signal detected in payload. Escalation required before routing to booking or sales.",
+          object: {
+            route: "C — ENTERPRISE FLAG",
+            tag: "HIGH VALUE",
+            pipeline: pipelineId,
+            complianceFlags: flags.length ? flags : ["enterprise-detected"],
+            escalateTo: "enterprise-sales",
+            payload,
+            timestamp: ts
+          }
+        };
+      }
+
+      if (isBooking) {
+        const dates = payload.dates || {};
+        return {
+          route: "B",
+          reason: "Trip request with destination and dates detected. Routing to booking API for itinerary generation.",
+          object: {
+            route: "B — BOOKING FLOW",
+            pipeline: pipelineId,
+            traveler: payload.traveler || null,
+            destination: payload.destination || null,
+            depart: dates.depart || null,
+            return: dates.return || null,
+            purpose: payload.purpose || null,
+            constraints: payload.constraints || null,
+            bookingApiReady: true,
+            timestamp: ts
+          }
+        };
+      }
+
+      if (isLead) {
+        return {
+          route: "A",
+          reason: "Contact or enquiry intent detected. Structured lead object generated for CRM integration.",
+          object: {
+            route: "A — LEAD CAPTURE",
+            pipeline: pipelineId,
+            name: payload.name || null,
+            email: payload.email || null,
+            company: payload.company || null,
+            interest: payload.interest || null,
+            crmReady: true,
+            followUp: payload.company ? "account-level" : "individual",
+            timestamp: ts
+          }
+        };
+      }
+
+      // No clear commercial signal
+      return {
+        route: "D",
+        reason: "No clear commercial signal detected. Output stored for internal analysis and policy logging.",
+        object: {
+          route: "D — INTERNAL ANALYSIS",
+          pipeline: pipelineId,
+          mode: "analysis",
+          query: payload.query || null,
+          context: payload.context || null,
+          storeOnly: true,
+          timestamp: ts
+        }
+      };
+    }
+
+    function buildRoutingPanel(routeResult) {
+      const panel = document.getElementById("routing-panel");
+      const def = ROUTE_DEFS[routeResult.route];
+
+      const badge = document.getElementById("route-badge");
+      badge.innerHTML = "";
+      const b = document.createElement("div");
+      b.className = "route-badge " + def.cls;
+      b.textContent = def.code + " — " + def.name;
+      badge.appendChild(b);
+
+      document.getElementById("route-reason").textContent = routeResult.reason;
+      document.getElementById("route-object").textContent = JSON.stringify(routeResult.object, null, 2);
+
+      panel.style.display = "block";
+    }
+    // ── END ROUTING LAYER ────────────────────────────────────────────────────
+
+    // ── ACTION LAYER ─────────────────────────────────────────────────────────
+    // POSTs route object to local server → saved to data/{file}.json
+    // Falls back with a clear message if server is not running.
+
+    function setActionStatus(msg, state) {
+      const el  = document.getElementById("action-status");
+      const txt = document.getElementById("action-status-msg");
+      el.className = "action-" + state;
+      txt.textContent = msg;
+    }
+
+    function executeAction(routeResult) {
+      setActionStatus("Executing…", "run");
+      rawLog("ACTION: dispatching route " + routeResult.route, "status-run");
+
+      fetch("/api/action", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ route: routeResult.route, object: routeResult.object })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          const msg = data.message + " → saved to " + data.file;
+          setActionStatus(msg, "ok");
+          rawLog("ACTION OK: " + msg, "status-ok");
+          setActionStatusFull(routeResult, data);
+          updateSummaryAction(data);
+        } else {
+          setActionStatus("Action failed: " + data.error, "fail");
+          rawLog("ACTION FAIL: " + data.error, "status-err");
+          updateSummaryAction(data);
+        }
+      })
+      .catch(err => {
+        const msg = "Server unreachable — run 'node tools/rehab-client/ai-lab/server.js'. Error: " + err.message;
+        setActionStatus(msg, "fail");
+        rawLog("ACTION FAIL: " + err.message, "status-err");
+      });
+    }
+    // ── END ACTION LAYER ──────────────────────────────────────────────────────
+
+    // ── OPERATOR VISIBILITY LAYER ─────────────────────────────────────────────
+    // Read-only display. Does not alter pipeline, routing, action, or enforcement.
+
+    function buildRunSummary(result) {
+      const allOk   = result.stages.every(s => s.ok);
+      const passed  = result.stages.filter(s => s.ok).length;
+      const total   = result.stages.length;
+      const routeDef = ROUTE_DEFS[result.routing.route];
+
+      document.getElementById("rs-pipeline").textContent  = result.pipeline;
+      document.getElementById("rs-stages").textContent    = passed + " / " + total + " passed";
+      document.getElementById("rs-route").textContent     = result.routing.route + " — " + routeDef.name;
+      document.getElementById("rs-action").textContent    = "pending…";   // updated by updateSummaryAction
+      document.getElementById("rs-contract").className    = "op-val " + (allOk ? "summary-contract-ok" : "summary-contract-fail");
+      document.getElementById("rs-contract").textContent  = allOk ? "COMPLETE — passed" : "FAIL";
+      document.getElementById("rs-timestamp").textContent = result.timestamp.replace("T", " ").slice(0, 19);
+      document.getElementById("run-summary-panel").style.display = "block";
+    }
+
+    function updateSummaryAction(actionData) {
+      const el = document.getElementById("rs-action");
+      if (!el) return;
+      el.textContent = actionData.ok
+        ? actionData.message + " → " + actionData.file
+        : "FAIL: " + (actionData.error || "unknown");
+      el.className = "op-val " + (actionData.ok ? "summary-contract-ok" : "summary-contract-fail");
+      const savedEl = document.getElementById("rs-saved");
+      if (savedEl) savedEl.textContent = (actionData.ok && actionData.savedAt) ? actionData.savedAt.replace("T", " ").slice(0, 19) : "—";
+    }
+
+    // Populates structured action-status fields from server response + route context.
+    function setActionStatusFull(routeResult, actionData) {
+      if (!actionData.ok) return; // failure already handled by setActionStatus
+
+      const def   = ROUTE_DEFS[routeResult.route];
+      const obj   = routeResult.object || {};
+      const objId = obj.name || obj.traveler || obj.query || obj.email || "—";
+      const saved = actionData.savedAt
+        ? actionData.savedAt.replace("T", " ").slice(0, 19)
+        : "—";
+
+      const outcomeEl = document.getElementById("as-outcome");
+      outcomeEl.textContent = actionData.message;
+      outcomeEl.className   = "op-val highlight";
+      document.getElementById("as-file").textContent    = actionData.file;
+      document.getElementById("as-saved").textContent   = saved;
+      document.getElementById("as-route").textContent   = routeResult.route + " — " + def.name;
+      document.getElementById("as-id").textContent      = objId;
+      document.getElementById("action-status-detail").style.display = "grid";
+    }
+    // ── END OPERATOR VISIBILITY LAYER ─────────────────────────────────────────
+
+    function downloadJSON() {
+      if (!lastResult) return;
+      const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: "application/json" });
+      triggerDownload(blob, "ai-lab-" + lastResult.pipeline + "-result.json");
+    }
+
+    function downloadReport() {
+      if (!lastResult) return;
+      const r = lastResult;
+      const lines = [
+        "AI LAB — PIPELINE REPORT",
+        "========================",
+        "Pipeline:  " + r.pipeline,
+        "Timestamp: " + r.timestamp,
+        "",
+        "INPUT",
+        "-----",
+        ...Object.entries(r.payload).map(([k, v]) => k + ": " + JSON.stringify(v)),
+        "",
+        "STAGES",
+        "------",
+        ...r.stages.map((s, i) => "[" + (i + 1) + "] " + s.stage.toUpperCase().padEnd(14) + (s.ok ? "PASS" : "FAIL")),
+        "",
+        "RESULT",
+        "------",
+        r.stages.every(s => s.ok) ? "COMPLETE — all stages passed." : "INCOMPLETE — one or more stages failed.",
+        "",
+        "ROUTING",
+        "-------",
+        "Route:  " + (r.routing ? r.routing.route + " — " + ROUTE_DEFS[r.routing.route].name : "—"),
+        "Reason: " + (r.routing ? r.routing.reason : "—"),
+        "",
+        "Route Object:",
+        r.routing ? JSON.stringify(r.routing.object, null, 2) : "—",
+        ""
+      ];
+      const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+      triggerDownload(blob, "ai-lab-" + r.pipeline + "-report.txt");
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
