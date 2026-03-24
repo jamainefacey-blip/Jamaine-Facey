@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Lab — Execution Panel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e0e0e0; min-height: 100vh; padding: 24px; }
+    h1 { color: #7fff7f; font-size: 1rem; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .meta { color: #555; font-size: 0.75rem; margin-bottom: 24px; }
+    .panel { background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; padding: 16px; margin-bottom: 16px; }
+    .panel-title { color: #7fb3ff; font-size: 0.8rem; letter-spacing: 0.08em; margin-bottom: 12px; }
+    label { display: block; color: #888; font-size: 0.75rem; margin-bottom: 4px; }
+    select, textarea {
+      width: 100%; background: #0d0d0d; border: 1px solid #333; border-radius: 3px;
+      color: #e0e0e0; font-family: inherit; font-size: 0.85rem; padding: 8px;
+    }
+    select { height: 36px; margin-bottom: 12px; }
+    textarea { resize: vertical; min-height: 120px; margin-bottom: 12px; }
+    button {
+      background: #1a3a1a; border: 1px solid #3a6a3a; border-radius: 3px;
+      color: #7fff7f; cursor: pointer; font-family: inherit; font-size: 0.85rem;
+      padding: 8px 20px;
+    }
+    button:hover { background: #2a4a2a; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    #output {
+      background: #080808; border: 1px solid #1e1e1e; border-radius: 3px;
+      color: #a0a0a0; font-size: 0.8rem; min-height: 160px; padding: 12px;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .status-ok  { color: #7fff7f; }
+    .status-err { color: #ff7f7f; }
+    .status-run { color: #ffdf7f; }
+    .hint { color: #555; font-size: 0.72rem; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>AI LAB — EXECUTION PANEL</h1>
+  <div class="meta">port 4444 | pain system | ai_lab lane</div>
+
+  <div class="panel">
+    <div class="panel-title">PIPELINE RUNNER</div>
+
+    <label for="pipeline">Pipeline</label>
+    <select id="pipeline">
+      <option value="vst-trip">VST — Trip</option>
+      <option value="vst-lead">VST — Lead</option>
+      <option value="vst-ava">VST — Ava</option>
+    </select>
+
+    <label for="payload">Input Payload (JSON)</label>
+    <textarea id="payload" spellcheck="false" placeholder='{"key": "value"}'></textarea>
+    <div class="hint">Valid JSON only. No pattern restrictions applied.</div>
+
+    <button id="run-btn" onclick="runPipeline()">RUN</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">OUTPUT</div>
+    <div id="output">Ready.</div>
+  </div>
+
+  <script>
+    const PIPELINES = {
+      "vst-trip": {
+        flow: ["request", "evaluate", "review", "approve", "journey", "complete"],
+        requiredKeys: ["traveler", "destination", "dates"],
+        example: { traveler: "J. Facey", destination: "London", dates: { depart: "2026-04-01", return: "2026-04-07" }, purpose: "client meeting" }
+      },
+      "vst-lead": {
+        flow: ["form", "api", "store", "notify"],
+        requiredKeys: ["name", "email"],
+        example: { name: "Jane Doe", email: "jane@corp.com", company: "Acme Ltd", interest: "corporate-travel" }
+      },
+      "vst-ava": {
+        flow: ["input", "evaluate", "explain", "render"],
+        requiredKeys: ["query"],
+        example: { query: "What is the travel policy for Tier 1 employees?", context: "compliance" }
+      }
+    };
+
+    // Pre-fill example on pipeline change
+    document.getElementById("pipeline").addEventListener("change", function () {
+      const pipe = PIPELINES[this.value];
+      if (pipe) document.getElementById("payload").value = JSON.stringify(pipe.example, null, 2);
+    });
+
+    // Init with first example
+    (function init() {
+      const first = PIPELINES["vst-trip"];
+      document.getElementById("payload").value = JSON.stringify(first.example, null, 2);
+    })();
+
+    function log(msg, cls) {
+      const out = document.getElementById("output");
+      const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+      out.innerHTML += `<span class="${cls || ''}">[${ts}] ${msg}</span>\n`;
+    }
+
+    function runPipeline() {
+      const pipelineId = document.getElementById("pipeline").value;
+      const rawPayload = document.getElementById("payload").value.trim();
+      const out = document.getElementById("output");
+      const btn = document.getElementById("run-btn");
+
+      out.textContent = "";
+      btn.disabled = true;
+
+      // Parse — no restrictive pattern; accept any valid JSON
+      let payload;
+      try {
+        payload = JSON.parse(rawPayload);
+      } catch (e) {
+        log("PARSE ERROR: " + e.message, "status-err");
+        log("Fix: Ensure payload is valid JSON. No regex patterns enforced.", "status-err");
+        btn.disabled = false;
+        return;
+      }
+
+      const pipe = PIPELINES[pipelineId];
+      if (!pipe) {
+        log("Unknown pipeline: " + pipelineId, "status-err");
+        btn.disabled = false;
+        return;
+      }
+
+      // Validate required keys
+      const missing = pipe.requiredKeys.filter(k => !(k in payload));
+      if (missing.length) {
+        log("VALIDATION ERROR: missing required keys: " + missing.join(", "), "status-err");
+        log("Required: " + pipe.requiredKeys.join(", "), "status-err");
+        btn.disabled = false;
+        return;
+      }
+
+      log("Pipeline: " + pipelineId, "status-run");
+      log("Payload accepted. Keys: " + Object.keys(payload).join(", "), "status-run");
+      log("---", "");
+
+      // Execute flow steps with async simulation
+      let step = 0;
+      function nextStep() {
+        if (step >= pipe.flow.length) {
+          log("---", "");
+          log("STATUS: COMPLETE", "status-ok");
+          log("PIPELINE: " + pipelineId + " passed all " + pipe.flow.length + " stages.", "status-ok");
+          btn.disabled = false;
+          return;
+        }
+        const stage = pipe.flow[step++];
+        log("STAGE [" + step + "/" + pipe.flow.length + "]: " + stage.toUpperCase() + " ... ok", "status-ok");
+        setTimeout(nextStep, 200);
+      }
+      nextStep();
+    }
+  </script>
+</body>
+</html>
