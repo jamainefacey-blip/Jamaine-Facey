@@ -108,6 +108,16 @@
       white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
     }
     .route-object-label { font-size: 0.7rem; color: #444; margin-bottom: 4px; text-transform: uppercase; }
+
+    /* Action status */
+    #action-status {
+      margin-top: 12px; padding: 8px 12px; border-radius: 3px; font-size: 0.78rem;
+      display: none; border: 1px solid #2a2a2a;
+    }
+    #action-status.action-ok   { display:block; background:#0a1a0a; border-color:#3a6a3a; color:#7fff7f; }
+    #action-status.action-fail { display:block; background:#1a0a0a; border-color:#6a1a1a; color:#ff7f7f; }
+    #action-status.action-run  { display:block; background:#1a1800; border-color:#6a5a00; color:#ffdf7f; }
+    .action-status-label { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:2px; }
   </style>
 </head>
 <body>
@@ -161,6 +171,11 @@
     <div class="route-reason" id="route-reason"></div>
     <div class="route-object-label">Output Object Preview</div>
     <div class="route-object" id="route-object"></div>
+
+    <div id="action-status">
+      <div class="action-status-label">Action Status</div>
+      <div id="action-status-msg"></div>
+    </div>
   </div>
 
   <script>
@@ -387,6 +402,8 @@
       document.getElementById("output-sections").innerHTML = "";
       document.getElementById("stage-track").innerHTML = "";
       document.getElementById("routing-panel").style.display = "none";
+      document.getElementById("action-status").className = "";
+      document.getElementById("action-status-msg").textContent = "";
       document.getElementById("dl-json-btn").disabled = true;
       document.getElementById("dl-txt-btn").disabled = true;
       lastResult = null;
@@ -437,6 +454,7 @@
           const routeResult = determineRoute(pipelineId, payload);
           rawLog("ROUTE: " + routeResult.route + " — " + ROUTE_DEFS[routeResult.route].name, "status-run");
           buildRoutingPanel(routeResult);
+          executeAction(routeResult);
           lastResult = {
             pipeline: pipelineId, payload,
             stages: pipe.flow.map((s, i) => ({ stage: s, ok: stagesOk[i] })),
@@ -587,6 +605,45 @@
       panel.style.display = "block";
     }
     // ── END ROUTING LAYER ────────────────────────────────────────────────────
+
+    // ── ACTION LAYER ─────────────────────────────────────────────────────────
+    // POSTs route object to local server → saved to data/{file}.json
+    // Falls back with a clear message if server is not running.
+
+    function setActionStatus(msg, state) {
+      const el  = document.getElementById("action-status");
+      const txt = document.getElementById("action-status-msg");
+      el.className = "action-" + state;
+      txt.textContent = msg;
+    }
+
+    function executeAction(routeResult) {
+      setActionStatus("Executing…", "run");
+      rawLog("ACTION: dispatching route " + routeResult.route, "status-run");
+
+      fetch("/api/action", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ route: routeResult.route, object: routeResult.object })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          const msg = data.message + " → saved to " + data.file;
+          setActionStatus(msg, "ok");
+          rawLog("ACTION OK: " + msg, "status-ok");
+        } else {
+          setActionStatus("Action failed: " + data.error, "fail");
+          rawLog("ACTION FAIL: " + data.error, "status-err");
+        }
+      })
+      .catch(err => {
+        const msg = "Server unreachable — run 'node tools/rehab-client/ai-lab/server.js'. Error: " + err.message;
+        setActionStatus(msg, "fail");
+        rawLog("ACTION FAIL: " + err.message, "status-err");
+      });
+    }
+    // ── END ACTION LAYER ──────────────────────────────────────────────────────
 
     function downloadJSON() {
       if (!lastResult) return;
