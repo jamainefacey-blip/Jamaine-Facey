@@ -121,6 +121,16 @@
     .contract-violations { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3a1010; }
     .contract-violation { font-size: 0.73rem; color: #ff9f9f; padding: 1px 0; }
     .contract-violation::before { content: "✗  "; }
+    #fail-scope-detail { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3a1010; }
+    .scope-violation { font-size: 0.73rem; padding: 4px 0; border-bottom: 1px dotted #2a1010; }
+    .scope-violation:last-child { border-bottom: none; }
+    .sv-label { font-size: 0.65rem; color: #884444; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+    .sv-file  { display: block; color: #ff9f9f; word-break: break-all; }
+    .sv-file::before  { content: "FILE:     "; color: #884444; }
+    .sv-scope { display: block; color: #d07070; }
+    .sv-scope::before { content: "SCOPE:    "; color: #884444; }
+    .sv-msg   { display: block; color: #c07070; }
+    .sv-msg::before   { content: "REASON:   "; color: #884444; }
 
     /* Action status */
     #action-status {
@@ -166,6 +176,19 @@
     <textarea id="payload" spellcheck="false" placeholder='{"key": "value"}'></textarea>
     <div class="hint">Valid JSON only. No pattern restrictions applied.</div>
 
+    <label for="scope-layer" style="margin-top:10px;">Task Scope (optional — triggers F8 guard)</label>
+    <select id="scope-layer">
+      <option value="">— none —</option>
+      <option value="UI">UI</option>
+      <option value="PIPELINE">PIPELINE</option>
+      <option value="ROUTING">ROUTING</option>
+      <option value="ACTION">ACTION</option>
+      <option value="STORAGE">STORAGE</option>
+    </select>
+
+    <label for="changed-files" style="margin-top:8px;">Changed Files (one per line)</label>
+    <textarea id="changed-files" spellcheck="false" rows="3" placeholder="tools/rehab-client/ai-lab/index.html"></textarea>
+
     <div class="btn-row" style="margin-top:12px;">
       <button id="run-btn" onclick="runPipeline()">RUN</button>
     </div>
@@ -176,6 +199,7 @@
     <div class="fail-condition-code" id="fail-code"></div>
     <div class="fail-condition-desc" id="fail-desc"></div>
     <div class="contract-violations" id="contract-violations"></div>
+    <div id="fail-scope-detail"></div>
   </div>
 
   <div class="panel" id="results-panel" style="display:none;">
@@ -462,6 +486,7 @@
       document.getElementById("fail-code").textContent = "";
       document.getElementById("fail-desc").textContent = "";
       document.getElementById("contract-violations").innerHTML = "";
+      document.getElementById("fail-scope-detail").innerHTML = "";
       document.getElementById("action-status").className = "";
       document.getElementById("action-status-msg").textContent = "";
       document.getElementById("dl-json-btn").disabled = true;
@@ -501,6 +526,11 @@
         btn.disabled = false;
         return;
       }
+
+      // scopeGuard — F8 cross-layer modification check (runs before behaviourCheck)
+      const taskScope   = document.getElementById("scope-layer").value.trim();
+      const changedFiles = document.getElementById("changed-files").value.split("\n").map(s => s.trim()).filter(Boolean);
+      if (!scopeGuard(taskScope, changedFiles)) { btn.disabled = false; return; }
 
       // behaviourCheck — F4 lane check + F5 payload integrity
       if (!behaviourCheck(pipelineId, payload)) { btn.disabled = false; return; }
@@ -562,7 +592,17 @@
       F4: "Task requires mixing lanes without explicit permission.",
       F5: "Output cannot be verified — no stages ran or result is empty.",
       F6: "Fix cycle limit (2) reached without passing.",
-      F7: "File write would overwrite data store (not append)."
+      F7: "File write would overwrite data store (not append).",
+      F8: "Task specifies a layer and a modification targets a different layer."
+    };
+
+    // Scope definitions: each layer owns a set of file-path patterns.
+    const SCOPE_LAYERS = {
+      UI:       [/index\.html$/i, /\.css$/i, /\.scss$/i, /frontend[^/]*\.js$/i, /\/app\.js$/i, /\/scripts\//i, /\/public\//i, /\/components\//i],
+      PIPELINE: [/pipeline/i],
+      ROUTING:  [/routing/i, /router/i, /route/i],
+      ACTION:   [/server\.js$/i, /action/i, /handler/i, /\/api\//i],
+      STORAGE:  [/\/data\//i, /\.json$/i, /store/i, /storage/i]
     };
 
     const VALID_STATUSES   = ["COMPLETE", "BLOCKED", "PARTIAL", "FAIL"];
@@ -594,6 +634,34 @@
         return failGuard("F5", "Payload is empty or not a valid object. Output unverifiable.");
       }
       rawLog("BEHAVIOUR: pre-run check passed", "status-ok");
+      return true;
+    }
+
+    // Pre-run: F8 scope enforcement. taskScope = UI|PIPELINE|ROUTING|ACTION|STORAGE.
+    // changedFiles = array of file paths. Returns false if any file violates scope.
+    function scopeGuard(taskScope, changedFiles) {
+      if (!taskScope || !SCOPE_LAYERS[taskScope]) {
+        rawLog("SCOPE GUARD: no scope declared — skipped", "status-ok");
+        return true;
+      }
+      if (!changedFiles || changedFiles.length === 0) {
+        rawLog("SCOPE GUARD: no files declared — skipped", "status-ok");
+        return true;
+      }
+      const patterns = SCOPE_LAYERS[taskScope];
+      const violations = changedFiles.filter(f => !patterns.some(p => p.test(f)));
+      if (violations.length) {
+        const detailEl = document.getElementById("fail-scope-detail");
+        detailEl.innerHTML = violations.map(function(file) {
+          return "<div class='scope-violation'>" +
+            "<span class='sv-file'>" + file + "</span>" +
+            "<span class='sv-scope'>Expected: " + taskScope + " layer only</span>" +
+            "<span class='sv-msg'>File path does not match any permitted pattern for this layer</span>" +
+            "</div>";
+        }).join("");
+        return failGuard("F8", "Scope violation — " + violations.length + " file(s) outside " + taskScope + " layer: " + violations.join(", "));
+      }
+      rawLog("SCOPE GUARD: all " + changedFiles.length + " file(s) within " + taskScope + " layer", "status-ok");
       return true;
     }
 
