@@ -1,3 +1,5 @@
+import AvaWidget from '../components/AvaWidget';
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#0B1120] text-slate-200">
@@ -129,18 +131,26 @@ export default function HomePage() {
 
       {/* ── AVA ─────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="bg-[#1A2540] border border-[#1E2D4A] rounded-xl p-10 flex flex-col sm:flex-row items-start sm:items-center gap-8">
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#1D6FF2]/10 border border-[#1D6FF2]/20 flex items-center justify-center">
-            <span className="text-[#1D6FF2] font-semibold text-sm">Ava</span>
+        <div className="bg-[#1A2540] border border-[#1E2D4A] rounded-xl p-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 mb-8">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#1D6FF2]/10 border border-[#1D6FF2]/20 flex items-center justify-center">
+              <span className="text-[#1D6FF2] font-semibold text-sm">Ava</span>
+            </div>
+            <div>
+              <h3 className="text-white font-medium text-lg mb-2">
+                Always on. Always monitoring.
+              </h3>
+              <p className="text-[#8A99B8] text-base leading-relaxed max-w-2xl">
+                Ava works in the background to evaluate, monitor, and guide every journey —
+                ensuring nothing is missed.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-white font-medium text-lg mb-2">
-              Always on. Always monitoring.
-            </h3>
-            <p className="text-[#8A99B8] text-base leading-relaxed max-w-2xl">
-              Ava works in the background to evaluate, monitor, and guide every journey —
-              ensuring nothing is missed.
+          <div className="border-t border-[#1E2D4A] pt-8">
+            <p className="text-xs text-[#8A99B8] uppercase tracking-widest mb-4">
+              Trip evaluation — try it now
             </p>
+            <AvaWidget />
           </div>
         </div>
       </section>
@@ -256,7 +266,8 @@ export default function HomePage() {
                 'SLA-backed support',
                 'Unlimited travellers',
               ],
-              cta: 'Contact us',
+              cta: 'Book a demo',
+              href: '/demo',
               highlight: false,
             },
           ].map((tier) => (
@@ -295,7 +306,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <a
-                href="/sign-up"
+                href={'href' in tier ? tier.href : '/sign-up'}
                 className={`w-full text-center py-2.5 rounded text-sm font-medium transition-colors ${
                   tier.highlight
                     ? 'bg-[#1D6FF2] text-white hover:bg-[#1558c4]'
