@@ -6,3 +6,6 @@ node_modules
 */.DS_Store
 
 .vscode
+
+# Platform monorepo (tracked on vst-platform-core branch, not this one)
+vst-platform/
