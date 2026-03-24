@@ -464,8 +464,10 @@
     fetch(RUNS_INDEX)
       .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP ' + r.status); })
       .then(renderHistory)
-      .catch(function () {
-        $('history-loading').textContent = 'Could not load run history.';
+      .catch(function (err) {
+        var msg = (err && (err.message || String(err))) || 'unknown error';
+        console.error('[AI Lab] loadHistory failed:', RUNS_INDEX, err);
+        $('history-loading').textContent = 'Could not load run history. (' + msg + ')';
       });
   }
 
@@ -527,11 +529,20 @@
     reset();
     $('header-status').textContent = 'loading\u2026';
 
-    fetch(RUNS_DIR + runId + '.json')
+    var runUrl = RUNS_DIR + runId + '.json';
+    fetch(runUrl)
       .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP ' + r.status); })
-      .then(renderRun)
+      .then(function (run) {
+        try { renderRun(run); }
+        catch (e) {
+          console.error('[AI Lab] renderRun threw:', runUrl, e);
+          renderError('Render error for ' + runId + ':\n' + e.message);
+        }
+      })
       .catch(function (err) {
-        renderError('Failed to load run ' + runId + ': ' + err);
+        var msg = (err && (err.message || String(err))) || 'unknown';
+        console.error('[AI Lab] loadRun fetch failed:', runUrl, err);
+        renderError('Could not load run data.\nURL: ' + runUrl + '\nError: ' + msg);
       });
   }
 
