@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "echo 'Static site — no framework build required'",
+    "preview:ai-lab": "python3 -m http.server 4444 --directory tools/rehab-client/ai-lab",
     "ai-lab:vst": "npx tsx ai-lab/runner/run-vst-analysis.ts",
     "ai-lab:vst:json": "npx tsx ai-lab/runner/run-vst-analysis.ts --json",
     "ai-lab:vst-fhi": "npx tsx ai-lab/runner/run-vst-fhi.ts",
