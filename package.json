@@ -3,11 +3,29 @@
   "description": "Explore a library of reference examples for learning about Edge Functions on Netlify.",
   "version": "1.0.0",
   "scripts": {
+    "build": "echo 'Static site — no framework build required'",
+    "vercel-build": "node tools/build-ai-lab-index.js",
+    "dev": "next dev -p 3000",
+    "build:vst": "next build",
+    "preview:vst": "next build && next start -p 3000",
+    "preview:ai-lab": "npx serve tools/rehab-client/ai-lab -p 4444 --no-clipboard",
+    "ai-lab:vst": "npx tsx ai-lab/runner/run-vst-analysis.ts",
+    "ai-lab:vst:json": "npx tsx ai-lab/runner/run-vst-analysis.ts --json",
+    "ai-lab:vst-fhi": "npx tsx ai-lab/runner/run-vst-fhi.ts",
+    "ai-lab:run": "npx tsx ai-lab/runner/run-asset.ts",
     "open:vst": "next dev -p 3000",
     "open:ai-lab": "node tools/rehab-client/ai-lab/server.js",
     "restart:ai-lab": "pkill -f 'node tools/rehab-client/ai-lab/server' || true && node tools/rehab-client/ai-lab/server.js",
     "check:vst": "curl -I http://localhost:3000 || true",
     "check:ai-lab": "curl -I http://localhost:4444 || true"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "https-proxy-agent": "^5.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "6.0.2"
   },
   "repository": {
     "type": "git",
@@ -21,8 +39,8 @@
   },
   "homepage": "https://github.com/netlify/edge-functions-examples#readme",
   "dependencies": {
-  "next": "14.2.3",
-  "react": "18.2.0",
-  "react-dom": "18.2.0"
-}
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  }
 }

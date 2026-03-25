@@ -1,0 +1,28 @@
+{
+  "taskName": "vst-analysis",
+  "timestamp": "2026-03-23T15:56:24.551Z",
+  "status": "BLOCKED",
+  "stepsExecuted": [
+    "asset-extraction → complete",
+    "asset-reconstruction → failed"
+  ],
+  "errors": [
+    "[asset-reconstruction] Failed to parse agent JSON response. Raw (first 200): {\"assetId\":\"vst\",\"systemOverview\":\"AI-powered business travel management platform for UK SMEs via REST API.\",\"layers\":[{\"name\":\"Frontend\",\"role\":\"UI layer, near-zero built\",\"components\":[\"Next.js App\""
+  ],
+  "fixesApplied": [],
+  "validationChecks": [
+    {
+      "name": "asset-extraction [vst]",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "name": "asset-reconstruction [vst]",
+      "passed": false,
+      "detail": "Failed to parse agent JSON response. Raw (first 200): {\"assetId\":\"vst\",\"systemOverview\":\"AI-powered business travel management platform for UK SMEs via REST API.\",\"layers\":[{\"name\":\"Frontend\",\"role\":\"UI layer, near-zero built\",\"components\":[\"Next.js App\""
+    }
+  ],
+  "commitReady": false,
+  "deployReady": false,
+  "runId": "eaa938ff-7f9c-4bdd-b637-a4066e99f679"
+}

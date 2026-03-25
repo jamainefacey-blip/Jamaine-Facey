@@ -1,0 +1,58 @@
+{
+  "taskName": "vst-retry-fail",
+  "timestamp": "2026-03-23T16:07:45.589Z",
+  "status": "FAIL",
+  "stepsExecuted": [
+    "asset-extraction → complete",
+    "asset-reconstruction → failed"
+  ],
+  "errors": [
+    "[asset-reconstruction] Failed to parse"
+  ],
+  "fixesApplied": [],
+  "validationChecks": [
+    {
+      "name": "asset-extraction [vst]",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "name": "asset-reconstruction [vst]",
+      "passed": false,
+      "detail": "Failed to parse"
+    }
+  ],
+  "commitReady": false,
+  "deployReady": false,
+  "runId": "test-retry-fail",
+  "retryCount": 3,
+  "retrySteps": [
+    {
+      "attempt": 1,
+      "pipelineId": "asset-reconstruction",
+      "error": "Failed to parse",
+      "failureType": "recoverable",
+      "timestamp": "2026-03-23T16:07:45.589Z"
+    },
+    {
+      "attempt": 2,
+      "pipelineId": "asset-reconstruction",
+      "error": "Failed to parse",
+      "failureType": "recoverable",
+      "timestamp": "2026-03-23T16:07:45.589Z"
+    },
+    {
+      "attempt": 3,
+      "pipelineId": "asset-reconstruction",
+      "error": "Failed to parse",
+      "failureType": "recoverable",
+      "timestamp": "2026-03-23T16:07:45.589Z"
+    }
+  ],
+  "recoveryActions": [
+    "Retry 1 of asset-reconstruction: Failed to parse",
+    "Retry 2 of asset-reconstruction: Failed to parse",
+    "Retry 3 of asset-reconstruction: Failed to parse"
+  ],
+  "finalFailureType": "recoverable"
+}

@@ -1,0 +1,41 @@
+{
+  "taskName": "vst-analysis",
+  "timestamp": "2026-03-23T16:06:30.531Z",
+  "status": "PASS",
+  "stepsExecuted": [
+    "asset-extraction → complete",
+    "asset-reconstruction → complete",
+    "gap-risk-analysis → complete",
+    "monetisation → complete"
+  ],
+  "errors": [],
+  "fixesApplied": [],
+  "validationChecks": [
+    {
+      "name": "asset-extraction [vst]",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "name": "asset-reconstruction [vst]",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "name": "gap-risk-analysis [vst]",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "name": "monetisation [vst]",
+      "passed": true,
+      "detail": "ok"
+    }
+  ],
+  "commitReady": true,
+  "deployReady": true,
+  "runId": "668ca062-b5d3-4bf1-b8bd-c97518e3426c",
+  "retryCount": 0,
+  "retrySteps": [],
+  "recoveryActions": []
+}

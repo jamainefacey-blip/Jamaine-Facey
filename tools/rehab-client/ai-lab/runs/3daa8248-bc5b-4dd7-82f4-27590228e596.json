@@ -1,0 +1,44 @@
+{
+  "runId": "3daa8248-bc5b-4dd7-82f4-27590228e596",
+  "assetIds": [
+    "vst"
+  ],
+  "pipelines": [
+    "asset-extraction",
+    "asset-reconstruction",
+    "gap-risk-analysis",
+    "monetisation",
+    "build-output"
+  ],
+  "sourceManifest": {
+    "vst": [
+      {
+        "kind": "doc",
+        "label": "VST approved seed summary",
+        "charCount": 1530,
+        "sha256": "f9fcd20d5dc3c694618635b3dda1126e496ddb45df2ee346c652d7d124bab193"
+      },
+      {
+        "kind": "doc",
+        "label": "VST technical alignment",
+        "charCount": 1463,
+        "sha256": "0c19f84112af59ee0a1f53b3bd225abb1ec62eef153698b21abd2be51b499ff5"
+      }
+    ]
+  },
+  "jobs": [
+    {
+      "jobId": "f7f48362-00fd-49c4-ad88-b38b5a035d4c",
+      "pipelineId": "asset-extraction",
+      "assetId": "vst",
+      "status": "failed",
+      "startedAt": "2026-03-23T15:33:50.019Z",
+      "completedAt": "2026-03-23T15:34:00.582Z",
+      "error": "fetch failed"
+    }
+  ],
+  "startedAt": "2026-03-23T15:33:49.991Z",
+  "completedAt": "2026-03-23T15:34:00.583Z",
+  "status": "failed",
+  "mode": "analysis"
+}

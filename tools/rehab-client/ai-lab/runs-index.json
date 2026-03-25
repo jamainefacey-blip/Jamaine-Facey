@@ -1,0 +1,107 @@
+[
+  {
+    "runId": "668ca062-b5d3-4bf1-b8bd-c97518e3426c",
+    "assetIds": [
+      "vst"
+    ],
+    "status": "complete",
+    "mode": "analysis",
+    "startedAt": "2026-03-23T16:05:37.853Z",
+    "completedAt": "2026-03-23T16:06:30.531Z",
+    "durationMs": 52678,
+    "pipelines": [
+      "asset-extraction",
+      "asset-reconstruction",
+      "gap-risk-analysis",
+      "monetisation",
+      "build-output"
+    ],
+    "jobCount": 4,
+    "failedStage": null,
+    "totalRetries": 0
+  },
+  {
+    "runId": "f538597f-aab6-49e2-b07e-3cedc357b3c6",
+    "assetIds": [
+      "vst"
+    ],
+    "status": "complete",
+    "mode": "analysis",
+    "startedAt": "2026-03-23T15:57:14.100Z",
+    "completedAt": "2026-03-23T15:58:08.137Z",
+    "durationMs": 54037,
+    "pipelines": [
+      "asset-extraction",
+      "asset-reconstruction",
+      "gap-risk-analysis",
+      "monetisation",
+      "build-output"
+    ],
+    "jobCount": 4,
+    "failedStage": null,
+    "totalRetries": 0
+  },
+  {
+    "runId": "eaa938ff-7f9c-4bdd-b637-a4066e99f679",
+    "assetIds": [
+      "vst"
+    ],
+    "status": "partial",
+    "mode": "analysis",
+    "startedAt": "2026-03-23T15:56:01.540Z",
+    "completedAt": "2026-03-23T15:56:24.551Z",
+    "durationMs": 23011,
+    "pipelines": [
+      "asset-extraction",
+      "asset-reconstruction",
+      "gap-risk-analysis",
+      "monetisation",
+      "build-output"
+    ],
+    "jobCount": 2,
+    "failedStage": "asset-reconstruction",
+    "totalRetries": 0
+  },
+  {
+    "runId": "7a5b601a-b1fb-4591-a8f6-c6f457718b16",
+    "assetIds": [
+      "vst"
+    ],
+    "status": "complete",
+    "mode": "analysis",
+    "startedAt": "2026-03-23T15:42:43.872Z",
+    "completedAt": "2026-03-23T15:43:37.483Z",
+    "durationMs": 53611,
+    "pipelines": [
+      "asset-extraction",
+      "asset-reconstruction",
+      "gap-risk-analysis",
+      "monetisation",
+      "build-output"
+    ],
+    "jobCount": 4,
+    "failedStage": null,
+    "totalRetries": 0
+  },
+  {
+    "runId": "3daa8248-bc5b-4dd7-82f4-27590228e596",
+    "assetIds": [
+      "vst"
+    ],
+    "status": "failed",
+    "mode": "analysis",
+    "startedAt": "2026-03-23T15:33:49.991Z",
+    "completedAt": "2026-03-23T15:34:00.583Z",
+    "durationMs": 10592,
+    "pipelines": [
+      "asset-extraction",
+      "asset-reconstruction",
+      "gap-risk-analysis",
+      "monetisation",
+      "build-output"
+    ],
+    "jobCount": 1,
+    "failedStage": "asset-extraction",
+    "totalRetries": 0
+  }
+]
