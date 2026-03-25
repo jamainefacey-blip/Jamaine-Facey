@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "cd $(git rev-parse --show-toplevel) && node tools/build-ai-lab-index.js",
+  "buildCommand": "node tools/build-ai-lab-index.js",
   "outputDirectory": "tools/rehab-client",
   "rewrites": [
     { "source": "/ai-lab",      "destination": "/ai-lab/index.html" },
