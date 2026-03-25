@@ -28,6 +28,8 @@ import { runGapRiskPipeline } from "./pipelines/gap-risk-analysis.ts";
 import { runMonetisationPipeline } from "./pipelines/monetisation.ts";
 import { runBuildOutputPipeline } from "./pipelines/build-output.ts";
 import { buildSourceManifest, formatSourceManifest, persistRunRecord } from "./run-log.ts";
+import { routeModel, auditModelRouting } from "./model-router.ts";
+import type { ModelSelection } from "./types.ts";
 import type { ExtractedSystem, ReconstructedArchitecture } from "./types.ts";
 
 const MAX_RETRIES_DEFAULT = 3;
@@ -139,6 +141,10 @@ export async function runAsset(
 ): Promise<PipelineJob[]> {
   const jobs: PipelineJob[] = [];
   const outputs = new Map<PipelineId, PipelineOutput>();
+  const routingSelections: ModelSelection[] = [];
+
+  // Total source char count for complexity inference
+  const sourceCharCount = asset.sources.reduce((sum, s) => sum + s.content.length, 0);
 
   // Respect PIPELINE_SEQUENCE order even if caller provides unordered list
   const orderedPipelines = PIPELINE_SEQUENCE.filter((p) => pipelines.includes(p));
@@ -170,7 +176,18 @@ export async function runAsset(
 
     while (attempt <= maxRetries) {
       try {
-        const output = await dispatchPipeline(pipelineId, asset, outputs, apiKey, config.claudeModel);
+        const selection = await routeModel({
+          lane: asset.id,
+          priority: attempt > 0 ? "medium" : sourceCharCount > 80_000 ? "high" : "medium",
+          skill: pipelineId,
+          retryAttempt: attempt,
+          sourceCharCount,
+        });
+        routingSelections.push(selection);
+        console.log(
+          `[MODEL-ROUTER] ${pipelineId} → ${selection.tier} (${selection.model}): ${selection.reason}`,
+        );
+        const output = await dispatchPipeline(pipelineId, asset, outputs, apiKey, selection.model);
         outputs.set(pipelineId, output);
         job.status = "complete";
         job.completedAt = now();
@@ -225,6 +242,16 @@ export async function runAsset(
         break;
       }
     }
+  }
+
+  // Audit: write run-level routing summary
+  if (routingSelections.length > 0) {
+    await auditModelRouting({
+      runId: jobs[0]?.jobId ?? "unknown",
+      assetId: asset.id,
+      selections: routingSelections,
+      resolvedAt: now(),
+    });
   }
 
   return jobs;

@@ -16,15 +16,7 @@
 import { orchestrate, summariseRun } from "../orchestrator.ts";
 import { buildValidationLog, printValidationSummary, writeValidationLog } from "../run-log.ts";
 import { DEFAULT_CONFIG, PIPELINE_SEQUENCE } from "../config.ts";
-import { VST_ASSET as VST_SEED } from "../assets/vst-seed.ts";
-import type { RawAsset } from "../types.ts";
-
-// vst-seed.ts exports sources only — wrap with required id + name
-const VST_ASSET: RawAsset = {
-  id: "vst",
-  name: "Voyage Smart Travels",
-  ...VST_SEED,
-};
+import { VST_ASSET } from "../assets/vst-seed.ts";
 
 async function main() {
   const _sessionToken = (() => { try { return require("fs").readFileSync(process.env["CLAUDE_SESSION_INGRESS_TOKEN_FILE"] ?? "", "utf8").trim(); } catch { return ""; } })();

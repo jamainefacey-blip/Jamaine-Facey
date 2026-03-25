@@ -1,7 +1,11 @@
-export const VST_ASSET = {
+import type { RawAsset } from "../types.ts";
+
+export const VST_ASSET: RawAsset = {
+  id: "vst",
+  name: "Voyage Smart Travels",
   sources: [
     {
-      kind: "doc",
+      kind: "doc" as const,
       label: "VST approved seed summary",
       content: `identity:
 - Voyage Smart Travels (VST)

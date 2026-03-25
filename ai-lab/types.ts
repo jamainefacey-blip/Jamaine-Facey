@@ -299,6 +299,37 @@ export interface ValidationLog {
   validationSummary: Record<string, "pass" | "fail">;
 }
 
+// ── Model Router ──────────────────────────────
+
+/** Which model tier to use for execution */
+export type ModelTier = "local" | "external" | "fallback";
+
+/** Input to the model router */
+export interface RouterInput {
+  /** Asset lane identifier (e.g. "vst", "fhi") */
+  lane: string;
+  /** Explicit priority override */
+  priority: "low" | "medium" | "high";
+  /** Pipeline / skill being executed */
+  skill: string;
+  /** Current retry attempt (0 = first attempt) */
+  retryAttempt?: number;
+  /** Total source chars for the asset — used for complexity inference */
+  sourceCharCount?: number;
+}
+
+/** Result of model routing */
+export interface ModelSelection {
+  tier: ModelTier;
+  model: string;
+  lane: string;
+  skill: string;
+  priority: "low" | "medium" | "high";
+  retryAttempt: number;
+  resolvedAt: string;
+  reason: string;
+}
+
 // ── Orchestrator ──────────────────────────────
 
 export interface OrchestratorConfig {

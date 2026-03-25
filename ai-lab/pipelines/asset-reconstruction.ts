@@ -38,7 +38,7 @@ export async function runReconstructionPipeline(
     `${arch.dataFlows.length} data flows, confidence: ${arch.confidence}`,
   );
 
-  if (arch.confidence === "low") {
+  if (arch.confidence.level === "low") {
     console.warn(
       `[PIPELINE:reconstruction] LOW CONFIDENCE for ${extracted.assetId} — ` +
       `consider adding more source material`,
