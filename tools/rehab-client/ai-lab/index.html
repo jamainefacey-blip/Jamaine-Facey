@@ -196,11 +196,64 @@
     }
     .btn-approve:hover { background:#2a4a2a; }
     .btn-approve:disabled { opacity:0.35; cursor:not-allowed; }
+
+    /* Operator plan panel */
+    #op-panel .panel-title { color:#ffdf7f; }
+    #op-request { width:100%; background:#0d0d0d; border:1px solid #333; border-radius:3px; color:#e0e0e0; font-family:inherit; font-size:0.85rem; padding:8px; resize:vertical; min-height:64px; }
+    #op-plan-output { display:none; margin-top:14px; }
+    .pf-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 16px; margin-bottom:10px; }
+    @media (max-width:520px) { .pf-grid { grid-template-columns:1fr; } }
+    .pf-row { display:flex; flex-direction:column; }
+    .pf-key { font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1px; }
+    .pf-val { font-size:0.78rem; color:#d0d0d0; word-break:break-word; }
+    .pf-val.hi  { color:#7fff7f; }
+    .pf-val.warn{ color:#ffdf7f; }
+    .pf-val.err { color:#ff7f7f; }
+    .pf-notes { font-size:0.73rem; color:#888; margin-bottom:10px; padding:6px 8px; background:#080808; border:1px solid #1e1e1e; border-radius:2px; word-break:break-word; }
+    #op-approval-warn { display:none; font-size:0.78rem; padding:8px 12px; border-radius:3px; margin-bottom:10px; background:#1a1000; border:1px solid #6a4a00; color:#ffdf7f; }
+    #op-exec-result { display:none; margin-top:10px; font-size:0.78rem; padding:8px 12px; border-radius:3px; }
+    #op-exec-result.er-ok   { display:block; background:#0a1a0a; border:1px solid #3a6a3a; color:#7fff7f; }
+    #op-exec-result.er-fail { display:block; background:#1a0a0a; border:1px solid #6a1a1a; color:#ff7f7f; }
   </style>
 </head>
 <body>
   <h1>AI LAB — EXECUTION PANEL</h1>
   <div class="meta">port 4444 | pain system | ai_lab lane</div>
+
+  <div class="panel" id="op-panel">
+    <div class="panel-title">Operator Panel — Plan &amp; Execute</div>
+
+    <label for="op-request">Request</label>
+    <textarea id="op-request" spellcheck="false" placeholder="Describe the task…"></textarea>
+
+    <div class="btn-row" style="margin-top:8px;">
+      <button id="op-plan-btn" onclick="opPlan()">PLAN</button>
+      <button id="op-reject-btn" class="btn-secondary" onclick="opReject()" disabled>REJECT</button>
+    </div>
+
+    <div id="op-plan-output">
+      <div style="margin:12px 0 6px;border-top:1px solid #1e1e1e;padding-top:12px;">
+        <div class="panel-title" style="margin-bottom:8px;">Plan Review</div>
+        <div class="pf-grid">
+          <div class="pf-row"><span class="pf-key">Lane</span><span class="pf-val hi" id="pf-lane"></span></div>
+          <div class="pf-row"><span class="pf-key">Priority</span><span class="pf-val" id="pf-priority"></span></div>
+          <div class="pf-row"><span class="pf-key">Skill</span><span class="pf-val" id="pf-skill"></span></div>
+          <div class="pf-row"><span class="pf-key">Approval required</span><span class="pf-val" id="pf-approval"></span></div>
+          <div class="pf-row" style="grid-column:1/-1;"><span class="pf-key">Title</span><span class="pf-val" id="pf-title"></span></div>
+          <div class="pf-row" style="grid-column:1/-1;"><span class="pf-key">Approval reason</span><span class="pf-val muted" id="pf-reason"></span></div>
+        </div>
+        <div class="pf-key" style="margin-bottom:4px;">Execution notes</div>
+        <div class="pf-notes" id="pf-notes"></div>
+      </div>
+
+      <div id="op-approval-warn">Manual approval required — submit to queue then use the Approval Panel below.</div>
+
+      <div class="btn-row">
+        <button id="op-exec-btn" onclick="opExecute()">CONFIRM &amp; EXECUTE</button>
+      </div>
+      <div id="op-exec-result"></div>
+    </div>
+  </div>
 
   <div class="panel">
     <div class="panel-title">Pipeline Runner</div>
@@ -1293,6 +1346,125 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
+
+    // ── OPERATOR PANEL ────────────────────────────────────────────────────────
+    // Enforces request → PLAN → REVIEW → CONFIRM → EXECUTE.
+    // Direct /api/task calls without planning are not possible from this panel.
+
+    let _currentPlan = null;
+
+    function opPlan() {
+      const request = document.getElementById("op-request").value.trim();
+      if (!request) return;
+
+      const planBtn = document.getElementById("op-plan-btn");
+      const output  = document.getElementById("op-plan-output");
+      const execRes = document.getElementById("op-exec-result");
+      planBtn.disabled = true;
+      output.style.display = "none";
+      execRes.className = "";
+      execRes.textContent = "";
+      _currentPlan = null;
+
+      fetch(OPERATOR_URL + "/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request })
+      })
+      .then(r => r.json())
+      .then(data => {
+        planBtn.disabled = false;
+        if (!data.ok) {
+          execRes.className = "er-fail";
+          execRes.textContent = "Plan failed: " + (data.error || "unknown");
+          return;
+        }
+        _currentPlan = data.plan;
+        opRenderPlan(data.plan);
+        document.getElementById("op-reject-btn").disabled = false;
+      })
+      .catch(err => {
+        planBtn.disabled = false;
+        execRes.className = "er-fail";
+        execRes.textContent = "Operator unreachable — " + err.message;
+      });
+    }
+
+    function opRenderPlan(plan) {
+      const priCls   = plan.priority === "high" ? "err" : plan.priority === "low" ? "muted" : "hi";
+      const apprCls  = plan.approvalRequired ? "warn" : "hi";
+
+      document.getElementById("pf-lane").textContent     = plan.lane;
+      document.getElementById("pf-priority").className   = "pf-val " + priCls;
+      document.getElementById("pf-priority").textContent = plan.priority;
+      document.getElementById("pf-skill").textContent    = plan.recommendedSkill;
+      document.getElementById("pf-approval").className   = "pf-val " + apprCls;
+      document.getElementById("pf-approval").textContent = plan.approvalRequired ? "YES" : "no";
+      document.getElementById("pf-title").textContent    = plan.title;
+      document.getElementById("pf-reason").textContent   = plan.approvalReason;
+      document.getElementById("pf-notes").textContent    = plan.executionNotes;
+
+      const warn    = document.getElementById("op-approval-warn");
+      const execBtn = document.getElementById("op-exec-btn");
+      if (plan.approvalRequired) {
+        warn.style.display  = "block";
+        execBtn.disabled    = false;   // still allow queueing — approval gate is in the operator
+        execBtn.textContent = "CONFIRM & QUEUE";
+      } else {
+        warn.style.display  = "none";
+        execBtn.disabled    = false;
+        execBtn.textContent = "CONFIRM & EXECUTE";
+      }
+
+      document.getElementById("op-plan-output").style.display = "block";
+    }
+
+    function opExecute() {
+      if (!_currentPlan) return;
+      const execBtn = document.getElementById("op-exec-btn");
+      const execRes = document.getElementById("op-exec-result");
+      execBtn.disabled = true;
+
+      fetch(OPERATOR_URL + "/api/task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lane:    _currentPlan.lane,
+          title:   _currentPlan.title,
+          payload: _currentPlan.payload
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          execRes.className   = "er-ok";
+          execRes.textContent = "Queued — task_id: " + data.task_id + "  state: " + data.state;
+          execBtn.disabled    = true;
+          document.getElementById("op-reject-btn").disabled = false;
+        } else {
+          execRes.className   = "er-fail";
+          execRes.textContent = "Execute failed: " + (data.error || "unknown");
+          execBtn.disabled    = false;
+        }
+      })
+      .catch(err => {
+        execRes.className   = "er-fail";
+        execRes.textContent = "Operator unreachable — " + err.message;
+        execBtn.disabled    = false;
+      });
+    }
+
+    function opReject() {
+      _currentPlan = null;
+      document.getElementById("op-request").value          = "";
+      document.getElementById("op-plan-output").style.display = "none";
+      document.getElementById("op-exec-result").className  = "";
+      document.getElementById("op-exec-result").textContent = "";
+      document.getElementById("op-approval-warn").style.display = "none";
+      document.getElementById("op-reject-btn").disabled    = true;
+      document.getElementById("op-exec-btn").disabled      = false;
+    }
+    // ── END OPERATOR PANEL ────────────────────────────────────────────────────
   </script>
 </body>
 </html>
