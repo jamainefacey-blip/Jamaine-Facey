@@ -31,6 +31,20 @@ const STORES = {
 
 const VALID_STATES = ["pending_approval", "approved", "running", "validated", "complete", "fail"];
 
+// ── Execution policy ──────────────────────────────────────────────────────────
+// Overnight run rules. Override via OPERATOR_POLICY env var (JSON string).
+
+const EXEC_POLICY = Object.assign({
+  maxConcurrent:      3,    // max tasks running simultaneously
+  maxRetries:         2,    // max retry attempts per task before permanent fail
+  retryDelayMs:       5000, // delay between retry scheduling and re-queue
+  allowedLanes:       ["VST", "FHI", "AI_LAB", "ADMIN", "BACKYARD", "GOVERNANCE"],
+  stopOnFailThreshold: 5    // halt poller if this many consecutive fails occur
+}, (() => {
+  try { return process.env.OPERATOR_POLICY ? JSON.parse(process.env.OPERATOR_POLICY) : {}; }
+  catch (_) { return {}; }
+})());
+
 // ── Storage helpers ─────────────────────────────────────────────────────────
 
 function readStore(file) {
@@ -329,10 +343,66 @@ function validateSkillOutput(skill, skillResult, result) {
   return { valid: true, reason: "all checks passed" };
 }
 
-const _inFlight = new Set();
+const _inFlight    = new Set();
+const _retryCount  = new Map();   // task_id → attempts so far
+const _retryQueued = new Set();   // task_ids scheduled for retry (prevents double-queue)
+let   _consecFails = 0;           // consecutive poller-level fail counter
+let   _pollerHalted = false;      // set true when stopOnFailThreshold reached
+
+// Schedules a failed task for one retry attempt after retryDelayMs,
+// if it has not exceeded maxRetries. Updates state → approved so the
+// poller can pick it up again. Logs POLICY decision either way.
+function scheduleRetry(task) {
+  const attempts = (_retryCount.get(task.id) || 0);
+  if (attempts >= EXEC_POLICY.maxRetries) {
+    audit("POLICY", task.id, "RETRY_EXHAUSTED attempts=" + attempts + "/" + EXEC_POLICY.maxRetries + " — permanent fail");
+    appendStore(STORES.execution, {
+      ts: new Date().toISOString(), task_id: task.id, state: "fail",
+      policy: { decision: "RETRY_EXHAUSTED", attempts, maxRetries: EXEC_POLICY.maxRetries },
+      contract: "FAIL", skill: null
+    });
+    return;
+  }
+  if (_retryQueued.has(task.id)) return;  // already scheduled
+  _retryQueued.add(task.id);
+  const next = attempts + 1;
+  audit("POLICY", task.id, "RETRY_SCHEDULED attempt=" + next + "/" + EXEC_POLICY.maxRetries + " delay=" + EXEC_POLICY.retryDelayMs + "ms");
+  appendStore(STORES.execution, {
+    ts: new Date().toISOString(), task_id: task.id, state: "approved",
+    policy: { decision: "RETRY_SCHEDULED", attempt: next, maxRetries: EXEC_POLICY.maxRetries, delayMs: EXEC_POLICY.retryDelayMs },
+    contract: null, skill: null
+  });
+  setTimeout(() => {
+    _retryCount.set(task.id, next);
+    _retryQueued.delete(task.id);
+    _inFlight.delete(task.id);   // allow re-entry
+    const q = readStore(STORES.queue);
+    const i = q.findIndex(t => t.id === task.id);
+    if (i !== -1 && q[i].state === "fail") {
+      q[i] = { ...q[i], state: "approved", updated_at: new Date().toISOString() };
+      writeStore(STORES.queue, q);
+      audit("POLICY", task.id, "RETRY_REQUEUED attempt=" + next);
+    }
+  }, EXEC_POLICY.retryDelayMs);
+}
 
 function executeTask(task) {
   if (_inFlight.has(task.id)) return;
+
+  // Policy: lane allow-list
+  if (!EXEC_POLICY.allowedLanes.includes(task.lane)) {
+    audit("POLICY", task.id, "LANE_BLOCKED lane=" + task.lane + " not in allowedLanes");
+    appendStore(STORES.execution, {
+      ts: new Date().toISOString(), task_id: task.id, state: "fail",
+      policy: { decision: "LANE_BLOCKED", lane: task.lane }, contract: "FAIL", skill: null
+    });
+    // Mark task fail in queue
+    const qb = readStore(STORES.queue);
+    const ib = qb.findIndex(t => t.id === task.id);
+    if (ib !== -1) { qb[ib] = { ...qb[ib], state: "fail", updated_at: new Date().toISOString() }; writeStore(STORES.queue, qb); }
+    return;
+  }
+
   _inFlight.add(task.id);
 
   // Transition: approved → running
@@ -395,13 +465,39 @@ function executeTask(task) {
   appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: nextState, result, contract: finalContract, skill: selectedSkill });
   audit("EXECUTION", task.id, "state=" + nextState + " contract=" + finalContract + " skill=" + selectedSkill);
 
+  // Policy: consecutive fail tracking + retry
+  if (nextState === "fail") {
+    _consecFails++;
+    scheduleRetry(task);
+  } else {
+    _consecFails = 0;
+  }
+
   _inFlight.delete(task.id);
 }
 
 function startExecutionPoller() {
   setInterval(() => {
+    if (_pollerHalted) return;
+
+    // Policy: stop on repeated fail threshold
+    if (_consecFails >= EXEC_POLICY.stopOnFailThreshold) {
+      _pollerHalted = true;
+      audit("POLICY", null, "POLLER_HALTED consecFails=" + _consecFails + " threshold=" + EXEC_POLICY.stopOnFailThreshold);
+      appendStore(STORES.execution, {
+        ts: new Date().toISOString(), task_id: null, state: "fail",
+        policy: { decision: "POLLER_HALTED", consecFails: _consecFails, threshold: EXEC_POLICY.stopOnFailThreshold },
+        contract: "FAIL", skill: null
+      });
+      return;
+    }
+
+    // Policy: maxConcurrent
+    const slots = EXEC_POLICY.maxConcurrent - _inFlight.size;
+    if (slots <= 0) return;
+
     const queue    = readStore(STORES.queue);
-    const approved = queue.filter(t => t.state === "approved" && !_inFlight.has(t.id));
-    approved.forEach(executeTask);
+    const approved = queue.filter(t => t.state === "approved" && !_inFlight.has(t.id) && !_retryQueued.has(t.id));
+    approved.slice(0, slots).forEach(executeTask);
   }, 3000);
 }
