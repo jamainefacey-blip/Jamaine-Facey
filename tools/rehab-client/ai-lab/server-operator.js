@@ -248,10 +248,63 @@ server.listen(PORT, "127.0.0.1", () => {
   startExecutionPoller();
 });
 
+// ── Skill Registry ────────────────────────────────────────────────────────────
+// Three registered skills. execute() is synchronous; no external calls.
+
+const SKILL_REGISTRY = {
+  "task-breakdown": {
+    name: "task-breakdown",
+    description: "Decompose complex task into ordered subtasks",
+    execute(task) {
+      const p = task.payload || {};
+      return {
+        skill:    "task-breakdown",
+        output:   "Task decomposed: pipeline=" + (p.pipeline || "—") + " route=" + (p.route || "—"),
+        subtasks: ["validate-input", "process-stages", "emit-output"]
+      };
+    }
+  },
+  "deep-research": {
+    name: "deep-research",
+    description: "Analyse task payload for research or investigation output",
+    execute(task) {
+      const p = task.payload || {};
+      return {
+        skill:    "deep-research",
+        output:   "Research complete: pipeline=" + (p.pipeline || "—") + " contract=" + (p.contract || "—"),
+        findings: p.input || {}
+      };
+    }
+  },
+  "build-execution": {
+    name: "build-execution",
+    description: "Execute build or structured workflow task",
+    execute(task) {
+      const p      = task.payload || {};
+      const stages = Array.isArray(p.stages) ? p.stages : [];
+      return {
+        skill:        "build-execution",
+        output:       "Build executed: pipeline=" + (p.pipeline || "—") + " stages=" + stages.length,
+        stagesPassed: stages.filter(s => s.ok).length
+      };
+    }
+  }
+};
+
+// ── Skill Router ──────────────────────────────────────────────────────────────
+// Selects skill from registry based on pipeline and lane. No fallback to null —
+// always returns a valid registry key.
+
+function routeSkill(task) {
+  const pipeline = (task.payload && task.payload.pipeline) || "";
+  if (pipeline.startsWith("fhi") || pipeline === "vst-ava") return "deep-research";
+  if (pipeline === "vst-trip"    || pipeline === "vst-lead") return "build-execution";
+  return "task-breakdown";
+}
+
 // ── Execution poller ─────────────────────────────────────────────────────────
 // Scans for approved tasks every 3s. Idempotent — in-flight set prevents
-// duplicate execution. Does not call external services. Uses existing
-// storage helpers and execution log only.
+// duplicate execution. Skill is routed and executed before state advances.
 
 const _inFlight = new Set();
 
@@ -268,21 +321,28 @@ function executeTask(task) {
   }
   queue[idx] = { ...queue[idx], state: "running", updated_at: new Date().toISOString() };
   writeStore(STORES.queue, queue);
-  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: "running", result: null, contract: null });
+  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: "running", result: null, contract: null, skill: null });
   audit("EXECUTION", task.id, "state=running");
 
-  // Execute: validate payload contract, derive result
+  // Route skill
+  const selectedSkill = routeSkill(task);
+  const skillResult   = SKILL_REGISTRY[selectedSkill].execute(task);
+  audit("SKILL", task.id, "selected=" + selectedSkill + " pipeline=" + ((task.payload && task.payload.pipeline) || "—"));
+
+  // Validate payload contract, derive result
   const p       = task.payload || {};
   const stages  = Array.isArray(p.stages) ? p.stages : [];
   const allOk   = stages.length > 0 && stages.every(s => s.ok === true);
   const contract = allOk ? "COMPLETE" : "FAIL";
   const result   = {
-    pipeline:  p.pipeline  || null,
-    route:     p.route     || null,
+    pipeline:     p.pipeline  || null,
+    route:        p.route     || null,
     contract,
-    stagesRun: stages.length,
+    skill:        selectedSkill,
+    skillOutput:  skillResult,
+    stagesRun:    stages.length,
     stagesPassed: stages.filter(s => s.ok).length,
-    executedAt: new Date().toISOString()
+    executedAt:   new Date().toISOString()
   };
 
   // Transition: running → complete (or fail)
@@ -293,8 +353,8 @@ function executeTask(task) {
     q2[i2] = { ...q2[i2], state: nextState, updated_at: new Date().toISOString() };
     writeStore(STORES.queue, q2);
   }
-  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: nextState, result, contract });
-  audit("EXECUTION", task.id, "state=" + nextState + " contract=" + contract);
+  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: nextState, result, contract, skill: selectedSkill });
+  audit("EXECUTION", task.id, "state=" + nextState + " contract=" + contract + " skill=" + selectedSkill);
 
   _inFlight.delete(task.id);
 }
