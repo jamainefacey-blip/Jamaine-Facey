@@ -167,6 +167,35 @@
     #run-summary-panel .panel-title { color:#d97fff; }
     .summary-contract-ok   { color:#7fff7f; }
     .summary-contract-fail { color:#ff7f7f; }
+
+    /* Approval panel */
+    #approval-panel .panel-title { color:#ffb37f; }
+    #approval-empty { color:#444; font-size:0.78rem; padding: 8px 0; }
+    .ap-task {
+      background:#080808; border:1px solid #222; border-radius:3px;
+      padding:10px 12px; margin-bottom:8px;
+    }
+    .ap-task-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .ap-task-meta { flex:1; min-width:0; }
+    .ap-title { font-size:0.8rem; color:#d0d0d0; margin-bottom:4px; word-break:break-word; }
+    .ap-fields { display:flex; gap:12px; flex-wrap:wrap; }
+    .ap-field { font-size:0.7rem; }
+    .ap-field-key { color:#555; }
+    .ap-field-val { color:#9fb3ff; }
+    .ap-field-val.lane-VST { color:#7fff7f; }
+    .ap-field-val.lane-FHI { color:#ffb37f; }
+    .ap-result {
+      margin-top:7px; font-size:0.75rem; padding:4px 8px; border-radius:2px; display:none;
+    }
+    .ap-result.ap-ok   { display:block; color:#7fff7f; background:#0a1a0a; border:1px solid #3a6a3a; }
+    .ap-result.ap-fail { display:block; color:#ff7f7f; background:#1a0a0a; border:1px solid #6a1a1a; }
+    .btn-approve {
+      background:#1a2e1a; border:1px solid #3a6a3a; border-radius:3px;
+      color:#7fff7f; cursor:pointer; font-family:inherit; font-size:0.78rem;
+      padding:5px 14px; white-space:nowrap; flex-shrink:0;
+    }
+    .btn-approve:hover { background:#2a4a2a; }
+    .btn-approve:disabled { opacity:0.35; cursor:not-allowed; }
   </style>
 </head>
 <body>
@@ -274,6 +303,15 @@
       <div id="oq-msg"></div>
       <div class="oq-task-id" id="oq-task-id"></div>
     </div>
+  </div>
+
+  <div class="panel" id="approval-panel">
+    <div class="panel-title">Operator Approval Queue</div>
+    <div class="btn-row" style="margin-bottom:12px;">
+      <button class="btn-secondary" onclick="loadApprovalQueue()">Refresh Queue</button>
+    </div>
+    <div id="approval-empty">No pending tasks. Run a pipeline or click Refresh.</div>
+    <div id="approval-list"></div>
   </div>
 
   <script>
@@ -1111,6 +1149,100 @@
       });
     }
     // ── END OPERATOR INTAKE LAYER ─────────────────────────────────────────────
+
+    // ── APPROVAL LAYER ───────────────────────────────────────────────────────
+    // Read-only queue fetch + single-task approve. UI layer only.
+
+    function loadApprovalQueue() {
+      const listEl  = document.getElementById("approval-list");
+      const emptyEl = document.getElementById("approval-empty");
+      listEl.innerHTML = "";
+      emptyEl.textContent = "Loading…";
+      emptyEl.style.display = "block";
+
+      fetch(OPERATOR_URL + "/api/queue?state=pending_approval")
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) { emptyEl.textContent = "Queue error: " + data.error; return; }
+          if (!data.tasks || data.tasks.length === 0) {
+            emptyEl.textContent = "No pending tasks.";
+            return;
+          }
+          emptyEl.style.display = "none";
+          data.tasks.forEach(task => {
+            listEl.appendChild(buildTaskCard(task));
+          });
+        })
+        .catch(err => {
+          emptyEl.textContent = "Operator unreachable — " + err.message;
+        });
+    }
+
+    function buildTaskCard(task) {
+      const created = task.created_at
+        ? task.created_at.replace("T", " ").slice(0, 19)
+        : "—";
+
+      const card = document.createElement("div");
+      card.className = "ap-task";
+      card.id = "ap-card-" + task.id;
+
+      const laneClass = "ap-field-val lane-" + (task.lane || "");
+
+      card.innerHTML =
+        "<div class='ap-task-header'>" +
+          "<div class='ap-task-meta'>" +
+            "<div class='ap-title'>" + escHtml(task.title || task.id) + "</div>" +
+            "<div class='ap-fields'>" +
+              "<div class='ap-field'><span class='ap-field-key'>id: </span><span class='ap-field-val muted'>" + escHtml(task.id) + "</span></div>" +
+              "<div class='ap-field'><span class='ap-field-key'>lane: </span><span class='" + laneClass + "'>" + escHtml(task.lane || "—") + "</span></div>" +
+              "<div class='ap-field'><span class='ap-field-key'>state: </span><span class='ap-field-val'>" + escHtml(task.state) + "</span></div>" +
+              "<div class='ap-field'><span class='ap-field-key'>created: </span><span class='ap-field-val muted'>" + created + "</span></div>" +
+            "</div>" +
+          "</div>" +
+          "<button class='btn-approve' id='ap-btn-" + task.id + "' onclick='approveTask(\"" + task.id + "\")'>APPROVE</button>" +
+        "</div>" +
+        "<div class='ap-result' id='ap-result-" + task.id + "'></div>";
+
+      return card;
+    }
+
+    function approveTask(taskId) {
+      const btn    = document.getElementById("ap-btn-" + taskId);
+      const result = document.getElementById("ap-result-" + taskId);
+      if (btn) btn.disabled = true;
+
+      fetch(OPERATOR_URL + "/api/approve", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ task_id: taskId })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (result) {
+          result.className = "ap-result " + (data.ok ? "ap-ok" : "ap-fail");
+          result.textContent = data.ok
+            ? "Approved — state: " + (data.task && data.task.state ? data.task.state : "approved")
+            : "Failed: " + (data.error || "unknown");
+        }
+      })
+      .catch(err => {
+        if (result) {
+          result.className = "ap-result ap-fail";
+          result.textContent = "Operator unreachable — " + err.message;
+        }
+        if (btn) btn.disabled = false;
+      });
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+    // ── END APPROVAL LAYER ───────────────────────────────────────────────────
 
     function downloadJSON() {
       if (!lastResult) return;
