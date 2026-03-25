@@ -16,9 +16,10 @@
 
 "use strict";
 
-const http = require("http");
-const fs   = require("fs");
-const path = require("path");
+const http    = require("http");
+const fs      = require("fs");
+const path    = require("path");
+const planner = require("./planner");
 
 const PORT     = process.env.OPERATOR_PORT || 4445;
 const DATA_DIR = path.join(__dirname, "data");
@@ -244,6 +245,24 @@ const server = http.createServer(async (req, res) => {
     const task_id = qs.task_id;
     const result  = task_id ? log.filter(e => e.task_id === task_id) : log;
     return ok(res, { ok: true, count: result.length, log: result });
+  }
+
+  // ── POST /api/plan — Ava/Eva planning layer ────────────────────────────
+  // Converts a request string into queue-ready task metadata.
+  // Does NOT queue or execute. Caller submits to /api/task separately.
+  if (req.method === "POST" && url === "/api/plan") {
+    let body;
+    try { body = await parseBody(req); } catch (_) { return err(res, 400, "Invalid JSON"); }
+
+    const { request } = body;
+    if (!request || !String(request).trim()) return err(res, 400, "request field required");
+
+    let plan;
+    try { plan = planner.plan(request); }
+    catch (e) { return err(res, 422, "Planner error: " + e.message); }
+
+    audit("PLAN", null, "lane=" + plan.lane + " skill=" + plan.recommendedSkill + " priority=" + plan.priority + " approval=" + plan.approvalRequired);
+    return ok(res, { ok: true, plan });
   }
 
   // ── 404 ─────────────────────────────────────────────────────────────────
