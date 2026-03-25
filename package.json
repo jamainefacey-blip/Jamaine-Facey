@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "echo 'Static site — no framework build required'",
+    "vercel-build": "node tools/build-ai-lab-index.js",
     "dev": "next dev -p 3000",
     "build:vst": "next build",
     "preview:vst": "next build && next start -p 3000",
@@ -11,7 +12,12 @@
     "ai-lab:vst": "npx tsx ai-lab/runner/run-vst-analysis.ts",
     "ai-lab:vst:json": "npx tsx ai-lab/runner/run-vst-analysis.ts --json",
     "ai-lab:vst-fhi": "npx tsx ai-lab/runner/run-vst-fhi.ts",
-    "ai-lab:run": "npx tsx ai-lab/runner/run-asset.ts"
+    "ai-lab:run": "npx tsx ai-lab/runner/run-asset.ts",
+    "open:vst": "next dev -p 3000",
+    "open:ai-lab": "node tools/rehab-client/ai-lab/server.js",
+    "restart:ai-lab": "pkill -f 'node tools/rehab-client/ai-lab/server' || true && node tools/rehab-client/ai-lab/server.js",
+    "check:vst": "curl -I http://localhost:3000 || true",
+    "check:ai-lab": "curl -I http://localhost:4444 || true"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

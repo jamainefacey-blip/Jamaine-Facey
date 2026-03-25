@@ -1,0 +1,2 @@
+# Ignore runtime data files — populated by server.js action layer
+*.json

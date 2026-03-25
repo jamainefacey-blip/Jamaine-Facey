@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "node tools/build-ai-lab-index.js",
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "tools/rehab-client",
   "rewrites": [
     { "source": "/ai-lab",      "destination": "/ai-lab/index.html" },
