@@ -1,4 +1,5 @@
 {
+  "framework": "nextjs",
   "buildCommand": "node tools/build-ai-lab-index.js && cp -r tools/rehab-client/ai-lab public/ai-lab && next build",
   "rewrites": [
     { "source": "/ai-lab",      "destination": "/ai-lab/index.html" },
