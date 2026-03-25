@@ -4,6 +4,9 @@
 # Next.js build output
 .next/
 
+# AI Lab panel — copied into Next.js public/ at build time, not committed
+public/ai-lab/
+
 node_modules
 
 */.DS_Store

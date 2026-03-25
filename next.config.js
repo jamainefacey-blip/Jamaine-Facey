@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
-// The pages/ directory contains Netlify Edge Function demo templates, NOT
-// Next.js pages. Restricting pageExtensions to .tsx/.ts prevents Next.js from
-// scanning those plain-JS files and failing the build.
+// The pages/ directory contains Netlify Edge Function demo templates alongside
+// VST Next.js pages (.tsx/.ts). Restricting pageExtensions to .tsx/.ts prevents
+// Next.js from scanning the plain-JS Netlify demo files.
 //
-// This project is deployed as a static site (tools/rehab-client).
-// next is installed as a dependency but not used as the primary framework.
+// Deployed on Vercel as a Next.js app (VST frontend).
+// AI Lab panel served from public/ai-lab/ (copied at build time).
 const nextConfig = {
   pageExtensions: ["tsx", "ts"],
 };

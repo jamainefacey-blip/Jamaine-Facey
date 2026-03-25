@@ -1,10 +1,7 @@
 {
-  "framework": null,
-  "buildCommand": "node tools/build-ai-lab-index.js",
-  "outputDirectory": "tools/rehab-client",
+  "buildCommand": "node tools/build-ai-lab-index.js && cp -r tools/rehab-client/ai-lab public/ai-lab && next build",
   "rewrites": [
     { "source": "/ai-lab",      "destination": "/ai-lab/index.html" },
-    { "source": "/ai-lab/(.*)", "destination": "/ai-lab/$1" },
-    { "source": "/(.*)",        "destination": "/index.html" }
+    { "source": "/ai-lab/(.*)", "destination": "/ai-lab/$1" }
   ]
 }
