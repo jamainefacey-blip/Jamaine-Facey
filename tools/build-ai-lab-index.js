@@ -15,6 +15,9 @@
 const fs   = require('fs');
 const path = require('path');
 
+console.log('[ai-lab-index] cwd:', process.cwd());
+console.log('[ai-lab-index] __dirname:', __dirname);
+
 const ROOT     = path.join(__dirname, '..');
 const RUNS_SRC = path.join(ROOT, 'ai-lab', 'runs');
 const RUNS_DST = path.join(__dirname, 'rehab-client', 'ai-lab', 'runs');
