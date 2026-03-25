@@ -306,6 +306,29 @@ function routeSkill(task) {
 // Scans for approved tasks every 3s. Idempotent — in-flight set prevents
 // duplicate execution. Skill is routed and executed before state advances.
 
+// Validation gate — runs after skill execution, before final state write.
+// Returns { valid: bool, reason: string }.
+function validateSkillOutput(skill, skillResult, result) {
+  if (!skillResult || !skillResult.output || String(skillResult.output).trim() === "") {
+    return { valid: false, reason: "skill output is null or empty" };
+  }
+  const requiredFields = ["pipeline", "route", "contract", "skill", "stagesRun", "stagesPassed", "executedAt"];
+  const missing = requiredFields.filter(f => result[f] === undefined || result[f] === null);
+  if (missing.length) {
+    return { valid: false, reason: "missing required contract fields: " + missing.join(", ") };
+  }
+  if (skill === "build-execution" && !(skillResult.stagesPassed > 0)) {
+    return { valid: false, reason: "build-execution: stagesPassed must be > 0" };
+  }
+  if (skill === "deep-research" && Object.keys(skillResult.findings || {}).length === 0) {
+    return { valid: false, reason: "deep-research: findings must not be empty" };
+  }
+  if (skill === "task-breakdown" && !(Array.isArray(skillResult.subtasks) && skillResult.subtasks.length > 0)) {
+    return { valid: false, reason: "task-breakdown: subtasks must not be empty" };
+  }
+  return { valid: true, reason: "all checks passed" };
+}
+
 const _inFlight = new Set();
 
 function executeTask(task) {
@@ -329,15 +352,14 @@ function executeTask(task) {
   const skillResult   = SKILL_REGISTRY[selectedSkill].execute(task);
   audit("SKILL", task.id, "selected=" + selectedSkill + " pipeline=" + ((task.payload && task.payload.pipeline) || "—"));
 
-  // Validate payload contract, derive result
+  // Build result object
   const p       = task.payload || {};
   const stages  = Array.isArray(p.stages) ? p.stages : [];
   const allOk   = stages.length > 0 && stages.every(s => s.ok === true);
-  const contract = allOk ? "COMPLETE" : "FAIL";
   const result   = {
     pipeline:     p.pipeline  || null,
     route:        p.route     || null,
-    contract,
+    contract:     allOk ? "COMPLETE" : "FAIL",
     skill:        selectedSkill,
     skillOutput:  skillResult,
     stagesRun:    stages.length,
@@ -345,16 +367,33 @@ function executeTask(task) {
     executedAt:   new Date().toISOString()
   };
 
-  // Transition: running → complete (or fail)
-  const nextState = allOk ? "complete" : "fail";
-  const q2  = readStore(STORES.queue);
-  const i2  = q2.findIndex(t => t.id === task.id);
+  // Validation gate: running → validated
+  const validation = validateSkillOutput(selectedSkill, skillResult, result);
+  const q2 = readStore(STORES.queue);
+  const i2 = q2.findIndex(t => t.id === task.id);
   if (i2 !== -1) {
-    q2[i2] = { ...q2[i2], state: nextState, updated_at: new Date().toISOString() };
+    q2[i2] = { ...q2[i2], state: "validated", updated_at: new Date().toISOString() };
     writeStore(STORES.queue, q2);
   }
-  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: nextState, result, contract, skill: selectedSkill });
-  audit("EXECUTION", task.id, "state=" + nextState + " contract=" + contract + " skill=" + selectedSkill);
+  appendStore(STORES.execution, {
+    ts: new Date().toISOString(), task_id: task.id, state: "validated",
+    validation: { valid: validation.valid, reason: validation.reason },
+    skill: selectedSkill, contract: result.contract
+  });
+  audit("VALIDATION", task.id, (validation.valid ? "PASS" : "FAIL") + " — " + validation.reason);
+
+  // Transition: validated → complete|fail
+  const nextState = (allOk && validation.valid) ? "complete" : "fail";
+  const finalContract = nextState === "complete" ? "COMPLETE" : "FAIL";
+  result.contract = finalContract;
+  const q3 = readStore(STORES.queue);
+  const i3 = q3.findIndex(t => t.id === task.id);
+  if (i3 !== -1) {
+    q3[i3] = { ...q3[i3], state: nextState, updated_at: new Date().toISOString() };
+    writeStore(STORES.queue, q3);
+  }
+  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: nextState, result, contract: finalContract, skill: selectedSkill });
+  audit("EXECUTION", task.id, "state=" + nextState + " contract=" + finalContract + " skill=" + selectedSkill);
 
   _inFlight.delete(task.id);
 }
