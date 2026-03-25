@@ -245,4 +245,64 @@ Object.values(STORES).forEach(f => { if (!fs.existsSync(f)) writeStore(f, []); }
 server.listen(PORT, "127.0.0.1", () => {
   console.log("AI Lab Operator running at http://localhost:" + PORT);
   console.log("Stores:", Object.entries(STORES).map(([k, v]) => k + "=" + path.relative(process.cwd(), v)).join(", "));
+  startExecutionPoller();
 });
+
+// ── Execution poller ─────────────────────────────────────────────────────────
+// Scans for approved tasks every 3s. Idempotent — in-flight set prevents
+// duplicate execution. Does not call external services. Uses existing
+// storage helpers and execution log only.
+
+const _inFlight = new Set();
+
+function executeTask(task) {
+  if (_inFlight.has(task.id)) return;
+  _inFlight.add(task.id);
+
+  // Transition: approved → running
+  const queue = readStore(STORES.queue);
+  const idx   = queue.findIndex(t => t.id === task.id);
+  if (idx === -1 || queue[idx].state !== "approved") {
+    _inFlight.delete(task.id);
+    return;
+  }
+  queue[idx] = { ...queue[idx], state: "running", updated_at: new Date().toISOString() };
+  writeStore(STORES.queue, queue);
+  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: "running", result: null, contract: null });
+  audit("EXECUTION", task.id, "state=running");
+
+  // Execute: validate payload contract, derive result
+  const p       = task.payload || {};
+  const stages  = Array.isArray(p.stages) ? p.stages : [];
+  const allOk   = stages.length > 0 && stages.every(s => s.ok === true);
+  const contract = allOk ? "COMPLETE" : "FAIL";
+  const result   = {
+    pipeline:  p.pipeline  || null,
+    route:     p.route     || null,
+    contract,
+    stagesRun: stages.length,
+    stagesPassed: stages.filter(s => s.ok).length,
+    executedAt: new Date().toISOString()
+  };
+
+  // Transition: running → complete (or fail)
+  const nextState = allOk ? "complete" : "fail";
+  const q2  = readStore(STORES.queue);
+  const i2  = q2.findIndex(t => t.id === task.id);
+  if (i2 !== -1) {
+    q2[i2] = { ...q2[i2], state: nextState, updated_at: new Date().toISOString() };
+    writeStore(STORES.queue, q2);
+  }
+  appendStore(STORES.execution, { ts: new Date().toISOString(), task_id: task.id, state: nextState, result, contract });
+  audit("EXECUTION", task.id, "state=" + nextState + " contract=" + contract);
+
+  _inFlight.delete(task.id);
+}
+
+function startExecutionPoller() {
+  setInterval(() => {
+    const queue    = readStore(STORES.queue);
+    const approved = queue.filter(t => t.state === "approved" && !_inFlight.has(t.id));
+    approved.forEach(executeTask);
+  }, 3000);
+}
