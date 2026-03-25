@@ -214,6 +214,36 @@
     #op-exec-result { display:none; margin-top:10px; font-size:0.78rem; padding:8px 12px; border-radius:3px; }
     #op-exec-result.er-ok   { display:block; background:#0a1a0a; border:1px solid #3a6a3a; color:#7fff7f; }
     #op-exec-result.er-fail { display:block; background:#1a0a0a; border:1px solid #6a1a1a; color:#ff7f7f; }
+
+    /* Task status tracker */
+    #op-status-tracker { display:none; margin-top:14px; padding-top:12px; border-top:1px solid #1e1e1e; }
+    #op-status-tracker .st-title { font-size:0.72rem; color:#9fb3ff; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
+    #st-task-id-line { font-size:0.7rem; color:#555; margin-bottom:8px; word-break:break-all; }
+    #st-task-id-line span { color:#888; }
+    .st-pills { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; }
+    .st-pill {
+      font-size:0.7rem; padding:3px 9px; border-radius:2px; border:1px solid #2a2a2a;
+      background:#1a1a1a; color:#555; transition:all 0.2s;
+    }
+    .st-pill.sp-active { border-color:#ffdf7f; color:#ffdf7f; background:#1a1800; }
+    .st-pill.sp-done   { border-color:#3a6a3a; color:#7fff7f; background:#0a1a0a; }
+    .st-pill.sp-fail   { border-color:#6a1a1a; color:#ff7f7f; background:#1a0a0a; }
+    #st-gate { display:none; font-size:0.78rem; padding:8px 10px; border-radius:3px; margin-bottom:8px; }
+    #st-gate.sg-wait { display:block; background:#0d0d1a; border:1px solid #3a3a8a; color:#9fb3ff; }
+    #st-gate.sg-manual { display:block; background:#1a1000; border:1px solid #6a4a00; color:#ffdf7f; }
+    .btn-auto-approve {
+      margin-left:10px; background:#1a2e1a; border:1px solid #3a6a3a; border-radius:3px;
+      color:#7fff7f; cursor:pointer; font-family:inherit; font-size:0.75rem; padding:3px 12px;
+    }
+    .btn-auto-approve:hover { background:#2a4a2a; }
+    .btn-auto-approve:disabled { opacity:0.35; cursor:not-allowed; }
+    #st-result-box { display:none; font-size:0.75rem; padding:8px 10px; border-radius:3px; }
+    #st-result-box.srb-ok   { display:block; background:#0a1a0a; border:1px solid #3a6a3a; color:#7fff7f; }
+    #st-result-box.srb-fail { display:block; background:#1a0a0a; border:1px solid #6a1a1a; color:#ff7f7f; }
+    .st-result-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 14px; margin-top:6px; }
+    .st-result-row { display:flex; flex-direction:column; }
+    .st-rk { font-size:0.62rem; color:#555; text-transform:uppercase; letter-spacing:0.05em; }
+    .st-rv { font-size:0.75rem; color:#d0d0d0; word-break:break-all; }
   </style>
 </head>
 <body>
@@ -252,6 +282,14 @@
         <button id="op-exec-btn" onclick="opExecute()">CONFIRM &amp; EXECUTE</button>
       </div>
       <div id="op-exec-result"></div>
+
+      <div id="op-status-tracker">
+        <div class="st-title">Task Status</div>
+        <div id="st-task-id-line">task_id: <span id="st-task-id"></span></div>
+        <div class="st-pills" id="st-pills"></div>
+        <div id="st-gate"></div>
+        <div id="st-result-box"></div>
+      </div>
     </div>
   </div>
 
@@ -1441,6 +1479,7 @@
           execRes.textContent = "Queued — task_id: " + data.task_id + "  state: " + data.state;
           execBtn.disabled    = true;
           document.getElementById("op-reject-btn").disabled = false;
+          opStartPoll(data.task_id, _currentPlan && _currentPlan.approvalRequired);
         } else {
           execRes.className   = "er-fail";
           execRes.textContent = "Execute failed: " + (data.error || "unknown");
@@ -1455,15 +1494,156 @@
     }
 
     function opReject() {
+      opStopPoll();
       _currentPlan = null;
       document.getElementById("op-request").value          = "";
       document.getElementById("op-plan-output").style.display = "none";
       document.getElementById("op-exec-result").className  = "";
       document.getElementById("op-exec-result").textContent = "";
       document.getElementById("op-approval-warn").style.display = "none";
+      document.getElementById("op-status-tracker").style.display = "none";
       document.getElementById("op-reject-btn").disabled    = true;
       document.getElementById("op-exec-btn").disabled      = false;
     }
+    // ── Task status tracker ───────────────────────────────────────────────────
+
+    const ST_STATES = ["pending_approval", "approved", "running", "validated", "complete", "fail"];
+    const ST_TERMINAL = ["complete", "fail"];
+    let _pollTimer = null;
+    let _pollTaskId = null;
+
+    function opStartPoll(taskId, manualApproval) {
+      opStopPoll();
+      _pollTaskId = taskId;
+
+      const tracker = document.getElementById("op-status-tracker");
+      document.getElementById("st-task-id").textContent = taskId;
+      document.getElementById("st-result-box").className = "";
+      document.getElementById("st-result-box").innerHTML = "";
+      document.getElementById("st-gate").className = "";
+      document.getElementById("st-gate").innerHTML = "";
+
+      // Build state pills
+      const pillsEl = document.getElementById("st-pills");
+      pillsEl.innerHTML = "";
+      ST_STATES.forEach(s => {
+        const p = document.createElement("span");
+        p.className = "st-pill";
+        p.id = "stp-" + s.replace("_", "-");
+        p.textContent = s.replace("_", " ");
+        pillsEl.appendChild(p);
+      });
+
+      tracker.style.display = "block";
+
+      // Show initial gate message
+      opSetGate("pending_approval", manualApproval, taskId);
+
+      _pollTimer = setInterval(() => opPollStatus(taskId, manualApproval), 3000);
+    }
+
+    function opStopPoll() {
+      if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+      _pollTaskId = null;
+    }
+
+    function opPollStatus(taskId, manualApproval) {
+      fetch(OPERATOR_URL + "/api/queue")
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) return;
+          const task = (data.tasks || []).find(t => t.id === taskId);
+          if (!task) return;
+          opRenderStatus(task, manualApproval);
+          if (ST_TERMINAL.includes(task.state)) opStopPoll();
+        })
+        .catch(() => {});  // silent — keep polling
+    }
+
+    function opRenderStatus(task, manualApproval) {
+      const state   = task.state;
+      const isTerminal = ST_TERMINAL.includes(state);
+      const isFail  = state === "fail";
+
+      // Update pills
+      const stateOrder = ["pending_approval", "approved", "running", "validated"];
+      let passed = false;
+      ST_STATES.forEach(s => {
+        const el = document.getElementById("stp-" + s.replace("_", "-"));
+        if (!el) return;
+        if (s === "complete" || s === "fail") {
+          if (state === s) el.className = "st-pill " + (s === "complete" ? "sp-done" : "sp-fail");
+          else el.className = "st-pill";
+          return;
+        }
+        if (s === state) { el.className = "st-pill sp-active"; passed = true; }
+        else if (!passed) el.className = "st-pill sp-done";
+        else el.className = "st-pill";
+      });
+
+      // Gate message
+      opSetGate(state, manualApproval, task.id);
+
+      // Result when terminal
+      if (isTerminal) {
+        fetch(OPERATOR_URL + "/api/execution?task_id=" + task.id)
+          .then(r => r.json())
+          .then(elog => {
+            const entry = (elog.log || []).find(e => e.state === state && e.result);
+            const box   = document.getElementById("st-result-box");
+            box.className = isFail ? "srb-fail" : "srb-ok";
+            if (entry && entry.result) {
+              const r = entry.result;
+              box.innerHTML =
+                "<strong>" + (isFail ? "FAIL" : "COMPLETE") + "</strong>" +
+                "<div class='st-result-grid'>" +
+                  "<div class='st-result-row'><span class='st-rk'>Contract</span><span class='st-rv'>" + (r.contract || "—") + "</span></div>" +
+                  "<div class='st-result-row'><span class='st-rk'>Skill</span><span class='st-rv'>" + (r.skill || "—") + "</span></div>" +
+                  "<div class='st-result-row'><span class='st-rk'>Stages passed</span><span class='st-rv'>" + (r.stagesPassed != null ? r.stagesPassed + " / " + r.stagesRun : "—") + "</span></div>" +
+                  "<div class='st-result-row'><span class='st-rk'>Executed at</span><span class='st-rv'>" + (r.executedAt ? r.executedAt.replace("T"," ").slice(0,19) : "—") + "</span></div>" +
+                "</div>";
+            } else {
+              box.textContent = isFail ? "Task failed — see Approval Queue for details." : "Complete.";
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    function opSetGate(state, manualApproval, taskId) {
+      const gate = document.getElementById("st-gate");
+      if (state !== "pending_approval") { gate.className = ""; gate.innerHTML = ""; return; }
+      if (manualApproval) {
+        gate.className = "sg-manual";
+        gate.textContent = "Awaiting manual approval — use the Approval Queue panel below.";
+      } else {
+        gate.className = "sg-wait";
+        gate.innerHTML = "Auto-approvable — no manual gate required." +
+          " <button class='btn-auto-approve' id='st-auto-approve-btn' onclick='opInlineApprove(\"" + taskId + "\")'>AUTO-APPROVE</button>";
+      }
+    }
+
+    function opInlineApprove(taskId) {
+      const btn = document.getElementById("st-auto-approve-btn");
+      if (btn) btn.disabled = true;
+      fetch(OPERATOR_URL + "/api/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_id: taskId })
+      })
+      .then(r => r.json())
+      .then(data => {
+        const gate = document.getElementById("st-gate");
+        if (data.ok) {
+          gate.className = "";
+          gate.textContent = "";
+        } else {
+          if (btn) btn.disabled = false;
+        }
+      })
+      .catch(() => { if (btn) btn.disabled = false; });
+    }
+
     // ── END OPERATOR PANEL ────────────────────────────────────────────────────
   </script>
 </body>
