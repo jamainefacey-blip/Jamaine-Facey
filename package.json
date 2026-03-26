@@ -18,7 +18,9 @@
     "open:ai-lab": "node tools/rehab-client/ai-lab/server.js",
     "restart:ai-lab": "pkill -f 'node tools/rehab-client/ai-lab/server' || true && node tools/build-ai-lab-index.js && node tools/rehab-client/ai-lab/server.js",
     "check:vst": "curl -I http://localhost:3000 || true",
-    "check:ai-lab": "curl -I http://localhost:4444 || true"
+    "check:ai-lab": "curl -I http://localhost:4444 || true",
+    "engine:run": "npx tsx engine/runner.ts",
+    "engine:once": "npx tsx engine/runner.ts --once"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
@@ -40,6 +42,7 @@
   },
   "homepage": "https://github.com/netlify/edge-functions-examples#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "next": "14.2.3",
     "react": "18.2.0",
     "react-dom": "18.2.0"

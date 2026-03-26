@@ -1,0 +1,66 @@
+// engine/types.ts — shared types for the autonomous execution engine
+
+export type TaskStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'validating'
+  | 'deploying'
+  | 'complete'
+  | 'failed'
+  | 'blocked';
+
+export type TaskLane = 'VST' | 'AI_LAB' | 'FHI' | 'ADMIN' | 'BACKYARD';
+
+export interface Task {
+  id: string;
+  lane: TaskLane;
+  description: string;
+  /** Files the executor is allowed to touch (globs allowed) */
+  scope: string[];
+  /** npm script to run for validation, e.g. "build:vst" */
+  validateScript?: string;
+  /** Whether to commit + push after successful validation */
+  deploy: boolean;
+  /** ISO timestamp when task was created */
+  createdAt: string;
+  /** Optional arbitrary metadata */
+  meta?: Record<string, unknown>;
+}
+
+export interface QueueEntry {
+  task: Task;
+  status: TaskStatus;
+  attempts: number;
+  lastError?: string;
+  enqueuedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+export interface ExecutionResult {
+  taskId: string;
+  status: 'complete' | 'failed' | 'blocked';
+  filesChanged: string[];
+  claudeOutput: string;
+  validationPassed: boolean;
+  validationOutput: string;
+  deployed: boolean;
+  deployOutput: string;
+  error?: string;
+  durationMs: number;
+}
+
+export interface RunLog {
+  runId: string;
+  taskId: string;
+  lane: TaskLane;
+  status: TaskStatus;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  filesChanged: string[];
+  validationPassed: boolean;
+  deployed: boolean;
+  error?: string;
+  claudeSummary: string;
+}
