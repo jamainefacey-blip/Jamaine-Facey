@@ -687,6 +687,23 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .mt-8  { margin-top: 32px; }
 .mt-12 { margin-top: 48px; }
 
+/* ── Nav scrolled state + active link (PASS 2B) ────────────────────────────── */
+.vst-nav--scrolled {
+  background: rgba(11,15,25,.98) !important;
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 16px rgba(0,0,0,.4);
+}
+.vst-nav__links a.active {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 2px;
+}
+.vst-nav__mobile a.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* ── Premium Dark + Gold Colour System ─────────────────────────────────────── */
 :root {
   --bg-main:        #0B0F19;
