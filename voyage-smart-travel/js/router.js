@@ -78,6 +78,30 @@ window.VSTRouter = (function () {
       }
     }
 
+    /* ── Home page interactions ─────────────────────────────────────────────── */
+    if (route === 'home') {
+      /* Planner tab switching */
+      var plannerTabs = document.getElementById('hp-planner-tabs');
+      if (plannerTabs) {
+        plannerTabs.addEventListener('click', function (e) {
+          var btn = e.target.closest('.hp-planner-tab');
+          if (!btn) return;
+          plannerTabs.querySelectorAll('.hp-planner-tab').forEach(function (t) {
+            t.classList.remove('active');
+          });
+          btn.classList.add('active');
+        });
+      }
+
+      /* "Plan my trip" button → trip request page */
+      var plannerSubmit = document.getElementById('hp-planner-submit');
+      if (plannerSubmit) {
+        plannerSubmit.addEventListener('click', function () {
+          navigate('trip-request');
+        });
+      }
+    }
+
     /* ── Trip Request form ─────────────────────────────────────────────────── */
     if (route === 'trip-request') {
       var tripForm    = document.getElementById('trip-request-form');
