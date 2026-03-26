@@ -2608,3 +2608,454 @@ button { font-family: inherit; }
   .hp-final-cta-actions { flex-direction: column; align-items: stretch; }
   .hp-final-cta-actions a { text-align: center; justify-content: center; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VST HOMEPAGE — VISUAL UPGRADE LAYER
+   Applied over existing hp- styles via cascade. Premium polish.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Animation keyframes ──────────────────────────────────────────────────── */
+@keyframes gradient-drift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes orbit-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50%       { transform: translate(-50%, -50%) translateY(-6px); }
+}
+
+@keyframes node-appear {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── HERO — depth & life ──────────────────────────────────────────────────── */
+
+/* Richer background gradient */
+.hp-hero {
+  background: radial-gradient(ellipse 130% 80% at 50% -20%, #0d1e3f 0%, #09101f 55%);
+}
+
+/* Additional chromatic glow layer */
+.hp-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 45% 55% at 15% 60%, rgba(56,189,248,.04) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 40% at 85% 30%, rgba(139,92,246,.03) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 35% at 50% 100%, rgba(212,168,83,.04) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Gradient text on the accent word */
+.hp-hero-accent {
+  background: linear-gradient(96deg, #d4a853 0%, #f5d988 45%, #c9922e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+/* Badge — glow */
+.hp-hero-badge {
+  box-shadow: 0 0 28px rgba(212,168,83,.12), 0 2px 8px rgba(0,0,0,.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Safety strip — better depth */
+.hp-hero-safety {
+  background: rgba(239,68,68,.06);
+  border-color: rgba(239,68,68,.18);
+  box-shadow: 0 2px 12px rgba(239,68,68,.08);
+  backdrop-filter: blur(8px);
+}
+
+/* ── ORBIT — animated ─────────────────────────────────────────────────────── */
+.hp-orbit-center {
+  animation: orbit-float 4s ease-in-out infinite;
+  box-shadow: 0 0 40px rgba(212,168,83,.25), 0 0 80px rgba(212,168,83,.08), 0 4px 16px rgba(0,0,0,.5);
+}
+
+.hp-orbit-ring--1 {
+  border-color: rgba(212,168,83,.12);
+  box-shadow: inset 0 0 60px rgba(212,168,83,.02);
+}
+.hp-orbit-ring--2 {
+  border-color: rgba(212,168,83,.06);
+}
+
+.hp-orbit-node {
+  box-shadow: 0 4px 20px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.04) inset;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.hp-orbit-node:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.12);
+  box-shadow: 0 6px 24px rgba(212,168,83,.25), 0 1px 0 rgba(255,255,255,.04) inset;
+}
+
+/* ── BUTTONS — premium feel ───────────────────────────────────────────────── */
+.hp-btn-primary {
+  background: linear-gradient(135deg, #d4a853 0%, #c98f2a 100%);
+  box-shadow: 0 4px 20px rgba(212,168,83,.3), 0 1px 0 rgba(255,255,255,.12) inset;
+  position: relative;
+  overflow: hidden;
+}
+.hp-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+  transition: left 0s;
+}
+.hp-btn-primary:hover::after {
+  left: 150%;
+  transition: left 0.5s ease;
+}
+.hp-btn-primary:hover {
+  background: linear-gradient(135deg, #e0b55e 0%, #d4a040 100%);
+  box-shadow: 0 8px 32px rgba(212,168,83,.45), 0 1px 0 rgba(255,255,255,.15) inset;
+  transform: translateY(-2px);
+}
+.hp-btn-primary:active { transform: translateY(0); }
+
+.hp-btn-ghost {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.hp-btn-ghost:hover {
+  background: rgba(212,168,83,.06);
+}
+
+/* ── TRIP PLANNER — glassmorphism elevation ───────────────────────────────── */
+.hp-planner-wrap {
+  background: linear-gradient(to bottom, #09101f 0%, #0d1628 100%);
+  padding-bottom: 0;
+}
+
+.hp-planner {
+  padding: 40px 0 48px;
+}
+
+.hp-planner-form {
+  background: rgba(15,23,42,.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.6),
+    0 1px 0 rgba(255,255,255,.06) inset,
+    0 0 0 1px rgba(212,168,83,.08);
+  align-items: flex-end;
+}
+
+/* Tab — stronger active treatment */
+.hp-planner-tab {
+  position: relative;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.hp-planner-tab.active {
+  color: var(--accent);
+  background: rgba(212,168,83,.07);
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(212,168,83,.08);
+}
+
+/* Input focus — gold glow */
+.hp-planner-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212,168,83,.12);
+  background: rgba(9,16,31,.8);
+}
+
+/* Field dividers on desktop */
+.hp-planner-field:not(:last-of-type) {
+  position: relative;
+}
+
+/* Submit button — elevated */
+.hp-planner-submit {
+  background: linear-gradient(135deg, #d4a853 0%, #c98f2a 100%);
+  box-shadow: 0 4px 20px rgba(212,168,83,.3);
+  transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+}
+.hp-planner-submit:hover {
+  background: linear-gradient(135deg, #e0b55e 0%, #d4a040 100%);
+  box-shadow: 0 8px 28px rgba(212,168,83,.4);
+  transform: translateY(-1px);
+}
+
+/* ── TRAVEL TYPE CARDS — depth + gradient overlay ─────────────────────────── */
+.hp-type-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, #1a2540 0%, #141d35 100%);
+  box-shadow: 0 4px 20px rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,.03) inset;
+  transition: border-color 0.22s, transform 0.22s, box-shadow 0.22s;
+}
+
+/* Gradient overlay on hover */
+.hp-type-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212,168,83,.09) 0%, rgba(212,168,83,.02) 60%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.hp-type-card:hover {
+  border-color: rgba(212,168,83,.35);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(212,168,83,.12);
+}
+.hp-type-card:hover::before { opacity: 1; }
+
+/* Icon — glow on card hover */
+.hp-type-card:hover .hp-type-icon {
+  background: rgba(212,168,83,.18);
+  border-color: rgba(212,168,83,.35);
+  box-shadow: 0 4px 16px rgba(212,168,83,.15);
+}
+
+.hp-type-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* ── SAFETY SECTION — dramatic + premium ──────────────────────────────────── */
+.hp-safety-section {
+  background: #050c1a;
+  padding: 96px 20px;
+}
+
+/* Stronger red gradient ambience */
+.hp-safety-section::before {
+  background:
+    radial-gradient(ellipse 70% 90% at 0% 50%, rgba(239,68,68,.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 100% 100%, rgba(239,68,68,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(139,92,246,.02) 0%, transparent 60%);
+}
+
+/* SOS badge — glow */
+.hp-sos-badge {
+  box-shadow: 0 0 24px rgba(239,68,68,.18), 0 0 0 1px rgba(239,68,68,.12);
+  letter-spacing: 1px;
+}
+
+/* Safety headline — white is good, keep */
+.hp-safety-h2 span { color: #ff6b6b; }
+
+/* Safety cards — left border + elevated */
+.hp-safety-card {
+  border: 1px solid rgba(255,255,255,.06);
+  border-left: 2px solid rgba(239,68,68,.4);
+  background: rgba(255,255,255,.03);
+  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  transition: border-color 0.2s, border-left-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.hp-safety-card:hover {
+  border-color: rgba(255,255,255,.1);
+  border-left-color: var(--danger);
+  background: rgba(239,68,68,.06);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 0 1px rgba(239,68,68,.15);
+  transform: translateX(3px);
+}
+
+.hp-safety-icon {
+  box-shadow: 0 4px 12px rgba(239,68,68,.12);
+}
+
+/* ── ACCESSIBILITY SECTION ────────────────────────────────────────────────── */
+.hp-a11y-item {
+  transition: background 0.15s, padding-left 0.15s;
+  border-radius: var(--radius-sm);
+  margin: 0 -8px;
+  padding: 20px 8px;
+}
+.hp-a11y-item:hover {
+  background: rgba(212,168,83,.04);
+  padding-left: 16px;
+}
+.hp-a11y-item:hover .hp-a11y-dot {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(212,168,83,.4);
+}
+.hp-a11y-dot {
+  transition: background 0.15s, box-shadow 0.15s;
+  margin-top: 7px;
+}
+
+/* ── TRANSPORT BAR ────────────────────────────────────────────────────────── */
+.hp-transport-section {
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-surface) 100%);
+}
+
+.hp-transport-item {
+  border-radius: 12px;
+  transition: background 0.18s, transform 0.18s;
+}
+.hp-transport-item:hover {
+  background: rgba(212,168,83,.06);
+  transform: translateY(-2px);
+}
+.hp-transport-item:hover .hp-transport-icon { color: var(--accent); }
+.hp-transport-item:hover .hp-transport-label { color: var(--accent); }
+
+/* ── HOW IT WORKS — ghost step numbers ────────────────────────────────────── */
+.hp-step {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.18s;
+}
+.hp-step:hover { background: #1d2a45; }
+
+/* Ghost number behind each step */
+.hp-steps .hp-step:nth-child(1)::before,
+.hp-steps .hp-step:nth-child(2)::before,
+.hp-steps .hp-step:nth-child(3)::before {
+  position: absolute;
+  bottom: -10px;
+  right: 20px;
+  font-size: 110px;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(212,168,83,.05);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -4px;
+}
+.hp-steps .hp-step:nth-child(1)::before { content: '01'; }
+.hp-steps .hp-step:nth-child(2)::before { content: '02'; }
+.hp-steps .hp-step:nth-child(3)::before { content: '03'; }
+
+.hp-step-num {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  color: var(--accent);
+  display: inline-block;
+  background: var(--accent-glow);
+  border: 1px solid rgba(212,168,83,.25);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 1.5px;
+  margin-bottom: 18px;
+}
+
+.hp-step-title {
+  position: relative;
+  z-index: 1;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+.hp-step-desc { position: relative; z-index: 1; }
+
+/* Step separator line on desktop */
+@media (min-width: 640px) {
+  .hp-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--border-light), var(--border-light), transparent);
+  }
+}
+
+/* ── TRUST BAR — gradient values ──────────────────────────────────────────── */
+.hp-trust-bar {
+  box-shadow: 0 4px 24px rgba(0,0,0,.3);
+}
+
+.hp-trust-stat {
+  background: linear-gradient(145deg, #1a2540 0%, #141d35 100%);
+  transition: background 0.18s;
+}
+.hp-trust-stat:hover { background: #1e2c4d; }
+
+.hp-trust-value {
+  background: linear-gradient(135deg, #c9922e 0%, #f5d988 50%, #d4a853 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── FINAL CTA — stronger gradient ───────────────────────────────────────── */
+.hp-final-cta {
+  background: linear-gradient(160deg, #07101f 0%, #0d1b33 40%, #070e1d 100%);
+}
+
+.hp-final-cta::before {
+  background:
+    radial-gradient(ellipse 80% 70% at 50% -10%, rgba(212,168,83,.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 15% 80%, rgba(56,189,248,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 40% at 85% 90%, rgba(139,92,246,.03) 0%, transparent 60%);
+}
+
+/* Gradient on the accent span */
+.hp-final-cta-h2 span {
+  background: linear-gradient(96deg, #d4a853 0%, #f5d988 50%, #c9922e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hp-final-cta-badge {
+  box-shadow: 0 0 24px rgba(212,168,83,.1);
+}
+
+/* ── GLOBAL POLISH ────────────────────────────────────────────────────────── */
+
+/* All section transitions smoother */
+.section, .hp-safety-section, .hp-transport-section, .hp-trust-section, .hp-final-cta {
+  border-top: 1px solid rgba(255,255,255,.04);
+}
+
+/* Nav active link gold underline */
+.nav-link.active {
+  color: var(--accent);
+  position: relative;
+}
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hp-orbit-ring--1,
+  .hp-orbit-ring--2,
+  .hp-orbit-center,
+  .hp-sos-pulse::before,
+  .hp-sos-pulse-lg::before,
+  .hp-btn-primary::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
