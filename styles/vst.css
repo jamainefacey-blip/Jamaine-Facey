@@ -686,3 +686,318 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .mt-4  { margin-top: 16px; }
 .mt-8  { margin-top: 32px; }
 .mt-12 { margin-top: 48px; }
+
+/* ── Premium Dark + Gold Colour System ─────────────────────────────────────── */
+:root {
+  --bg-main:        #0B0F19;
+  --bg-surface:     #121826;
+  --bg-card:        #1B2333;
+  --accent:         #C6A85A;
+  --accent-soft:    #E7D39F;
+  --text-primary:   #F5F7FA;
+  --text-secondary: #9AA4B2;
+  --text-muted:     #6B7280;
+  --success:        #22C55E;
+  --warning:        #F59E0B;
+  --error:          #EF4444;
+  --border-subtle:  #1E2D42;
+  --accent-dim:     #221D0E;
+  --accent-border:  #4A3B1A;
+
+  /* Override legacy tokens to dark palette */
+  --vst-navy:        #0B0F19;
+  --vst-navy-mid:    #121826;
+  --vst-blue:        #C6A85A;
+  --vst-blue-hover:  #B8963C;
+  --vst-blue-light:  #221D0E;
+  --vst-blue-border: #4A3B1A;
+  --vst-green:       #22C55E;
+  --vst-text:        #F5F7FA;
+  --vst-muted:       #9AA4B2;
+  --vst-border:      #1E2D42;
+  --vst-bg:          #121826;
+  --vst-bg-alt:      #0B0F19;
+  --vst-bg-dark:     #0B0F19;
+}
+
+/* ── Base overrides ─────────────────────────────────────────────────────────── */
+body {
+  background: var(--bg-main);
+  color: var(--text-primary);
+}
+
+/* Headings on dark backgrounds */
+.vst-h1, .vst-h2, .vst-h3 {
+  color: var(--text-primary);
+}
+
+/* Primary button — gold */
+.vst-btn--primary {
+  background: var(--accent);
+  color: #0B0F19;
+  box-shadow: 0 2px 8px rgba(198,168,90,.25);
+}
+.vst-btn--primary:hover {
+  background: var(--accent-soft);
+  box-shadow: 0 4px 20px rgba(198,168,90,.35);
+}
+
+/* Secondary button — outline */
+.vst-btn--secondary {
+  border: 1.5px solid var(--accent-border);
+  color: var(--accent-soft);
+  background: transparent;
+}
+.vst-btn--secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Ghost light button (on dark sections) */
+.vst-btn--ghost-light {
+  background: rgba(255,255,255,.07);
+  color: var(--text-primary);
+  border: 1.5px solid rgba(255,255,255,.15);
+}
+.vst-btn--ghost-light:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.25);
+}
+
+/* Cards */
+.vst-card {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+}
+.vst-card--shadow {
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+
+/* Nav — dark glass */
+.vst-nav {
+  background: rgba(11,15,25,.92);
+  border-bottom-color: var(--border-subtle);
+}
+.vst-nav__logo {
+  color: var(--text-primary);
+}
+.vst-nav__logo-mark {
+  background: var(--accent);
+  color: #0B0F19;
+}
+.vst-nav__links a {
+  color: var(--text-secondary);
+}
+.vst-nav__links a:hover {
+  color: var(--text-primary);
+}
+.vst-nav__login {
+  color: var(--text-secondary);
+}
+.vst-nav__login:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+.vst-nav__hamburger span {
+  background: var(--text-primary);
+}
+.vst-nav__mobile {
+  background: var(--bg-surface);
+  border-top-color: var(--border-subtle);
+}
+.vst-nav__mobile a {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-subtle);
+}
+.vst-nav__mobile a:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Alt section */
+.vst-section--alt {
+  background: var(--bg-main);
+}
+.vst-section {
+  background: var(--bg-surface);
+}
+
+/* Labels */
+.vst-label {
+  color: var(--accent);
+}
+.vst-section--dark .vst-label {
+  color: var(--accent-soft);
+}
+.vst-section--dark .vst-lead {
+  color: var(--text-secondary);
+}
+
+/* Lead text */
+.vst-lead {
+  color: var(--text-secondary);
+}
+
+/* Card icon */
+.vst-card__icon {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.vst-card__title {
+  color: var(--text-primary);
+}
+
+/* Steps */
+.vst-step__num {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+.vst-step__title {
+  color: var(--text-primary);
+}
+
+/* Compliance */
+.vst-comp-icon {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.vst-comp-title {
+  color: var(--text-primary);
+}
+.vst-comp-item {
+  border-bottom-color: var(--border-subtle);
+}
+.vst-comp-item:hover {
+  background: var(--bg-card);
+}
+
+/* Plans / Pricing */
+.vst-plan {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+}
+.vst-plan--featured {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(198,168,90,.15);
+}
+.vst-plan__price {
+  color: var(--text-primary);
+}
+.vst-plan__features li {
+  color: var(--text-primary);
+}
+.vst-plan__features li::before {
+  color: var(--success);
+}
+
+/* Auth */
+.vst-auth {
+  background: var(--bg-main);
+}
+.vst-auth__card {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.vst-auth__title {
+  color: var(--text-primary);
+}
+.vst-auth__switch a {
+  color: var(--accent);
+}
+
+/* Forms */
+.vst-input, .vst-textarea, .vst-select {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+.vst-input:focus, .vst-textarea:focus, .vst-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(198,168,90,.15);
+}
+.vst-label-text {
+  color: var(--text-primary);
+}
+
+/* Trust bar */
+.vst-trust {
+  background: var(--bg-main);
+  border-bottom-color: var(--border-subtle);
+}
+.vst-trust__item {
+  color: var(--text-secondary);
+}
+.vst-trust__item .icon {
+  background: rgba(34,197,94,.12);
+  color: var(--success);
+}
+
+/* Ava chip */
+.vst-ava-chip {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* Hero gradient override */
+.vst-hero {
+  background: linear-gradient(155deg, #060913 0%, var(--bg-surface) 55%, #060913 100%);
+}
+.vst-hero::before {
+  background: radial-gradient(ellipse 70% 55% at 65% -10%, rgba(198,168,90,.12) 0%, transparent 65%);
+}
+.vst-hero__eyebrow {
+  background: rgba(198,168,90,.1);
+  border-color: rgba(198,168,90,.25);
+  color: var(--accent-soft);
+}
+.vst-hero__title em {
+  color: var(--accent);
+}
+
+/* CTA Banner */
+.vst-cta-banner {
+  background: linear-gradient(135deg, #060913 0%, var(--bg-surface) 100%);
+}
+.vst-cta-banner::before {
+  background: radial-gradient(ellipse 70% 80% at 50% -20%, rgba(198,168,90,.12) 0%, transparent 70%);
+}
+
+/* Footer */
+.vst-footer {
+  background: #060913;
+  border-top: 1px solid var(--border-subtle);
+}
+.vst-footer__bottom {
+  border-top-color: var(--border-subtle);
+}
+
+/* Page hero (inner pages) */
+.vst-page-hero {
+  background: linear-gradient(155deg, #060913 0%, var(--bg-surface) 100%);
+}
+
+/* Success */
+.vst-success__title {
+  color: var(--text-primary);
+}
+
+/* Checklist */
+.vst-checklist li::before {
+  background: rgba(34,197,94,.12);
+  color: var(--success);
+}
+
+/* Step ava badge */
+.vst-step__ava {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* Pricing grid section alt fix */
+.vst-pricing-grid .vst-plan {
+  background: var(--bg-card);
+}
