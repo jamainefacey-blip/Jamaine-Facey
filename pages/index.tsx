@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../components/vst/Layout';
 
@@ -86,12 +87,41 @@ const GAINS = [
 ];
 
 const PRICING_TIERS = [
-  { name: 'Free', price: '0',   cadence: 'forever',   note: 'Up to 5 travellers',      featured: false },
-  { name: 'Team', price: '79',  cadence: 'per month',  note: 'Up to 25 travellers',     featured: true  },
-  { name: 'Pro',  price: '199', cadence: 'per month',  note: 'Unlimited travellers',    featured: false },
+  { name: 'Free', price: '0',   cadence: 'forever',  note: 'Up to 5 travellers',   featured: false },
+  { name: 'Team', price: '79',  cadence: 'per month', note: 'Up to 25 travellers',  featured: true  },
+  { name: 'Pro',  price: '199', cadence: 'per month', note: 'Unlimited travellers', featured: false },
 ];
 
 export default function Home() {
+  useEffect(() => {
+    // Activate reveal only after JS is running — prevents SSR opacity flash
+    document.documentElement.classList.add('vst-js');
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      document.querySelectorAll<HTMLElement>('.vst-reveal').forEach(el => {
+        el.classList.add('is-visible');
+      });
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.07, rootMargin: '0px 0px -28px 0px' }
+    );
+
+    document.querySelectorAll('.vst-reveal').forEach(el => io.observe(el));
+
+    return () => io.disconnect();
+  }, []);
+
   return (
     <Layout>
 
@@ -133,7 +163,7 @@ export default function Home() {
       {/* ── Trust bar ─────────────────────────────────────────────────────────── */}
       <div className="vst-trust">
         <div className="vst-container">
-          <div className="vst-trust__inner">
+          <div className="vst-trust__inner vst-reveal">
             <span className="vst-trust__item"><span className="icon">✓</span> UK-based</span>
             <span className="vst-trust__item"><span className="icon">✓</span> Public sector ready</span>
             <span className="vst-trust__item"><span className="icon">✓</span> GDPR compliant</span>
@@ -146,7 +176,7 @@ export default function Home() {
       {/* ── 2. Why VST ────────────────────────────────────────────────────────── */}
       <section className="vst-section">
         <div className="vst-container">
-          <div className="vst-section-head">
+          <div className="vst-section-head vst-reveal">
             <span className="vst-label">Why VST</span>
             <h2 className="vst-h2">
               Everything your team needs.<br />Nothing it doesn&apos;t.
@@ -157,8 +187,11 @@ export default function Home() {
             </p>
           </div>
           <div className="vst-grid-3">
-            {WHY_VST.map(w => (
-              <div key={w.headline} className="vst-card vst-card--shadow">
+            {WHY_VST.map((w, i) => (
+              <div
+                key={w.headline}
+                className={`vst-card vst-card--shadow vst-reveal vst-reveal--d${i + 1}`}
+              >
                 <div className="vst-card__title">{w.headline}</div>
                 <div className="vst-card__body">{w.body}</div>
               </div>
@@ -171,9 +204,7 @@ export default function Home() {
       <section className="vst-section vst-section--alt">
         <div className="vst-container">
           <div className="vst-ava-split">
-
-            {/* Left: content */}
-            <div>
+            <div className="vst-reveal">
               <span className="vst-ava-chip">Ava — AI Travel Assistant</span>
               <h2 className="vst-h2">Your travel manager, always on</h2>
               <p className="vst-lead vst-lead--mt">
@@ -191,8 +222,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right: mock Ava panel */}
-            <div className="vst-ava-panel">
+            <div className="vst-ava-panel vst-reveal vst-reveal--d2">
               <div className="vst-ava-panel__head">
                 <span className="vst-ava-panel__dot" />
                 Ava &middot; Active
@@ -221,7 +251,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -229,7 +258,7 @@ export default function Home() {
       {/* ── 4. Compliance ─────────────────────────────────────────────────────── */}
       <section className="vst-section">
         <div className="vst-container">
-          <div className="vst-section-head">
+          <div className="vst-section-head vst-reveal">
             <span className="vst-label">Compliance &amp; oversight</span>
             <h2 className="vst-h2">Policy enforced. Approvals streamlined. Audit ready.</h2>
             <p className="vst-lead">
@@ -237,7 +266,7 @@ export default function Home() {
               at the point of booking, not after the fact.
             </p>
           </div>
-          <div className="vst-comp-box">
+          <div className="vst-comp-box vst-reveal vst-reveal--d1">
             {COMPLIANCE_POINTS.map(c => (
               <div key={c.title} className="vst-comp-item">
                 <div className="vst-comp-icon">{c.icon}</div>
@@ -248,16 +277,18 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <Link href="/compliance" className="vst-btn vst-btn--secondary">
-            Full compliance overview
-          </Link>
+          <div className="vst-reveal vst-reveal--d2">
+            <Link href="/compliance" className="vst-btn vst-btn--secondary">
+              Full compliance overview
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* ── 5. Sectors ────────────────────────────────────────────────────────── */}
       <section className="vst-section vst-section--dark">
         <div className="vst-container">
-          <div className="vst-section-head vst-section-head--center">
+          <div className="vst-section-head vst-section-head--center vst-reveal">
             <span className="vst-label">Who it&apos;s for</span>
             <h2 className="vst-h2">Built for the way UK teams work</h2>
             <p className="vst-lead">
@@ -267,7 +298,10 @@ export default function Home() {
           </div>
           <div className="vst-sector-grid">
             {SECTORS.map((s, i) => (
-              <div key={s.label} className="vst-sector-card">
+              <div
+                key={s.label}
+                className={`vst-sector-card vst-reveal vst-reveal--d${Math.min(i + 1, 5)}`}
+              >
                 <div className="vst-sector-card__num">0{i + 1}</div>
                 <div className="vst-sector-card__title">{s.label}</div>
                 <div className="vst-sector-card__desc">{s.desc}</div>
@@ -280,7 +314,7 @@ export default function Home() {
       {/* ── 6. Benefits ───────────────────────────────────────────────────────── */}
       <section className="vst-section">
         <div className="vst-container">
-          <div className="vst-section-head vst-section-head--center">
+          <div className="vst-section-head vst-section-head--center vst-reveal">
             <span className="vst-label">Operating gains</span>
             <h2 className="vst-h2">Less admin. Better oversight. Real savings.</h2>
             <p className="vst-lead">
@@ -289,15 +323,18 @@ export default function Home() {
             </p>
           </div>
           <div className="vst-grid-2">
-            {BENEFITS.map(b => (
-              <div key={b.title} className="vst-card vst-card--shadow">
+            {BENEFITS.map((b, i) => (
+              <div
+                key={b.title}
+                className={`vst-card vst-card--shadow vst-reveal vst-reveal--d${i + 1}`}
+              >
                 <div className="vst-card__icon">{b.icon}</div>
                 <div className="vst-card__title">{b.title}</div>
                 <div className="vst-card__body">{b.body}</div>
               </div>
             ))}
           </div>
-          <div className="vst-section-cta">
+          <div className="vst-section-cta vst-reveal vst-reveal--d3">
             <Link href="/business-travel" className="vst-btn vst-btn--secondary vst-btn--lg">
               See all capabilities
             </Link>
@@ -308,7 +345,7 @@ export default function Home() {
       {/* ── 7. Pricing teaser ─────────────────────────────────────────────────── */}
       <section className="vst-section vst-section--alt">
         <div className="vst-container">
-          <div className="vst-section-head vst-section-head--center">
+          <div className="vst-section-head vst-section-head--center vst-reveal">
             <span className="vst-label">Pricing</span>
             <h2 className="vst-h2">Free to start. Scales with you.</h2>
             <p className="vst-lead">
@@ -317,10 +354,10 @@ export default function Home() {
             </p>
           </div>
           <div className="vst-plan-tease">
-            {PRICING_TIERS.map(p => (
+            {PRICING_TIERS.map((p, i) => (
               <div
                 key={p.name}
-                className={`vst-plan${p.featured ? ' vst-plan--featured' : ''}`}
+                className={`vst-plan${p.featured ? ' vst-plan--featured' : ''} vst-reveal vst-reveal--d${i + 1}`}
               >
                 {p.featured && <div className="vst-plan__badge">Most popular</div>}
                 <div className="vst-plan__name">{p.name}</div>
@@ -336,7 +373,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="vst-section-cta">
+          <div className="vst-section-cta vst-reveal vst-reveal--d4">
             <Link href="/pricing" className="vst-btn vst-btn--secondary">
               Compare all plans in detail
             </Link>
@@ -346,7 +383,7 @@ export default function Home() {
 
       {/* ── 8. Final CTA ──────────────────────────────────────────────────────── */}
       <div className="vst-cta-banner">
-        <div className="vst-container">
+        <div className="vst-container vst-reveal">
           <h2 className="vst-cta-banner__title">Ready to take control of business travel?</h2>
           <p className="vst-cta-banner__sub">
             Set up in minutes. No credit card required. Cancel any time.

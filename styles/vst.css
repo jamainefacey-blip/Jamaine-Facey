@@ -687,6 +687,41 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .mt-8  { margin-top: 32px; }
 .mt-12 { margin-top: 48px; }
 
+/* ── PASS 3B: Scroll reveal ─────────────────────────────────────────────────── */
+
+/*
+  Base hidden state — only activates when .vst-js is on <html>.
+  This prevents SSR opacity flash: elements are visible by default,
+  only hidden after JS has initialised the observer.
+*/
+.vst-js .vst-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1),
+              transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.vst-js .vst-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for grouped cards */
+.vst-js .vst-reveal--d1 { transition-delay: 0.06s; }
+.vst-js .vst-reveal--d2 { transition-delay: 0.13s; }
+.vst-js .vst-reveal--d3 { transition-delay: 0.20s; }
+.vst-js .vst-reveal--d4 { transition-delay: 0.27s; }
+.vst-js .vst-reveal--d5 { transition-delay: 0.34s; }
+
+/* Reduced-motion: skip reveal entirely */
+@media (prefers-reduced-motion: reduce) {
+  .vst-js .vst-reveal,
+  .vst-js .vst-reveal.is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* ── PASS 3A: Interaction layer ─────────────────────────────────────────────── */
 
 /* Keyframes */
