@@ -79,23 +79,23 @@ const BENEFITS = [
 ];
 
 const GAINS = [
-  { num: '40%', label: 'average time saved on trip booking' },
-  { num: '£0', label: 'per-booking fees on core plans' },
+  { num: '40%',  label: 'average time saved on trip booking' },
+  { num: '£0',   label: 'per-booking fees on core plans' },
   { num: '100%', label: 'policy-compliant by default' },
-  { num: '1', label: 'platform for booking, approvals & reporting' },
+  { num: '1',    label: 'platform for booking, approvals & reporting' },
 ];
 
 const PRICING_TIERS = [
-  { name: 'Free', price: '0', cadence: 'forever', note: 'Up to 5 travellers', featured: false },
-  { name: 'Team', price: '79', cadence: 'per month', note: 'Up to 25 travellers', featured: true },
-  { name: 'Pro', price: '199', cadence: 'per month', note: 'Unlimited travellers', featured: false },
+  { name: 'Free', price: '0',   cadence: 'forever',   note: 'Up to 5 travellers',      featured: false },
+  { name: 'Team', price: '79',  cadence: 'per month',  note: 'Up to 25 travellers',     featured: true  },
+  { name: 'Pro',  price: '199', cadence: 'per month',  note: 'Unlimited travellers',    featured: false },
 ];
 
 export default function Home() {
   return (
     <Layout>
 
-      {/* ── 1. Hero ───────────────────────────────────────────────────────── */}
+      {/* ── 1. Hero ───────────────────────────────────────────────────────────── */}
       <section className="vst-hero">
         <div className="vst-container">
           <div className="vst-hero__content">
@@ -106,7 +106,9 @@ export default function Home() {
               Business travel,<br /><em>managed properly</em>
             </h1>
             <p className="vst-hero__sub">
-              Voyage Smart Travels gives UK SMEs and public sector teams a single platform to book, approve, and report on business travel. Policy-compliant by default. No per-booking fees. No implementation project.
+              Voyage Smart Travels gives UK SMEs and public sector teams a single platform
+              to book, approve, and report on business travel. Policy-compliant by default.
+              No per-booking fees. No implementation project.
             </p>
             <div className="vst-hero__ctas">
               <Link href="/signup" className="vst-btn vst-btn--primary vst-btn--lg">
@@ -118,7 +120,7 @@ export default function Home() {
             </div>
             <div className="vst-hero__stats">
               {GAINS.map(g => (
-                <div key={g.label}>
+                <div className="vst-hero__stat" key={g.label}>
                   <div className="vst-hero__stat-num">{g.num}</div>
                   <div className="vst-hero__stat-label">{g.label}</div>
                 </div>
@@ -128,7 +130,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust bar */}
+      {/* ── Trust bar ─────────────────────────────────────────────────────────── */}
       <div className="vst-trust">
         <div className="vst-container">
           <div className="vst-trust__inner">
@@ -141,7 +143,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 2. Why VST ────────────────────────────────────────────────────── */}
+      {/* ── 2. Why VST ────────────────────────────────────────────────────────── */}
       <section className="vst-section">
         <div className="vst-container">
           <div className="vst-section-head">
@@ -150,15 +152,14 @@ export default function Home() {
               Everything your team needs.<br />Nothing it doesn&apos;t.
             </h2>
             <p className="vst-lead">
-              Built around how UK organisations actually manage travel — not how a US enterprise platform assumes they do.
+              Built around how UK organisations actually manage travel — not how a US
+              enterprise platform assumes they do.
             </p>
           </div>
           <div className="vst-grid-3">
             {WHY_VST.map(w => (
               <div key={w.headline} className="vst-card vst-card--shadow">
-                <div className="vst-card__title" style={{ fontSize: '1.0625rem', marginBottom: 10 }}>
-                  {w.headline}
-                </div>
+                <div className="vst-card__title">{w.headline}</div>
                 <div className="vst-card__body">{w.body}</div>
               </div>
             ))}
@@ -166,38 +167,77 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 3. Ava ────────────────────────────────────────────────────────── */}
+      {/* ── 3. Ava ────────────────────────────────────────────────────────────── */}
       <section className="vst-section vst-section--alt">
         <div className="vst-container">
-          <div style={{ maxWidth: 640 }}>
-            <span className="vst-ava-chip">Ava — AI Travel Assistant</span>
-            <h2 className="vst-h2">Your travel manager, always on</h2>
-            <p className="vst-lead" style={{ marginTop: 16 }}>
-              Ava handles the routine so your team doesn&apos;t have to. From surfacing policy-compliant options to flagging anomalous spend, she works in the background — quietly, accurately, without supervision.
-            </p>
-            <ul className="vst-checklist" style={{ marginTop: 28 }}>
-              {AVA_FEATURES.map(f => <li key={f}>{f}</li>)}
-            </ul>
-            <div style={{ marginTop: 32 }}>
-              <Link href="/how-it-works" className="vst-btn vst-btn--primary">
-                See how Ava works
-              </Link>
+          <div className="vst-ava-split">
+
+            {/* Left: content */}
+            <div>
+              <span className="vst-ava-chip">Ava — AI Travel Assistant</span>
+              <h2 className="vst-h2">Your travel manager, always on</h2>
+              <p className="vst-lead vst-lead--mt">
+                Ava handles the routine so your team doesn&apos;t have to. From surfacing
+                policy-compliant options to flagging anomalous spend, she works in the
+                background — quietly, accurately, without supervision.
+              </p>
+              <ul className="vst-checklist vst-checklist--mt">
+                {AVA_FEATURES.map(f => <li key={f}>{f}</li>)}
+              </ul>
+              <div className="vst-section-cta vst-section-cta--left">
+                <Link href="/how-it-works" className="vst-btn vst-btn--primary">
+                  See how Ava works
+                </Link>
+              </div>
             </div>
+
+            {/* Right: mock Ava panel */}
+            <div className="vst-ava-panel">
+              <div className="vst-ava-panel__head">
+                <span className="vst-ava-panel__dot" />
+                Ava &middot; Active
+              </div>
+              <div className="vst-ava-panel__body">
+                <div className="vst-ava-panel__msg vst-ava-panel__msg--user">
+                  Book Manchester to London, Thursday morning
+                </div>
+                <div className="vst-ava-panel__msg vst-ava-panel__msg--ava">
+                  Found 3 compliant options. Best rail fare: £87 advance, departs 07:14.
+                  <div className="vst-ava-panel__tag">✓ Policy compliant</div>
+                </div>
+              </div>
+              <div className="vst-ava-panel__stats">
+                <div className="vst-ava-panel__stat">
+                  <span>Q1 travel spend</span>
+                  <strong>£12,840</strong>
+                </div>
+                <div className="vst-ava-panel__stat">
+                  <span>Compliance rate</span>
+                  <strong>100%</strong>
+                </div>
+                <div className="vst-ava-panel__stat">
+                  <span>Avg. cost per trip</span>
+                  <strong className="pos">£163 ↓18%</strong>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* ── 4. Compliance / oversight ─────────────────────────────────────── */}
+      {/* ── 4. Compliance ─────────────────────────────────────────────────────── */}
       <section className="vst-section">
         <div className="vst-container">
           <div className="vst-section-head">
             <span className="vst-label">Compliance &amp; oversight</span>
             <h2 className="vst-h2">Policy enforced. Approvals streamlined. Audit ready.</h2>
             <p className="vst-lead">
-              VST closes the gap between travel policy and actual booking behaviour — at the point of booking, not after the fact.
+              VST closes the gap between travel policy and actual booking behaviour —
+              at the point of booking, not after the fact.
             </p>
           </div>
-          <div style={{ border: '1px solid var(--vst-border)', borderRadius: 'var(--vst-radius-lg)', overflow: 'hidden' }}>
+          <div className="vst-comp-box">
             {COMPLIANCE_POINTS.map(c => (
               <div key={c.title} className="vst-comp-item">
                 <div className="vst-comp-icon">{c.icon}</div>
@@ -208,58 +248,47 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ marginTop: 32 }}>
-            <Link href="/compliance" className="vst-btn vst-btn--secondary">
-              Full compliance overview
-            </Link>
-          </div>
+          <Link href="/compliance" className="vst-btn vst-btn--secondary">
+            Full compliance overview
+          </Link>
         </div>
       </section>
 
-      {/* ── 5. Sector relevance ───────────────────────────────────────────── */}
+      {/* ── 5. Sectors ────────────────────────────────────────────────────────── */}
       <section className="vst-section vst-section--dark">
         <div className="vst-container">
           <div className="vst-section-head vst-section-head--center">
             <span className="vst-label">Who it&apos;s for</span>
             <h2 className="vst-h2">Built for the way UK teams work</h2>
             <p className="vst-lead">
-              Whether you&apos;re an SME with 20 travelling staff or a public sector body managing supplier visits — VST fits without a lengthy implementation.
+              Whether you&apos;re an SME with 20 travelling staff or a public sector body
+              managing supplier visits — VST fits without a lengthy implementation.
             </p>
           </div>
-          <div className="vst-grid-3" style={{ maxWidth: 900, margin: '0 auto' }}>
-            {SECTORS.map(s => (
-              <div
-                key={s.label}
-                style={{
-                  background: 'rgba(255,255,255,.06)',
-                  border: '1px solid rgba(255,255,255,.1)',
-                  borderRadius: 'var(--vst-radius-lg)',
-                  padding: '24px',
-                }}
-              >
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
-                  {s.label}
-                </div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,.65)', lineHeight: 1.65 }}>
-                  {s.desc}
-                </div>
+          <div className="vst-sector-grid">
+            {SECTORS.map((s, i) => (
+              <div key={s.label} className="vst-sector-card">
+                <div className="vst-sector-card__num">0{i + 1}</div>
+                <div className="vst-sector-card__title">{s.label}</div>
+                <div className="vst-sector-card__desc">{s.desc}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── 6. Benefits / operating gains ─────────────────────────────────── */}
+      {/* ── 6. Benefits ───────────────────────────────────────────────────────── */}
       <section className="vst-section">
         <div className="vst-container">
           <div className="vst-section-head vst-section-head--center">
             <span className="vst-label">Operating gains</span>
             <h2 className="vst-h2">Less admin. Better oversight. Real savings.</h2>
             <p className="vst-lead">
-              VST replaces the patchwork of booking sites, email approvals, and spreadsheet reports with a single managed process.
+              VST replaces the patchwork of booking sites, email approvals, and spreadsheet
+              reports with a single managed process.
             </p>
           </div>
-          <div className="vst-grid-2" style={{ marginBottom: 40 }}>
+          <div className="vst-grid-2">
             {BENEFITS.map(b => (
               <div key={b.title} className="vst-card vst-card--shadow">
                 <div className="vst-card__icon">{b.icon}</div>
@@ -268,7 +297,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ textAlign: 'center' }}>
+          <div className="vst-section-cta">
             <Link href="/business-travel" className="vst-btn vst-btn--secondary vst-btn--lg">
               See all capabilities
             </Link>
@@ -276,46 +305,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 7. Pricing teaser ─────────────────────────────────────────────── */}
+      {/* ── 7. Pricing teaser ─────────────────────────────────────────────────── */}
       <section className="vst-section vst-section--alt">
         <div className="vst-container">
           <div className="vst-section-head vst-section-head--center">
             <span className="vst-label">Pricing</span>
             <h2 className="vst-h2">Free to start. Scales with you.</h2>
             <p className="vst-lead">
-              No per-booking fees. No hidden charges. Transparent flat-rate plans with a fully functional free tier.
+              No per-booking fees. No hidden charges. Transparent flat-rate plans with a
+              fully functional free tier.
             </p>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'center', marginBottom: 40 }}>
+          <div className="vst-plan-tease">
             {PRICING_TIERS.map(p => (
               <div
                 key={p.name}
-                style={{
-                  background: '#fff',
-                  border: p.featured ? '2px solid var(--vst-blue)' : '1.5px solid var(--vst-border)',
-                  borderRadius: 'var(--vst-radius-lg)',
-                  padding: '28px 32px',
-                  minWidth: 200,
-                  maxWidth: 260,
-                  flex: '1 1 200px',
-                  boxShadow: p.featured ? '0 8px 32px rgba(37,99,235,.15)' : 'none',
-                  position: 'relative',
-                }}
+                className={`vst-plan${p.featured ? ' vst-plan--featured' : ''}`}
               >
-                {p.featured && (
-                  <div style={{
-                    position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
-                    background: 'var(--vst-blue)', color: '#fff',
-                    fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em',
-                    padding: '4px 14px', borderRadius: 100, whiteSpace: 'nowrap',
-                  }}>
-                    Most popular
-                  </div>
-                )}
+                {p.featured && <div className="vst-plan__badge">Most popular</div>}
                 <div className="vst-plan__name">{p.name}</div>
                 <div className="vst-plan__price"><sup>£</sup>{p.price}</div>
                 <div className="vst-plan__cadence">{p.cadence}</div>
-                <div style={{ fontSize: 13, color: 'var(--vst-muted)', marginBottom: 20 }}>{p.note}</div>
+                <div className="vst-plan__note">{p.note}</div>
                 <Link
                   href="/pricing"
                   className={`vst-btn vst-btn--full${p.featured ? ' vst-btn--primary' : ' vst-btn--secondary'}`}
@@ -325,7 +336,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ textAlign: 'center' }}>
+          <div className="vst-section-cta">
             <Link href="/pricing" className="vst-btn vst-btn--secondary">
               Compare all plans in detail
             </Link>
@@ -333,7 +344,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 8. Final CTA ──────────────────────────────────────────────────── */}
+      {/* ── 8. Final CTA ──────────────────────────────────────────────────────── */}
       <div className="vst-cta-banner">
         <div className="vst-container">
           <h2 className="vst-cta-banner__title">Ready to take control of business travel?</h2>
@@ -341,8 +352,12 @@ export default function Home() {
             Set up in minutes. No credit card required. Cancel any time.
           </p>
           <div className="vst-cta-banner__btns">
-            <Link href="/signup" className="vst-btn vst-btn--primary vst-btn--lg">Start for free</Link>
-            <Link href="/demo" className="vst-btn vst-btn--ghost-light vst-btn--lg">Book a demo</Link>
+            <Link href="/signup" className="vst-btn vst-btn--primary vst-btn--lg">
+              Start for free
+            </Link>
+            <Link href="/demo" className="vst-btn vst-btn--ghost-light vst-btn--lg">
+              Book a demo
+            </Link>
           </div>
         </div>
       </div>
