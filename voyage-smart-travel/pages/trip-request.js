@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    VST — Trip Request Page
-   Full form + evaluation result panel + Ava explanation.
+   Full form + evaluation result panel + Ava explanation + success state.
    ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── Evaluation result renderer (called from router after evaluation) ─────── */
@@ -32,10 +32,27 @@ window.renderEvalResult = function (result, ava) {
     return parseInt(parts[2], 10) + ' ' + months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
   }
 
+  var dateRange = result.tripType === 'one_way'
+    ? fmtDate(result.departureDate) + ' &mdash; One-way'
+    : fmtDate(result.departureDate) + ' &mdash; ' + fmtDate(result.returnDate);
+
+  var durationText = result.tripType === 'one_way'
+    ? '1 night (est.)'
+    : result.nights + ' night' + (result.nights !== 1 ? 's' : '');
+
+  var originMeta = result.origin ? result.origin + ' &rarr; ' : '';
+
   var escalationBlock = ev.escalationReason
     ? '<div class="eval-escalation">' +
         '<div class="eval-escalation-icon">' + window.VSTComponents.icon('alert') + '</div>' +
         '<div><strong>Escalation trigger:</strong> ' + ev.escalationReason + '</div>' +
+      '</div>'
+    : '';
+
+  var accessBlock = result.accessibilityNeeds && result.accessibilityNeeds.length > 0
+    ? '<div class="eval-access-note">' +
+        '<span class="eval-access-label">Accessibility needs noted:</span> ' +
+        result.accessibilityNeeds.join(', ') +
       '</div>'
     : '';
 
@@ -45,10 +62,11 @@ window.renderEvalResult = function (result, ava) {
       <!-- Trip summary header -->
       <div class="eval-header">
         <div class="eval-header-left">
+          <p class="eval-origin">${originMeta}${result.destination}</p>
           <h2 class="eval-destination">${result.destination}</h2>
           <p class="eval-meta">
-            ${fmtDate(result.departureDate)} &mdash; ${fmtDate(result.returnDate)}
-            &nbsp;&middot;&nbsp; ${result.nights} night${result.nights !== 1 ? 's' : ''}
+            ${dateRange}
+            &nbsp;&middot;&nbsp; ${durationText}
             &nbsp;&middot;&nbsp; ${result.travellerCount} traveller${result.travellerCount !== 1 ? 's' : ''}
             &nbsp;&middot;&nbsp; ${window.VSTAvaEngine.purposeLabel(result.purpose)}
           </p>
@@ -72,7 +90,7 @@ window.renderEvalResult = function (result, ava) {
         </div>
         <div class="eval-metric">
           <div class="eval-metric-label">Duration</div>
-          <div class="eval-metric-value">${result.nights} nights</div>
+          <div class="eval-metric-value">${durationText}</div>
         </div>
         <div class="eval-metric">
           <div class="eval-metric-label">Evaluated</div>
@@ -81,6 +99,7 @@ window.renderEvalResult = function (result, ava) {
       </div>
 
       ${escalationBlock}
+      ${accessBlock}
 
       <!-- Ava explanation -->
       <div class="ava-panel ${avaClass}">
@@ -101,13 +120,87 @@ window.renderEvalResult = function (result, ava) {
       <!-- Actions -->
       <div class="eval-actions">
         <button class="btn btn-primary" id="trip-save-btn">
-          Save Trip &amp; Go to Dashboard
+          Save Trip &amp; Confirm
         </button>
         <button class="btn btn-outline" id="trip-new-btn">
           New Request
         </button>
       </div>
 
+    </div>`;
+};
+
+/* ── Success confirmation panel ───────────────────────────────────────────── */
+window.renderTripSuccess = function (result) {
+  function fmtDate(d) {
+    if (!d) return '—';
+    var parts = d.split('-');
+    if (parts.length !== 3) return d;
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return parseInt(parts[2], 10) + ' ' + months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
+  }
+
+  var statusLabels = {
+    approved:     'Auto-approved',
+    under_review: 'Under review',
+    escalated:    'Escalated',
+  };
+  var statusClasses = {
+    approved:     'appr-approved',
+    under_review: 'appr-pending',
+    escalated:    'appr-escalated',
+  };
+
+  var statusLabel = statusLabels[result.status] || result.status;
+  var statusClass = statusClasses[result.status] || 'appr-pending';
+
+  return `
+    <div class="trip-success-panel">
+      <div class="trip-success-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h2 class="trip-success-title">Trip request saved.</h2>
+      <p class="trip-success-sub">Your request is logged and queued for review.</p>
+
+      <div class="trip-success-summary">
+        <div class="trip-success-row">
+          <span class="trip-success-label">Destination</span>
+          <span class="trip-success-value">${result.destination}</span>
+        </div>
+        ${result.origin ? '<div class="trip-success-row"><span class="trip-success-label">Origin</span><span class="trip-success-value">' + result.origin + '</span></div>' : ''}
+        <div class="trip-success-row">
+          <span class="trip-success-label">Dates</span>
+          <span class="trip-success-value">${
+            result.tripType === 'one_way'
+              ? fmtDate(result.departureDate) + ' · One-way'
+              : fmtDate(result.departureDate) + ' – ' + fmtDate(result.returnDate)
+          }</span>
+        </div>
+        <div class="trip-success-row">
+          <span class="trip-success-label">Travellers</span>
+          <span class="trip-success-value">${result.travellerCount}</span>
+        </div>
+        <div class="trip-success-row">
+          <span class="trip-success-label">Status</span>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="trip-success-row">
+          <span class="trip-success-label">Trip ID</span>
+          <span class="trip-success-id">${result.id}</span>
+        </div>
+      </div>
+
+      <div class="trip-success-actions">
+        <button class="btn btn-primary" id="trip-goto-dashboard">
+          Go to Dashboard
+        </button>
+        <button class="btn btn-ghost" id="trip-request-another">
+          Request another trip
+        </button>
+      </div>
     </div>`;
 };
 
@@ -123,16 +216,56 @@ window.renderTripRequest = function () {
     ['site_inspection',   'Site inspection'],
     ['training',          'Training / workshop'],
     ['internal_project',  'Internal project'],
+    ['leisure',           'Leisure / personal'],
     ['other',             'Other (specify in notes)'],
   ].map(function (o) {
     return '<option value="' + o[0] + '">' + o[1] + '</option>';
+  }).join('');
+
+  var budgetOpts = [
+    ['', 'Select budget band'],
+    ['economy', 'Economy'],
+    ['mid', 'Mid-range'],
+    ['premium', 'Premium'],
+    ['luxury', 'Luxury'],
+  ].map(function (o, i) {
+    return '<option value="' + o[0] + '"' + (i === 0 ? ' disabled selected' : '') + '>' + o[1] + '</option>';
+  }).join('');
+
+  var travellerTypeOpts = [
+    ['',            'Select traveller type'],
+    ['solo',        'Solo traveller'],
+    ['family',      'Family'],
+    ['business',    'Business'],
+    ['disabled',    'Accessibility needs'],
+    ['luxury',      'Luxury / VIP'],
+    ['backpacker',  'Backpacker'],
+  ].map(function (o, i) {
+    return '<option value="' + o[0] + '"' + (i === 0 ? ' disabled selected' : '') + '>' + o[1] + '</option>';
+  }).join('');
+
+  var accessOpts = [
+    ['wheelchair', 'Wheelchair access'],
+    ['hearing',    'Hearing assistance'],
+    ['visual',     'Visual assistance'],
+    ['dietary',    'Dietary requirements'],
+    ['cognitive',  'Cognitive support'],
+  ];
+
+  var accessChecks = accessOpts.map(function (a) {
+    return `
+      <label class="access-check">
+        <input type="checkbox" name="accessibility" value="${a[0]}" class="access-check-input" />
+        <span class="access-check-box" aria-hidden="true"></span>
+        ${a[1]}
+      </label>`;
   }).join('');
 
   return `
     ${C.renderPageHero({
       eyebrow: 'Travel Control',
       title:   'Request a Trip',
-      sub:     'Submit your travel details. All requests are evaluated automatically against spend limits, destination risk, and organisational policy before approval is considered.',
+      sub:     'Submit your travel details. All requests are evaluated automatically against spend limits, destination risk, and policy before approval is considered.',
     })}
 
     <section class="section">
@@ -161,12 +294,28 @@ window.renderTripRequest = function () {
 
           <div class="card-section-head">
             <h3 class="card-section-title">Trip details</h3>
-            <p class="card-section-sub">All fields marked <span class="form-required">*</span> are required.</p>
+            <p class="card-section-sub">Fields marked <span class="form-required">*</span> are required.</p>
           </div>
 
           <form id="trip-request-form" novalidate>
 
+            <!-- Row 1: Origin + Destination -->
             <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="tr-origin">
+                  Travelling from
+                </label>
+                <input
+                  class="form-input"
+                  type="text"
+                  id="tr-origin"
+                  name="origin"
+                  placeholder="e.g. New York, USA"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+
               <div class="form-group">
                 <label class="form-label" for="tr-destination">
                   Destination <span class="form-required">*</span>
@@ -183,19 +332,36 @@ window.renderTripRequest = function () {
                 />
                 <div class="form-error" id="err-destination"></div>
               </div>
+            </div>
+
+            <!-- Row 2: Trip type + Traveller type -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Trip type</label>
+                <div class="trip-type-toggle" role="group" aria-label="Trip type">
+                  <label class="trip-type-opt trip-type-opt--active">
+                    <input type="radio" name="tripType" id="tr-triptype-return" value="return" checked />
+                    Return
+                  </label>
+                  <label class="trip-type-opt">
+                    <input type="radio" name="tripType" id="tr-triptype-oneway" value="one_way" />
+                    One-way
+                  </label>
+                </div>
+              </div>
 
               <div class="form-group">
-                <label class="form-label" for="tr-purpose">
-                  Purpose of travel <span class="form-required">*</span>
+                <label class="form-label" for="tr-traveller-type">
+                  Traveller type <span class="form-required">*</span>
                 </label>
-                <select class="form-select" id="tr-purpose" name="purpose" required>
-                  <option value="" disabled selected>Select purpose</option>
-                  ${purposeOpts}
+                <select class="form-select" id="tr-traveller-type" name="travellerType" required>
+                  ${travellerTypeOpts}
                 </select>
-                <div class="form-error" id="err-purpose"></div>
+                <div class="form-error" id="err-traveller-type"></div>
               </div>
             </div>
 
+            <!-- Row 3: Departure + Return + Travellers -->
             <div class="form-row-3">
               <div class="form-group">
                 <label class="form-label" for="tr-departure">
@@ -212,9 +378,9 @@ window.renderTripRequest = function () {
                 <div class="form-error" id="err-departure"></div>
               </div>
 
-              <div class="form-group">
+              <div class="form-group" id="tr-return-group">
                 <label class="form-label" for="tr-return">
-                  Return date <span class="form-required">*</span>
+                  Return date <span class="form-required" id="tr-return-required">*</span>
                 </label>
                 <input
                   class="form-input"
@@ -222,7 +388,6 @@ window.renderTripRequest = function () {
                   id="tr-return"
                   name="returnDate"
                   min="${today}"
-                  required
                 />
                 <div class="form-error" id="err-return"></div>
               </div>
@@ -245,6 +410,40 @@ window.renderTripRequest = function () {
               </div>
             </div>
 
+            <!-- Row 4: Purpose + Budget -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="tr-purpose">
+                  Purpose of travel <span class="form-required">*</span>
+                </label>
+                <select class="form-select" id="tr-purpose" name="purpose" required>
+                  <option value="" disabled selected>Select purpose</option>
+                  ${purposeOpts}
+                </select>
+                <div class="form-error" id="err-purpose"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="tr-budget">
+                  Budget band <span class="form-optional">(optional)</span>
+                </label>
+                <select class="form-select" id="tr-budget" name="budgetBand">
+                  ${budgetOpts}
+                </select>
+              </div>
+            </div>
+
+            <!-- Accessibility needs -->
+            <div class="form-group" id="tr-access-group">
+              <label class="form-label">
+                Accessibility needs <span class="form-optional">(select all that apply)</span>
+              </label>
+              <div class="access-checks">
+                ${accessChecks}
+              </div>
+            </div>
+
+            <!-- Notes -->
             <div class="form-group">
               <label class="form-label" for="tr-notes">
                 Additional notes <span class="form-optional">(optional)</span>
@@ -254,7 +453,7 @@ window.renderTripRequest = function () {
                 id="tr-notes"
                 name="notes"
                 rows="3"
-                placeholder="Provide relevant context — key meetings, specific requirements, or risk considerations."
+                placeholder="Key meetings, specific requirements, or risk considerations."
               ></textarea>
             </div>
 

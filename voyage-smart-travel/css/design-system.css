@@ -936,3 +936,374 @@
   }
   .ds-btn--primary::after { display: none; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLANNER FLOW — extras row, one-way toggle, trip-type toggle
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Planner extras row (below the main fields) ───────────────────────────── */
+.hp-planner-extras {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  flex-wrap: wrap;
+}
+
+.hp-planner-extras-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--color-border-glass);
+  flex-shrink: 0;
+}
+
+.hp-planner-extras-label {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-xs);
+  margin-bottom: 0;
+}
+
+.hp-planner-extras-select {
+  flex: 0 1 200px;
+  min-width: 140px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--type-xs);
+  background: rgba(9,16,31,.6);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.hp-planner-extras-select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(212,168,83,.1);
+  outline: none;
+}
+
+/* ── One-way toggle ───────────────────────────────────────────────────────── */
+.hp-planner-oneway {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--type-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  user-select: none;
+  flex-shrink: 0;
+}
+.hp-planner-oneway input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.hp-planner-oneway-track {
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-full);
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.hp-planner-oneway-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--color-text-muted);
+  border-radius: 50%;
+  transition: left var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.hp-planner-oneway input:checked ~ .hp-planner-oneway-track {
+  background: var(--color-accent);
+}
+.hp-planner-oneway input:checked ~ .hp-planner-oneway-track::after {
+  left: 16px;
+  background: var(--color-navy-900);
+}
+.hp-planner-oneway:hover { color: var(--color-text); }
+
+/* ── Trip type toggle (return / one-way radio group in the trip-request form) */
+.trip-type-toggle {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.trip-type-opt {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  font-size: var(--type-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background   var(--dur-fast) var(--ease-out),
+    color        var(--dur-fast) var(--ease-out);
+  user-select: none;
+}
+.trip-type-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.trip-type-opt:hover {
+  border-color: rgba(212,168,83,.3);
+  color: var(--color-text);
+}
+.trip-type-opt--active {
+  border-color: rgba(212,168,83,.5);
+  background: var(--color-accent-glow);
+  color: var(--color-accent);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY CHECKBOXES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.access-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.access-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--type-sm);
+  color: var(--color-text-muted);
+  user-select: none;
+  transition: color var(--dur-fast) var(--ease-out);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+.access-check:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-light);
+}
+.access-check-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.access-check-box {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-xs);
+  background: transparent;
+  flex-shrink: 0;
+  display: inline-block;
+  position: relative;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background   var(--dur-fast) var(--ease-out);
+}
+.access-check-box::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid transparent;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.access-check-input:checked ~ .access-check-box {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.access-check-input:checked ~ .access-check-box::after {
+  border-color: var(--color-navy-900);
+  opacity: 1;
+}
+.access-check:has(.access-check-input:checked) {
+  color: var(--color-text);
+  border-color: rgba(212,168,83,.35);
+  background: var(--color-accent-glow);
+}
+
+/* Fallback for browsers without :has() */
+.access-check.is-checked {
+  color: var(--color-text);
+  border-color: rgba(212,168,83,.35);
+  background: var(--color-accent-glow);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EVAL PANEL — new elements
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.eval-origin {
+  font-size: var(--type-xs);
+  color: var(--color-text-subtle);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.eval-access-note {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-info-bg);
+  border: 1px solid rgba(56,189,248,.2);
+  border-radius: var(--radius-sm);
+  font-size: var(--type-sm);
+  color: var(--color-text-muted);
+}
+.eval-access-label {
+  font-weight: var(--fw-semibold);
+  color: var(--color-info);
+  margin-right: var(--space-1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TRIP SUCCESS PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.trip-success-panel {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  box-shadow: var(--shadow-lg), var(--shadow-inner);
+  animation: success-in 0.4s var(--ease-out) both;
+}
+
+@keyframes success-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.trip-success-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-6);
+  background: var(--color-success-bg);
+  border: 2px solid rgba(34,197,94,.3);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-success);
+}
+.trip-success-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.trip-success-title {
+  font-size: var(--type-2xl);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--ls-tight);
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.trip-success-sub {
+  font-size: var(--type-body);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-8);
+}
+
+.trip-success-summary {
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-8);
+  text-align: left;
+}
+
+.trip-success-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+}
+.trip-success-row + .trip-success-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.trip-success-label {
+  font-size: var(--type-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.trip-success-value {
+  font-size: var(--type-body);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  text-align: right;
+}
+
+.trip-success-id {
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+  color: var(--color-text-subtle);
+  text-align: right;
+  word-break: break-all;
+}
+
+.trip-success-actions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE — planner flow and form
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 639px) {
+  .hp-planner-extras {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+  .hp-planner-extras-sep { display: none; }
+  .hp-planner-extras-select { flex: 1 1 100%; }
+
+  .trip-type-toggle { gap: var(--space-2); }
+  .trip-type-opt { flex: 1 1 calc(50% - var(--space-1)); justify-content: center; }
+
+  .access-checks { gap: var(--space-2); }
+  .access-check { flex: 1 1 calc(50% - var(--space-1)); }
+
+  .trip-success-panel { padding: var(--space-8) var(--space-5); }
+  .trip-success-actions { flex-direction: column; }
+  .trip-success-actions .btn { width: 100%; justify-content: center; }
+}
+

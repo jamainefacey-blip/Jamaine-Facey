@@ -137,14 +137,21 @@ window.VSTAvaEngine = (function () {
 
   /* ── Main evaluate function ─────────────────────────────────────────────── */
   function evaluate(formData) {
-    var destination    = String(formData.destination || '').trim();
-    var departureDate  = formData.departureDate;
-    var returnDate     = formData.returnDate;
-    var travellerCount = Math.max(1, parseInt(formData.travellerCount, 10) || 1);
-    var purpose        = formData.purpose || '';
-    var notes          = String(formData.notes || '').trim() || null;
+    var destination       = String(formData.destination || '').trim();
+    var origin            = String(formData.origin || '').trim() || null;
+    var departureDate     = formData.departureDate;
+    var returnDate        = formData.returnDate;
+    var tripType          = formData.tripType === 'one_way' ? 'one_way' : 'return';
+    var travellerCount    = Math.max(1, parseInt(formData.travellerCount, 10) || 1);
+    var purpose           = formData.purpose || '';
+    var travellerType     = formData.travellerType || '';
+    var budgetBand        = formData.budgetBand || '';
+    var accessibilityNeeds = Array.isArray(formData.accessibilityNeeds) ? formData.accessibilityNeeds : [];
+    var notes             = String(formData.notes || '').trim() || null;
 
-    var nights     = calcNights(departureDate, returnDate);
+    /* For one-way trips, use 1 night as the duration basis */
+    var nights = tripType === 'one_way' ? 1 : calcNights(departureDate, returnDate);
+
     var risk       = resolveRisk(destination);
     var cost       = estimateCost(destination, nights, travellerCount);
     var compliance = resolveCompliance(risk, cost);
@@ -154,14 +161,19 @@ window.VSTAvaEngine = (function () {
     var status     = resolveTripStatus(approval);
 
     return {
-      destination:    destination,
-      departureDate:  departureDate,
-      returnDate:     returnDate,
-      nights:         nights,
-      travellerCount: travellerCount,
-      purpose:        purpose,
-      notes:          notes,
-      status:         status,
+      destination:       destination,
+      origin:            origin,
+      departureDate:     departureDate,
+      returnDate:        tripType === 'one_way' ? null : returnDate,
+      tripType:          tripType,
+      nights:            nights,
+      travellerCount:    travellerCount,
+      travellerType:     travellerType,
+      budgetBand:        budgetBand,
+      accessibilityNeeds: accessibilityNeeds,
+      purpose:           purpose,
+      notes:             notes,
+      status:            status,
       evaluation: {
         estimatedCost:       cost,
         currency:            'USD',

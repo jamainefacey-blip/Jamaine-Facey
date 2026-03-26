@@ -93,10 +93,41 @@ window.VSTRouter = (function () {
         });
       }
 
-      /* "Plan my trip" button → trip request page */
+      /* One-way toggle — hide/show return date field */
+      var oneWayCheck   = document.getElementById('hp-plan-oneway');
+      var returnField   = document.getElementById('hp-plan-return-field');
+      if (oneWayCheck && returnField) {
+        oneWayCheck.addEventListener('change', function () {
+          returnField.style.display = oneWayCheck.checked ? 'none' : '';
+        });
+      }
+
+      /* "Plan my trip" → collect values, store prefill, navigate */
       var plannerSubmit = document.getElementById('hp-planner-submit');
       if (plannerSubmit) {
         plannerSubmit.addEventListener('click', function () {
+          var fromEl         = document.getElementById('hp-plan-from');
+          var toEl           = document.getElementById('hp-plan-to');
+          var departEl       = document.getElementById('hp-plan-depart');
+          var returnEl       = document.getElementById('hp-plan-return');
+          var paxEl          = document.getElementById('hp-plan-pax');
+          var typeEl         = document.getElementById('hp-plan-traveller-type');
+          var isOneWay       = oneWayCheck && oneWayCheck.checked;
+
+          var prefill = {
+            origin:        fromEl   ? fromEl.value.trim()   : '',
+            destination:   toEl     ? toEl.value.trim()     : '',
+            departureDate: departEl ? departEl.value        : '',
+            returnDate:    (!isOneWay && returnEl) ? returnEl.value : '',
+            travellerCount: paxEl   ? paxEl.value           : '1',
+            travellerType: typeEl   ? typeEl.value          : '',
+            tripType:      isOneWay ? 'one_way'             : 'return',
+          };
+
+          try {
+            sessionStorage.setItem('vst_planner_prefill', JSON.stringify(prefill));
+          } catch (e) { /* storage unavailable */ }
+
           navigate('trip-request');
         });
       }
@@ -109,19 +140,101 @@ window.VSTRouter = (function () {
       var resultPanel = document.getElementById('trip-result-panel');
       var stepForm    = document.getElementById('step-form');
       var stepEval    = document.getElementById('step-eval');
+      var stepConfirm = document.getElementById('step-confirm');
 
       if (!tripForm) return;
 
+      /* ── Pre-fill from planner sessionStorage ──────────────────────────── */
+      try {
+        var raw = sessionStorage.getItem('vst_planner_prefill');
+        if (raw) {
+          var prefill = JSON.parse(raw);
+          sessionStorage.removeItem('vst_planner_prefill');
+
+          function pf(id, val) {
+            var el = document.getElementById(id);
+            if (el && val) el.value = val;
+          }
+
+          pf('tr-origin',        prefill.origin);
+          pf('tr-destination',   prefill.destination);
+          pf('tr-departure',     prefill.departureDate);
+          pf('tr-return',        prefill.returnDate);
+          pf('tr-travellers',    prefill.travellerCount);
+          pf('tr-traveller-type', prefill.travellerType);
+
+          /* Apply trip type radio */
+          if (prefill.tripType === 'one_way') {
+            var oneWayRadio = document.getElementById('tr-triptype-oneway');
+            if (oneWayRadio) {
+              oneWayRadio.checked = true;
+              oneWayRadio.closest('.trip-type-opt').classList.add('trip-type-opt--active');
+              var returnRadio = document.getElementById('tr-triptype-return');
+              if (returnRadio) returnRadio.closest('.trip-type-opt').classList.remove('trip-type-opt--active');
+              /* Hide return date group */
+              var rg = document.getElementById('tr-return-group');
+              if (rg) { rg.style.opacity = '0.4'; rg.style.pointerEvents = 'none'; }
+              var req = document.getElementById('tr-return-required');
+              if (req) req.style.display = 'none';
+            }
+          }
+        }
+      } catch (e) { /* ignore prefill errors */ }
+
+      /* ── Trip type toggle — return / one-way ───────────────────────────── */
+      var tripTypeOpts = tripForm.querySelectorAll('.trip-type-opt');
+      var returnGroup  = document.getElementById('tr-return-group');
+      var returnReq    = document.getElementById('tr-return-required');
+
+      tripTypeOpts.forEach(function (opt) {
+        var radio = opt.querySelector('input[type="radio"]');
+        if (!radio) return;
+        radio.addEventListener('change', function () {
+          tripTypeOpts.forEach(function (o) { o.classList.remove('trip-type-opt--active'); });
+          opt.classList.add('trip-type-opt--active');
+          var isOneWay = radio.value === 'one_way';
+          if (returnGroup) {
+            returnGroup.style.opacity       = isOneWay ? '0.4' : '';
+            returnGroup.style.pointerEvents = isOneWay ? 'none' : '';
+          }
+          if (returnReq) returnReq.style.display = isOneWay ? 'none' : '';
+          /* Clear return error when switching to one-way */
+          if (isOneWay) {
+            var errReturn = document.getElementById('err-return');
+            if (errReturn) { errReturn.textContent = ''; errReturn.style.display = 'none'; }
+          }
+        });
+      });
+
+      /* ── Form submit ───────────────────────────────────────────────────── */
       tripForm.addEventListener('submit', function (e) {
         e.preventDefault();
 
         /* Collect values */
         var destination    = document.getElementById('tr-destination').value.trim();
+        var origin         = (document.getElementById('tr-origin') || {}).value;
+        origin = origin ? origin.trim() : '';
         var departureDate  = document.getElementById('tr-departure').value;
-        var returnDate     = document.getElementById('tr-return').value;
         var travellerCount = parseInt(document.getElementById('tr-travellers').value, 10);
         var purpose        = document.getElementById('tr-purpose').value;
+        var travellerType  = document.getElementById('tr-traveller-type').value;
+        var budgetBand     = (document.getElementById('tr-budget') || {}).value || '';
         var notes          = document.getElementById('tr-notes').value.trim();
+
+        /* Trip type */
+        var tripTypeRadio = tripForm.querySelector('input[name="tripType"]:checked');
+        var tripType      = tripTypeRadio ? tripTypeRadio.value : 'return';
+        var isOneWay      = tripType === 'one_way';
+
+        var returnDate = '';
+        if (!isOneWay) {
+          returnDate = document.getElementById('tr-return').value;
+        }
+
+        /* Accessibility needs */
+        var accessChecks = tripForm.querySelectorAll('input[name="accessibility"]:checked');
+        var accessibilityNeeds = [];
+        accessChecks.forEach(function (cb) { accessibilityNeeds.push(cb.value); });
 
         /* Validate */
         var valid = true;
@@ -135,19 +248,23 @@ window.VSTRouter = (function () {
           if (msg) valid = false;
         }
 
-        setErr('err-destination', destination.length < 2 ? 'Enter a valid destination.' : '');
-        setErr('err-departure',   !departureDate ? 'Select a departure date.' : '');
+        setErr('err-destination',   destination.length < 2 ? 'Enter a valid destination.' : '');
+        setErr('err-departure',     !departureDate ? 'Select a departure date.' : '');
+        setErr('err-travellers',    (!travellerCount || travellerCount < 1) ? 'Enter at least 1 traveller.' : '');
+        setErr('err-purpose',       !purpose ? 'Select a purpose.' : '');
+        setErr('err-traveller-type', !travellerType ? 'Select a traveller type.' : '');
 
-        if (!returnDate) {
-          setErr('err-return', 'Select a return date.');
-        } else if (departureDate && new Date(returnDate) <= new Date(departureDate)) {
-          setErr('err-return', 'Return date must be after departure date.');
+        if (!isOneWay) {
+          if (!returnDate) {
+            setErr('err-return', 'Select a return date.');
+          } else if (departureDate && new Date(returnDate) <= new Date(departureDate)) {
+            setErr('err-return', 'Return date must be after departure date.');
+          } else {
+            setErr('err-return', '');
+          }
         } else {
           setErr('err-return', '');
         }
-
-        setErr('err-travellers', (!travellerCount || travellerCount < 1) ? 'Enter at least 1 traveller.' : '');
-        setErr('err-purpose',    !purpose ? 'Select a purpose.' : '');
 
         if (!valid) return;
 
@@ -163,19 +280,24 @@ window.VSTRouter = (function () {
 
           /* Run evaluation */
           var result = window.VSTAvaEngine.evaluate({
-            destination:    destination,
-            departureDate:  departureDate,
-            returnDate:     returnDate,
-            travellerCount: travellerCount,
-            purpose:        purpose,
-            notes:          notes,
+            destination:       destination,
+            origin:            origin,
+            departureDate:     departureDate,
+            returnDate:        returnDate,
+            tripType:          tripType,
+            travellerCount:    travellerCount,
+            travellerType:     travellerType,
+            budgetBand:        budgetBand,
+            accessibilityNeeds: accessibilityNeeds,
+            purpose:           purpose,
+            notes:             notes,
           });
 
           /* Get Ava explanation */
           var ava = window.VSTAvaEngine.avaExplain(result.evaluation);
 
           /* Render result panel */
-          resultPanel.innerHTML = window.renderEvalResult(result, ava);
+          resultPanel.innerHTML     = window.renderEvalResult(result, ava);
           formPanel.style.display   = 'none';
           resultPanel.style.display = 'block';
 
@@ -187,12 +309,49 @@ window.VSTRouter = (function () {
           var saveBtn = document.getElementById('trip-save-btn');
           if (saveBtn) {
             saveBtn.addEventListener('click', function () {
-              window.VSTTrips.create(result);
+              var savedTrip = window.VSTTrips.create(result);
+
               /* Advance to saved step */
-              var stepConfirm = document.getElementById('step-confirm');
               if (stepEval)    stepEval.classList.remove('trip-step--active');
               if (stepConfirm) stepConfirm.classList.add('trip-step--active', 'trip-step--done');
-              navigate('dashboard');
+
+              /* Show success confirmation panel */
+              resultPanel.innerHTML = window.renderTripSuccess(savedTrip || result);
+
+              /* Wire success panel buttons */
+              var goDash = document.getElementById('trip-goto-dashboard');
+              if (goDash) {
+                goDash.addEventListener('click', function () { navigate('dashboard'); });
+              }
+
+              var reqAnother = document.getElementById('trip-request-another');
+              if (reqAnother) {
+                reqAnother.addEventListener('click', function () {
+                  resultPanel.innerHTML     = '';
+                  resultPanel.style.display = 'none';
+                  formPanel.style.display   = 'block';
+                  if (submitBtn) {
+                    submitBtn.textContent = 'Evaluate Trip Request';
+                    submitBtn.disabled    = false;
+                  }
+                  if (stepEval)    stepEval.classList.remove('trip-step--active', 'trip-step--done');
+                  if (stepConfirm) stepConfirm.classList.remove('trip-step--active', 'trip-step--done');
+                  if (stepForm)    stepForm.classList.add('trip-step--active');
+                  tripForm.reset();
+                  tripTypeOpts.forEach(function (o) { o.classList.remove('trip-type-opt--active'); });
+                  var returnOpt = tripForm.querySelector('.trip-type-opt:first-child');
+                  if (returnOpt) returnOpt.classList.add('trip-type-opt--active');
+                  if (returnGroup) { returnGroup.style.opacity = ''; returnGroup.style.pointerEvents = ''; }
+                  if (returnReq) returnReq.style.display = '';
+                });
+              }
+
+              /* Auto-navigate to dashboard after 8 s if user doesn't click */
+              setTimeout(function () {
+                if (document.getElementById('trip-goto-dashboard')) {
+                  navigate('dashboard');
+                }
+              }, 8000);
             });
           }
 
@@ -207,11 +366,14 @@ window.VSTRouter = (function () {
                 submitBtn.textContent = 'Evaluate Trip Request';
                 submitBtn.disabled    = false;
               }
-              if (stepEval) {
-                stepEval.classList.remove('trip-step--active', 'trip-step--done');
-              }
+              if (stepEval) stepEval.classList.remove('trip-step--active', 'trip-step--done');
               if (stepForm) stepForm.classList.add('trip-step--active');
               tripForm.reset();
+              tripTypeOpts.forEach(function (o) { o.classList.remove('trip-type-opt--active'); });
+              var returnOpt = tripForm.querySelector('.trip-type-opt:first-child');
+              if (returnOpt) returnOpt.classList.add('trip-type-opt--active');
+              if (returnGroup) { returnGroup.style.opacity = ''; returnGroup.style.pointerEvents = ''; }
+              if (returnReq) returnReq.style.display = '';
             });
           }
 

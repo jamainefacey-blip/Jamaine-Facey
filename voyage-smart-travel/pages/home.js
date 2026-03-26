@@ -114,27 +114,51 @@ window.renderHome = function () {
           </button>
         </div>
 
-        <!-- Fields -->
-        <div class="hp-planner-form">
+        <!-- Fields row -->
+        <div class="hp-planner-form" id="hp-planner-form">
           <div class="hp-planner-field">
-            <label class="hp-planner-label">From</label>
-            <input class="hp-planner-input" type="text" placeholder="City or airport" autocomplete="off" />
+            <label class="hp-planner-label" for="hp-plan-from">From</label>
+            <input class="hp-planner-input" type="text" id="hp-plan-from" placeholder="City or airport" autocomplete="off" />
           </div>
           <div class="hp-planner-field">
-            <label class="hp-planner-label">To</label>
-            <input class="hp-planner-input" type="text" placeholder="Destination" autocomplete="off" />
+            <label class="hp-planner-label" for="hp-plan-to">To</label>
+            <input class="hp-planner-input" type="text" id="hp-plan-to" placeholder="Destination" autocomplete="off" />
           </div>
           <div class="hp-planner-field hp-planner-field--date">
-            <label class="hp-planner-label">Depart</label>
-            <input class="hp-planner-input" type="date" />
+            <label class="hp-planner-label" for="hp-plan-depart">Depart</label>
+            <input class="hp-planner-input" type="date" id="hp-plan-depart" />
+          </div>
+          <div class="hp-planner-field hp-planner-field--date" id="hp-plan-return-field">
+            <label class="hp-planner-label" for="hp-plan-return">Return</label>
+            <input class="hp-planner-input" type="date" id="hp-plan-return" />
           </div>
           <div class="hp-planner-field hp-planner-field--pax">
-            <label class="hp-planner-label">Travellers</label>
-            <input class="hp-planner-input" type="number" value="1" min="1" max="50" />
+            <label class="hp-planner-label" for="hp-plan-pax">Travellers</label>
+            <input class="hp-planner-input" type="number" id="hp-plan-pax" value="1" min="1" max="50" />
           </div>
           <button class="hp-planner-submit" id="hp-planner-submit">
             Plan my trip
           </button>
+        </div>
+
+        <!-- Extras row: one-way toggle + traveller type -->
+        <div class="hp-planner-extras">
+          <label class="hp-planner-oneway">
+            <input type="checkbox" id="hp-plan-oneway" />
+            <span class="hp-planner-oneway-track" aria-hidden="true"></span>
+            One-way trip
+          </label>
+          <div class="hp-planner-extras-sep" aria-hidden="true"></div>
+          <label class="hp-planner-label hp-planner-extras-label" for="hp-plan-traveller-type">I&rsquo;m travelling as</label>
+          <select class="hp-planner-input hp-planner-extras-select" id="hp-plan-traveller-type">
+            <option value="">Any traveller type</option>
+            <option value="solo">Solo</option>
+            <option value="family">Family</option>
+            <option value="business">Business</option>
+            <option value="disabled">Accessibility needs</option>
+            <option value="luxury">Luxury / VIP</option>
+            <option value="backpacker">Backpacker</option>
+          </select>
         </div>
 
       </div>
