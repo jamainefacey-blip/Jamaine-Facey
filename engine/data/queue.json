@@ -1,0 +1,23 @@
+[
+  {
+    "task": {
+      "id": "test-5a539983",
+      "lane": "BACKYARD",
+      "description": "Write engine/data/status.json — operational status for the execution engine.",
+      "scope": [
+        "engine/data/status.json"
+      ],
+      "deploy": true,
+      "createdAt": "2026-03-26T19:40:56.855Z",
+      "meta": {
+        "testRun": true,
+        "pass": 2
+      }
+    },
+    "status": "complete",
+    "attempts": 1,
+    "enqueuedAt": "2026-03-26T19:40:56.856Z",
+    "startedAt": "2026-03-26T19:40:56.856Z",
+    "completedAt": "2026-03-26T19:40:58.338Z"
+  }
+]
