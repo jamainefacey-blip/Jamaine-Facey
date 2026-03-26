@@ -687,6 +687,158 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .mt-8  { margin-top: 32px; }
 .mt-12 { margin-top: 48px; }
 
+/* ── PASS 3A: Interaction layer ─────────────────────────────────────────────── */
+
+/* Keyframes */
+@keyframes vstFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes vstFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Hero entrance — staggered sequence on page load */
+.vst-hero__eyebrow {
+  animation: vstFadeUp 0.6s 0.08s cubic-bezier(0.22,1,0.36,1) both;
+}
+.vst-hero__title {
+  animation: vstFadeUp 0.7s 0.2s  cubic-bezier(0.22,1,0.36,1) both;
+}
+.vst-hero__sub {
+  animation: vstFadeUp 0.65s 0.34s cubic-bezier(0.22,1,0.36,1) both;
+}
+.vst-hero__ctas {
+  animation: vstFadeUp 0.6s 0.46s  cubic-bezier(0.22,1,0.36,1) both;
+}
+.vst-hero__stats {
+  animation: vstFadeIn 0.7s 0.6s   cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* Card hover lift */
+.vst-card {
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.22s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.22s;
+}
+.vst-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.2);
+  border-color: rgba(198,168,90,.22);
+}
+
+/* Plan card hover */
+.vst-plan {
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.22s cubic-bezier(0.22,1,0.36,1);
+}
+.vst-plan:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0,0,0,.4);
+}
+.vst-plan--featured:hover {
+  box-shadow: 0 12px 36px rgba(198,168,90,.2), 0 0 0 1px var(--accent);
+}
+
+/* Button interaction polish */
+.vst-btn {
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s,
+              transform 0.14s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.18s, opacity 0.18s;
+}
+.vst-btn:active {
+  transform: scale(0.96) !important;
+  transition-duration: 0.08s !important;
+}
+.vst-btn--primary:hover {
+  transform: translateY(-1px);
+}
+.vst-btn--secondary:hover {
+  transform: translateY(-1px);
+}
+
+/* Ava panel hover glow */
+.vst-ava-panel {
+  transition: box-shadow 0.28s cubic-bezier(0.22,1,0.36,1), border-color 0.28s;
+}
+.vst-ava-panel:hover {
+  box-shadow: 0 16px 56px rgba(0,0,0,.55), 0 0 0 1px rgba(198,168,90,.18);
+  border-color: rgba(198,168,90,.18);
+}
+
+/* Trust bar item hover */
+.vst-trust__item {
+  transition: color 0.15s;
+  cursor: default;
+}
+.vst-trust__item:hover {
+  color: var(--text-primary);
+}
+
+/* Compliance item — already has background transition, ensure smooth */
+.vst-comp-item {
+  transition: background 0.18s, padding-left 0.18s;
+}
+.vst-comp-item:hover {
+  padding-left: 32px;
+}
+
+/* Sector card — already has transition, add lift */
+.vst-sector-card {
+  transition: background 0.2s, border-color 0.2s, transform 0.22s cubic-bezier(0.22,1,0.36,1);
+}
+.vst-sector-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Nav logo hover */
+.vst-nav__logo {
+  transition: opacity 0.15s;
+}
+.vst-nav__logo:hover {
+  opacity: 0.8;
+}
+
+/* Nav primary CTA button in nav — subtle scale */
+.vst-nav .vst-btn--primary:hover {
+  transform: none;
+  box-shadow: 0 2px 12px rgba(198,168,90,.35);
+}
+
+/* Footer link hover */
+.vst-footer__col ul a {
+  transition: color 0.15s, padding-left 0.15s;
+}
+.vst-footer__col ul a:hover {
+  padding-left: 4px;
+}
+
+/* ── Reduced motion — disable ALL transitions and animations ────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .vst-hero__eyebrow,
+  .vst-hero__title,
+  .vst-hero__sub,
+  .vst-hero__ctas,
+  .vst-hero__stats {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .vst-card,
+  .vst-plan,
+  .vst-btn,
+  .vst-ava-panel,
+  .vst-trust__item,
+  .vst-comp-item,
+  .vst-sector-card,
+  .vst-nav__logo,
+  .vst-footer__col ul a {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 /* ── PASS 2C: Homepage structure classes ────────────────────────────────────── */
 
 /* Ava split layout */
