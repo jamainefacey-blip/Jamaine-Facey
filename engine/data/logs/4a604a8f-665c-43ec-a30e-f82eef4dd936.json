@@ -1,0 +1,13 @@
+{
+  "runId": "4a604a8f-665c-43ec-a30e-f82eef4dd936",
+  "taskId": "pc-backlog-01",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T16:47:24.632Z",
+  "completedAt": "2026-03-27T16:47:24.633Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"exists\":false,\"file\":\"backlog.json\"}"
+}

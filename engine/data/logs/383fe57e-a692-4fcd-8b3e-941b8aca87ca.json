@@ -1,0 +1,13 @@
+{
+  "runId": "383fe57e-a692-4fcd-8b3e-941b8aca87ca",
+  "taskId": "pc-priority-01",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T16:47:24.934Z",
+  "completedAt": "2026-03-27T16:47:24.934Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 8.75"
+}

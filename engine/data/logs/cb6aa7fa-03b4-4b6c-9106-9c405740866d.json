@@ -1,0 +1,14 @@
+{
+  "runId": "cb6aa7fa-03b4-4b6c-9106-9c405740866d",
+  "taskId": "pc-prebuild-01",
+  "lane": "AI_LAB",
+  "status": "failed",
+  "startedAt": "2026-03-27T16:46:57.164Z",
+  "completedAt": "2026-03-27T16:46:57.165Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Unsafe expression rejected: filter(monetisation_viability, pain_system_alignment, compliance_safety, build_feasibility)",
+  "claudeSummary": "FAIL: Unsafe expression rejected: filter(monetisation_viability, pain_system_alignment, compliance_safety, build_feasibility)"
+}

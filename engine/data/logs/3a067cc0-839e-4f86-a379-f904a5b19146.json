@@ -1,0 +1,14 @@
+{
+  "runId": "3a067cc0-839e-4f86-a379-f904a5b19146",
+  "taskId": "pc-priority-01",
+  "lane": "AI_LAB",
+  "status": "pending",
+  "startedAt": "2026-03-27T16:46:55.664Z",
+  "completedAt": "2026-03-27T16:46:55.664Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Unsafe expression rejected: score(monetisation_potential, speed_to_build, reusability, strategic_fit)",
+  "claudeSummary": "FAIL: Unsafe expression rejected: score(monetisation_potential, speed_to_build, reusability, strategic_fit)"
+}
