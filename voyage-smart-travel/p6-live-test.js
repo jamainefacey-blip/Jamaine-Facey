@@ -72,7 +72,7 @@ async function submitTrip(page, fields, config) {
     page.on('pageerror', err => consoleErrors.push('LTC1 pageerror: ' + err.message));
 
     await page.addInitScript((endpoint) => {
-      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaEndpoint: endpoint };
+      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaEndpoint: endpoint, avaSecureEndpoint: false };
     }, MOCK_ENDPOINT);
 
     await submitTrip(page, {
@@ -134,7 +134,7 @@ async function submitTrip(page, fields, config) {
     page.on('pageerror', err => consoleErrors.push('LTC2 pageerror: ' + err.message));
 
     await page.addInitScript((endpoint) => {
-      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaEndpoint: endpoint };
+      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaEndpoint: endpoint, avaSecureEndpoint: false };
     }, MOCK_ENDPOINT);
 
     await submitTrip(page, {
@@ -201,9 +201,10 @@ async function submitTrip(page, fields, config) {
 
     await page.addInitScript(() => {
       window.VST_CONFIG = {
-        avaApiKey:   'test-key-fallback-check',
-        avaEndpoint: 'http://127.0.0.1:19999',  // nothing listening here
-        avaTimeout:  2000,                        // short timeout so test is fast
+        avaApiKey:        'test-key-fallback-check',
+        avaEndpoint:      'http://127.0.0.1:19999',  // nothing listening here
+        avaTimeout:       2000,                        // short timeout so test is fast
+        avaSecureEndpoint: false,
       };
     });
 
@@ -280,7 +281,7 @@ async function submitTrip(page, fields, config) {
     page.on('pageerror', err => consoleErrors.push('STC5 pageerror: ' + err.message));
 
     await page.addInitScript((endpoint) => {
-      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaEndpoint: endpoint };
+      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaEndpoint: endpoint, avaSecureEndpoint: false };
     }, MOCK_ENDPOINT);
 
     await submitTrip(page, {
@@ -325,7 +326,7 @@ async function submitTrip(page, fields, config) {
     page.on('pageerror', err => consoleErrors.push('STC6 pageerror: ' + err.message));
 
     await page.addInitScript(() => {
-      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6' };
+      window.VST_CONFIG = { avaApiKey: 'test-key-live-p6', avaSecureEndpoint: false };
       // Override fetch to return malformed JSON
       window.fetch = () => Promise.resolve({
         ok: true,

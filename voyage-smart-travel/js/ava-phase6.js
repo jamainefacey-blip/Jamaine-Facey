@@ -19,12 +19,16 @@ window.VSTAvaPhase6 = (function () {
   'use strict';
 
   /* ── Config ──────────────────────────────────────────────────────────────── */
-  var CFG        = window.VST_CONFIG || {};
-  var API_KEY    = CFG.avaApiKey    || null;
-  var ENDPOINT   = CFG.avaEndpoint  || 'https://api.anthropic.com/v1/messages';
-  var MODEL      = CFG.avaModel     || 'claude-haiku-4-5-20251001';
-  var TIMEOUT    = CFG.avaTimeout   || 12000;
-  var AUTH_SCHEME = CFG.avaAuthScheme || 'x-api-key'; /* 'x-api-key' | 'bearer' */
+  var CFG             = window.VST_CONFIG || {};
+  var API_KEY         = CFG.avaApiKey    || null;
+  var ENDPOINT        = CFG.avaEndpoint  || 'https://api.anthropic.com/v1/messages';
+  var MODEL           = CFG.avaModel     || 'claude-haiku-4-5-20251001';
+  var TIMEOUT         = CFG.avaTimeout   || 12000;
+  var AUTH_SCHEME     = CFG.avaAuthScheme || 'x-api-key'; /* 'x-api-key' | 'bearer' */
+  /* Secure server endpoint — set to false/null to disable and use direct path */
+  var SECURE_ENDPOINT = CFG.hasOwnProperty('avaSecureEndpoint')
+    ? CFG.avaSecureEndpoint
+    : '/api/ava-evaluate';
 
   /* ── Valid enum values ───────────────────────────────────────────────────── */
   var VALID_RISK       = ['LOW', 'MEDIUM', 'HIGH'];
@@ -315,7 +319,24 @@ window.VSTAvaPhase6 = (function () {
     });
   }
 
-  /* ── Live API call ───────────────────────────────────────────────────────── */
+  /* ── Secure server-side evaluation ──────────────────────────────────────── */
+  function secureEvaluate(fd) {
+    return fetchWithTimeout(SECURE_ENDPOINT, {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify(fd),
+    }, TIMEOUT)
+    .then(function (res) {
+      if (!res.ok) throw new Error('secure:http:' + res.status);
+      return res.json();
+    })
+    .then(function (data) {
+      if (!validate(data)) throw new Error('secure:schema');
+      return normalise(data);
+    });
+  }
+
+  /* ── Live API call (direct — kept for backward-compat with tests) ────────── */
   function liveEvaluate(fd) {
     var authHeader = AUTH_SCHEME === 'bearer'
       ? { 'Authorization': 'Bearer ' + API_KEY }
@@ -353,13 +374,19 @@ window.VSTAvaPhase6 = (function () {
      ═══════════════════════════════════════════════════════════════════════════ */
 
   function evaluate(formData) {
+    if (SECURE_ENDPOINT) {
+      /* Primary path: call internal server endpoint (key never leaves server) */
+      return secureEvaluate(formData).catch(function () {
+        return fallbackEvaluate(formData);
+      });
+    }
     if (API_KEY) {
-      /* Live mode — fail-safe fallback if API fails or returns invalid data */
+      /* Legacy direct path — only active when avaSecureEndpoint explicitly disabled */
       return liveEvaluate(formData).catch(function () {
         return fallbackEvaluate(formData);
       });
     }
-    /* No API key — deterministic fallback, resolves synchronously via Promise */
+    /* No endpoint, no key — deterministic fallback */
     return Promise.resolve(fallbackEvaluate(formData));
   }
 
@@ -368,7 +395,7 @@ window.VSTAvaPhase6 = (function () {
     fallbackEvaluate: fallbackEvaluate, /* exposed for testing */
     validate:         validate,
     normalise:        normalise,
-    isLiveMode:       function () { return !!API_KEY; },
+    isLiveMode:       function () { return !!(SECURE_ENDPOINT || API_KEY); },
   };
 
 })();

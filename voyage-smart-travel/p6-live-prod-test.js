@@ -112,6 +112,7 @@ async function getFallbackAvaText(browser, destination, origin, returnDate, trav
         avaApiKey:     'proxy-auth',  /* auth handled server-side by proxy */
         avaEndpoint:   proxyEndpoint,
         avaAuthScheme: 'x-api-key',  /* proxy ignores this; injects real Bearer */
+        avaSecureEndpoint: false,
         avaTimeout:    25000,
       };
     }, PROXY_ENDPOINT);
@@ -251,9 +252,10 @@ async function getFallbackAvaText(browser, destination, origin, returnDate, trav
 
     await page.addInitScript(() => {
       window.VST_CONFIG = {
-        avaApiKey:    'invalid-token-12345',
-        avaAuthScheme: 'bearer',
-        avaTimeout:   5000,
+        avaApiKey:         'invalid-token-12345',
+        avaAuthScheme:     'bearer',
+        avaTimeout:        5000,
+        avaSecureEndpoint: false,
       };
     });
 
