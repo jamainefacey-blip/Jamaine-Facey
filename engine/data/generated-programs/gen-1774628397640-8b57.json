@@ -1,0 +1,70 @@
+{
+  "programId": "gen-1774628397640-8b57",
+  "instruction": "fix bug — FHI report submission form validation not firing on mobile",
+  "lane": "FHI",
+  "intent": "fix_bug",
+  "generatedAt": "2026-03-27T16:19:57.640Z",
+  "steps": [
+    {
+      "type": "data",
+      "lane": "FHI",
+      "description": "Read failing asset / error state",
+      "payload": {
+        "task": "read-error-state"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-1-a065ef",
+      "order": 1
+    },
+    {
+      "type": "eval",
+      "lane": "FHI",
+      "description": "Diagnose root cause",
+      "payload": {
+        "task": "diagnose"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-2-feb03a",
+      "order": 2,
+      "dependsOn": [
+        "step-1"
+      ]
+    },
+    {
+      "type": "transform",
+      "lane": "FHI",
+      "description": "Apply fix",
+      "payload": {
+        "task": "apply-fix"
+      },
+      "risk": "medium",
+      "requiresApproval": true,
+      "stepId": "step-3-0cc6c3",
+      "order": 3,
+      "dependsOn": [
+        "step-2"
+      ]
+    },
+    {
+      "type": "eval",
+      "lane": "FHI",
+      "description": "Verify fix — run test suite",
+      "payload": {
+        "task": "verify-fix"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-4-a1f1d6",
+      "order": 4,
+      "dependsOn": [
+        "step-3"
+      ]
+    }
+  ],
+  "totalSteps": 4,
+  "estimatedRisk": "medium",
+  "requiresFounderApproval": false,
+  "warnings": []
+}

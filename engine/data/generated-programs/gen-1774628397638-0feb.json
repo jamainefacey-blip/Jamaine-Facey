@@ -1,0 +1,100 @@
+{
+  "programId": "gen-1774628397638-0feb",
+  "instruction": "build VST feature — hero section with booking CTA and destination carousel",
+  "lane": "VST",
+  "intent": "build_feature",
+  "generatedAt": "2026-03-27T16:19:57.638Z",
+  "steps": [
+    {
+      "type": "data",
+      "lane": "VST",
+      "description": "Read current state / existing asset",
+      "payload": {
+        "task": "pre-build-read"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-1-f22561",
+      "order": 1
+    },
+    {
+      "type": "eval",
+      "lane": "VST",
+      "description": "Evaluate pre-gate readiness baseline",
+      "payload": {
+        "task": "pre-gate-eval"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-2-39a4ff",
+      "order": 2,
+      "dependsOn": [
+        "step-1"
+      ]
+    },
+    {
+      "type": "transform",
+      "lane": "VST",
+      "description": "Build feature implementation",
+      "payload": {
+        "task": "feature-build"
+      },
+      "risk": "medium",
+      "requiresApproval": true,
+      "stepId": "step-3-b32ecc",
+      "order": 3,
+      "dependsOn": [
+        "step-2"
+      ]
+    },
+    {
+      "type": "eval",
+      "lane": "VST",
+      "description": "Run pre-gate audit on built asset",
+      "payload": {
+        "task": "pre-gate-audit"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-4-690cab",
+      "order": 4,
+      "dependsOn": [
+        "step-3"
+      ]
+    },
+    {
+      "type": "transform",
+      "lane": "VST",
+      "description": "Gate evaluation — score & verdict",
+      "payload": {
+        "task": "gate-eval"
+      },
+      "risk": "medium",
+      "requiresApproval": true,
+      "stepId": "step-5-75a0d8",
+      "order": 5,
+      "dependsOn": [
+        "step-4"
+      ]
+    },
+    {
+      "type": "write",
+      "lane": "VST",
+      "description": "Persist gate result and audit trail",
+      "payload": {
+        "task": "persist-gate-result"
+      },
+      "risk": "medium",
+      "requiresApproval": true,
+      "stepId": "step-6-3528af",
+      "order": 6,
+      "dependsOn": [
+        "step-5"
+      ]
+    }
+  ],
+  "totalSteps": 6,
+  "estimatedRisk": "medium",
+  "requiresFounderApproval": false,
+  "warnings": []
+}
