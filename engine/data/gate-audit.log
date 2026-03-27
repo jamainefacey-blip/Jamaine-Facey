@@ -22,3 +22,8 @@
 [2026-03-27T15:08:04.977Z] gate-eval id=5580450a-cd4d-4267-8d99-5290f36d6e9d task=gate-test-placeholder lane=VST status=fail score=67 founderReady=false hardBlockers=[PLACEHOLDER_DETECTED]
 [2026-03-27T15:08:04.979Z] gate-eval id=709c2bfb-273c-44b2-86e7-05395c94e616 task=gate-test-no-cta lane=VST status=pass score=86 founderReady=true hardBlockers=[]
 [2026-03-27T15:08:04.980Z] gate-eval id=2c93aef2-1afd-4805-8df9-f966e25773a6 task=gate-test-build-fail lane=AI_LAB status=fail score=64 founderReady=false hardBlockers=[BUILD_FAILED]
+[2026-03-27T15:31:26.372Z] gate-eval id=bee6cd51-93eb-4c17-b703-5e2d2bbde8be task=gate-test-healthy lane=BACKYARD status=pass score=91 founderReady=true hardBlockers=[]
+[2026-03-27T15:31:26.375Z] gate-eval id=f9b5d4f8-1ecd-4e56-81c0-d02278050be4 task=gate-test-no-proof lane=AI_LAB status=fail score=59 founderReady=false hardBlockers=[NO_PREVIEW_PROOF]
+[2026-03-27T15:31:26.376Z] gate-eval id=be71d80a-0596-4e94-b24c-a92776d2b8f5 task=gate-test-placeholder lane=VST status=fail score=67 founderReady=false hardBlockers=[PLACEHOLDER_DETECTED]
+[2026-03-27T15:31:26.378Z] gate-eval id=eea9f4e8-0a42-4e3b-be9a-08fa4b4434d3 task=gate-test-no-cta lane=VST status=pass score=86 founderReady=true hardBlockers=[]
+[2026-03-27T15:31:26.380Z] gate-eval id=509576a9-509d-4e07-84db-94847399f013 task=gate-test-build-fail lane=AI_LAB status=fail score=64 founderReady=false hardBlockers=[BUILD_FAILED]
