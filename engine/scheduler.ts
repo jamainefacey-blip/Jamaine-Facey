@@ -11,7 +11,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { SCHEDULER_CONFIG, ROOT } from './config';
 import { log, writeRunLog } from './logger';
-import { decide, GUARDRAIL_POLICY } from './guardrail';
+import { decide, loadLivePolicy, GUARDRAIL_POLICY } from './guardrail';
 import type { SchedulerTask, SchedulerState, RunLog } from './types';
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -121,9 +121,10 @@ export function processQueue(): boolean {
   }
 
   // ── Guardrail layer ────────────────────────────────────────────────────────
-  // Classify risk and decide execution before any processing occurs.
-  const policy = { ...GUARDRAIL_POLICY, overnightMode: state.overnightMode };
-  const guard = decide(task, policy);
+  // Load live policy from disk on every cycle — picks up runtime edits instantly.
+  // overnightMode in scheduler-state.json overrides policy file (UI toggle wins).
+  const livePolicy = { ...loadLivePolicy(), overnightMode: state.overnightMode };
+  const guard = decide(task, livePolicy);
 
   // Stamp guardrail result onto the task (persisted for UI)
   task.risk     = guard.risk;
@@ -303,10 +304,10 @@ export function setOvernightMode(enabled: boolean): void {
   log('INFO', `Scheduler: overnightMode=${enabled}`);
 }
 
-/** Return current guardrail policy (merged with live overnight mode flag). */
+/** Return current live guardrail policy (from disk, merged with scheduler overnight mode). */
 export function getGuardrailPolicy() {
   const state = loadState();
-  return { ...GUARDRAIL_POLICY, overnightMode: state.overnightMode };
+  return { ...loadLivePolicy(), overnightMode: state.overnightMode };
 }
 
 /**

@@ -8,6 +8,8 @@
 //   POST /stop                → stop scheduler
 //   GET  /guardrail           → current guardrail policy + overnight mode
 //   POST /guardrail/overnight → toggle overnight mode (body: { enabled: boolean })
+//   POST /guardrail/policy    → update policy at runtime (body: PolicyUpdateRequest)
+//   POST /guardrail/reset     → reset policy to baseline defaults
 //   GET  /queue               → list all tasks
 //   POST /queue/add           → enqueue a new task (body: { type, payload, id? })
 //   POST /queue/approve/:id   → approve an awaiting_approval task → queued
@@ -26,6 +28,7 @@ import {
   getGuardrailPolicy,
   approveTask,
 } from './scheduler';
+import { updateGuardrailPolicy, resetGuardrailPolicy } from './guardrail';
 import { log } from './logger';
 import type { SchedulerTask } from './types';
 
@@ -120,6 +123,28 @@ const server = http.createServer(async (req, res) => {
       if (typeof body.enabled !== 'boolean') return json(res, 400, { error: 'enabled must be boolean' });
       setOvernightMode(body.enabled);
       return json(res, 200, { ok: true, overnightMode: body.enabled });
+    }
+
+    // ── POST /guardrail/policy ─────────────────────────────────────────────────
+    // Update allowedTypes / approvalTypes / overnightMode / maxAttempts at runtime.
+    // blockedTypes (deploy, notify) are immutable — any attempt is rejected per-type.
+    if (method === 'POST' && url === '/guardrail/policy') {
+      const body = await readBody(req) as {
+        promoteToAllowed?: string[];
+        demoteToApproval?: string[];
+        overnightMode?: boolean;
+        maxAttempts?: number;
+      };
+      const result = updateGuardrailPolicy(body);
+      log('INFO', `Policy update: ${result.log}`);
+      return json(res, result.ok ? 200 : 207, result);
+    }
+
+    // ── POST /guardrail/reset ──────────────────────────────────────────────────
+    if (method === 'POST' && url === '/guardrail/reset') {
+      const policy = resetGuardrailPolicy();
+      log('INFO', 'Policy reset to baseline');
+      return json(res, 200, { ok: true, policy });
     }
 
     // ── GET /queue ───────────────────────────────────────────────────────────

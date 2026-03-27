@@ -1,5 +1,5 @@
 // engine/scheduler-test.ts — full test suite
-// PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01
+// PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01
 
 import {
   startScheduler,
@@ -9,8 +9,16 @@ import {
   listTasks,
   resetScheduler,
   approveTask,
+  setOvernightMode,
 } from './scheduler';
-import { decide, classifyRisk, GUARDRAIL_POLICY } from './guardrail';
+import {
+  decide,
+  classifyRisk,
+  GUARDRAIL_POLICY,
+  updateGuardrailPolicy,
+  resetGuardrailPolicy,
+  loadLivePolicy,
+} from './guardrail';
 import { log } from './logger';
 import type { SchedulerTask } from './types';
 
@@ -42,7 +50,7 @@ const INTERVAL = 250;
 
 async function runTests(): Promise<void> {
   log('INFO', '══════════════════════════════════════════════════════');
-  log('INFO', 'TEST SUITE — PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01');
+  log('INFO', 'TEST SUITE — PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01');
   log('INFO', '══════════════════════════════════════════════════════');
 
   // ── Guardrail unit tests ──────────────────────────────────────────────────
@@ -70,6 +78,116 @@ async function runTests(): Promise<void> {
   assert(decide(mkTask('notify')).decision  === 'blocked',           'notify → blocked');
   assert(decide(mkTask('unknown')).decision === 'blocked',           'unknown → blocked (safety rule)');
 
+  // ── PC-POLICY-01 tests ────────────────────────────────────────────────────
+
+  // P1: promote repo from approvalTypes → allowedTypes → decision changes
+  log('INFO', '\n[P1] repo: approvalTypes → promote → allowedTypes (decision=allowed)');
+  resetGuardrailPolicy();
+  const p1base = loadLivePolicy();
+  assert(p1base.approvalTypes.includes('repo' as SchedulerTask['type']), 'P1: repo starts in approvalTypes');
+  assert(!p1base.allowedTypes.includes('repo' as SchedulerTask['type']), 'P1: repo not in allowedTypes initially');
+
+  // Verify baseline: repo → approval_required
+  assert(decide(mkTask('repo'), p1base).decision === 'approval_required', 'P1: repo → approval_required at baseline');
+
+  const p1result = updateGuardrailPolicy({ promoteToAllowed: ['repo'] });
+  assert(p1result.ok,                    'P1: promote ok=true');
+  assert(p1result.errors.length === 0,   'P1: no errors on valid promote');
+
+  const p1live = loadLivePolicy();
+  assert(p1live.allowedTypes.includes('repo' as SchedulerTask['type']),  'P1: repo now in allowedTypes (persisted)');
+  assert(!p1live.approvalTypes.includes('repo' as SchedulerTask['type']), 'P1: repo removed from approvalTypes');
+
+  // With overnight=off: repo decision now=allowed
+  const p1dec = decide(mkTask('repo'), { ...p1live, overnightMode: false });
+  assert(p1dec.decision === 'allowed', 'P1: repo → allowed after promote (overnight=off)');
+
+  // P2: transform promoted → allowed (overnight=off)
+  log('INFO', '\n[P2] transform: approvalTypes → promote → allowedTypes');
+  resetGuardrailPolicy();
+  const p2result = updateGuardrailPolicy({ promoteToAllowed: ['transform'] });
+  assert(p2result.ok, 'P2: transform promote ok');
+  const p2live = loadLivePolicy();
+  assert(p2live.allowedTypes.includes('transform' as SchedulerTask['type']), 'P2: transform in allowedTypes');
+  const p2dec = decide(mkTask('transform'), { ...p2live, overnightMode: false });
+  assert(p2dec.decision === 'allowed', 'P2: transform → allowed after promote (overnight=off)');
+
+  // P3: deploy → promote rejected (immutable blocked)
+  log('INFO', '\n[P3] deploy: promote attempt rejected (immutable blocked)');
+  resetGuardrailPolicy();
+  const p3result = updateGuardrailPolicy({ promoteToAllowed: ['deploy'] });
+  assert(!p3result.ok,                   'P3: deploy promote ok=false');
+  assert(p3result.errors.length > 0,     'P3: errors list non-empty');
+  assert(p3result.errors[0].includes('immutable'), 'P3: error mentions immutable');
+  const p3live = loadLivePolicy();
+  assert(p3live.blockedTypes.includes('deploy' as SchedulerTask['type']), 'P3: deploy remains in blockedTypes');
+  assert(decide(mkTask('deploy'), p3live).decision === 'blocked', 'P3: deploy still → blocked');
+
+  // P4: notify → promote rejected (immutable blocked)
+  log('INFO', '\n[P4] notify: promote attempt rejected (immutable blocked)');
+  resetGuardrailPolicy();
+  const p4result = updateGuardrailPolicy({ promoteToAllowed: ['notify'] });
+  assert(!p4result.ok, 'P4: notify promote ok=false');
+  assert(decide(mkTask('notify'), loadLivePolicy()).decision === 'blocked', 'P4: notify still → blocked');
+
+  // P5: unknown type always blocked regardless of any policy
+  log('INFO', '\n[P5] unknown type always blocked (not in any policy list)');
+  resetGuardrailPolicy();
+  const p5result = updateGuardrailPolicy({ promoteToAllowed: ['mystery_xyz'] });
+  assert(!p5result.ok, 'P5: unknown type promote ok=false');
+  assert(decide(mkTask('mystery_xyz'), loadLivePolicy()).decision === 'blocked', 'P5: mystery_xyz → blocked');
+
+  // P6: demoteToApproval moves type from allowedTypes → approvalTypes
+  log('INFO', '\n[P6] eval: allowedTypes → demote → approvalTypes');
+  resetGuardrailPolicy();
+  const p6result = updateGuardrailPolicy({ demoteToApproval: ['eval'] });
+  assert(p6result.ok, 'P6: demote ok=true');
+  const p6live = loadLivePolicy();
+  assert(!p6live.allowedTypes.includes('eval' as SchedulerTask['type']),  'P6: eval removed from allowedTypes');
+  assert(p6live.approvalTypes.includes('eval' as SchedulerTask['type'],), 'P6: eval now in approvalTypes');
+  assert(decide(mkTask('eval'), p6live).decision === 'approval_required',  'P6: eval → approval_required after demote');
+
+  // P7: resetGuardrailPolicy restores baseline
+  log('INFO', '\n[P7] resetGuardrailPolicy restores baseline');
+  // Start from modified state (eval demoted)
+  const p7reset = resetGuardrailPolicy();
+  assert(p7reset.allowedTypes.includes('eval' as SchedulerTask['type']),  'P7: reset restores eval to allowedTypes');
+  assert(!p7reset.approvalTypes.includes('eval' as SchedulerTask['type']), 'P7: eval removed from approvalTypes on reset');
+  assert(p7reset.blockedTypes.includes('deploy' as SchedulerTask['type']), 'P7: deploy in blockedTypes after reset');
+  const p7live = loadLivePolicy();
+  assert(p7live.allowedTypes.includes('eval' as SchedulerTask['type']), 'P7: loadLivePolicy reflects reset (persisted)');
+
+  // P8: Integration — promote repo → scheduler executes it (attempts > 0, decision=allowed)
+  log('INFO', '\n[P8] Integration: promote repo → scheduler runs it (decision=allowed, attempts>0)');
+  resetGuardrailPolicy();
+  resetScheduler();
+  // promote repo
+  updateGuardrailPolicy({ promoteToAllowed: ['repo'] });
+  // turn off overnight so medium-risk doesn't re-escalate
+  setOvernightMode(false);
+
+  addTask('repo', { branch: 'main' }, 'p8-repo');
+  startScheduler(INTERVAL);
+
+  // Wait for: task attempted (decision=allowed means it was run, not awaiting_approval)
+  await waitFor(
+    () => {
+      const t = listTasks().find(x => x.id === 'p8-repo');
+      return !!t && (t.status === 'failed' || t.attempts > 0);
+    },
+    'p8-repo attempted or failed',
+    6000,
+  );
+  stopScheduler();
+
+  const p8task = listTasks().find(t => t.id === 'p8-repo')!;
+  assert(p8task.decision === 'allowed',       'P8: task stamped decision=allowed (guardrail passed)');
+  assert(p8task.attempts > 0,                 'P8: attempts > 0 (executor ran, not guardrail-blocked)');
+  assert(p8task.status !== 'awaiting_approval', 'P8: status is NOT awaiting_approval (promote worked)');
+
+  // Restore policy to baseline before other tests
+  resetGuardrailPolicy();
+
   // ── A1: repo task → awaiting_approval → approve → queued → done ──────────
   log('INFO', '\n[A1] repo → awaiting_approval → approve → queued → processed');
   resetScheduler();
@@ -91,18 +209,7 @@ async function runTests(): Promise<void> {
   assert(a1approved.status === 'queued',         'A1: approveTask returns status=queued');
   assert(a1approved.blockReason === undefined,   'A1: blockReason cleared after approval');
 
-  // Scheduler should now pick up and run.
-  // repo type: guardrail decision=approval_required, but we've manually re-queued it.
-  // On re-pick-up the guardrail fires again and returns awaiting_approval again — this is correct.
-  // (Approval per-cycle is the intended Phase 1 behaviour: each cycle requires re-approval
-  //  OR overnight mode off. Test this with overnightMode=false so it runs through.)
-  // Turn off overnight mode so the re-queued repo task can run.
-  // (Without overnight mode: medium risk stays approval_required in approvalTypes regardless.)
-  // Actually 'repo' is in approvalTypes — always approval_required regardless of overnight.
-  // So the proper test is: approving puts it back to queued, scheduler picks it up,
-  // guardrail fires again → awaiting_approval. That is the correct cycle.
-  // The task will never auto-execute (it's in approvalTypes) — this is CORRECT behaviour.
-  // Confirm: after approve → queued, then back to awaiting_approval on next pick-up.
+  // repo is in approvalTypes → will cycle back to awaiting_approval on next pick-up
   await waitFor(
     () => listTasks().find(t => t.id === 'a1-repo')?.status === 'awaiting_approval',
     'a1-repo back to awaiting_approval after re-pick-up',
@@ -249,9 +356,10 @@ async function runTests(): Promise<void> {
   assert(listTasks().find(t => t.id === 'r4')?.attempts === 1, 'R4: attempts=1');
 
   log('INFO', '\n══════════════════════════════════════════════════════');
-  log('INFO', 'ALL TESTS PASSED — PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01');
+  log('INFO', 'ALL TESTS PASSED — PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01');
   log('INFO', '══════════════════════════════════════════════════════');
   resetScheduler();
+  resetGuardrailPolicy();
 }
 
 runTests().catch(err => { console.error('[scheduler-test] fatal:', err); process.exit(1); });

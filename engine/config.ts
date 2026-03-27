@@ -43,6 +43,9 @@ export const SCHEDULER_CONFIG = {
   /** Persisted scheduler state file */
   stateFile: path.join(ROOT, 'engine', 'data', 'scheduler-state.json'),
 
+  /** Persisted guardrail policy file (runtime-editable) */
+  policyFile: path.join(ROOT, 'engine', 'data', 'guardrail-policy.json'),
+
   /** Safe task types the scheduler will execute (all others are blocked) */
   safeTypes: ['eval', 'data'] as const,
 } as const;

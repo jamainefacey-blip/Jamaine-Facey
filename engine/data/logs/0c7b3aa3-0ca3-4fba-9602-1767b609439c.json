@@ -1,0 +1,13 @@
+{
+  "runId": "0c7b3aa3-0ca3-4fba-9602-1767b609439c",
+  "taskId": "a2-transform",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T10:41:20.860Z",
+  "completedAt": "2026-03-27T10:41:20.860Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "claudeSummary": "APPROVAL: task a2-transform manually approved (awaiting_approval → queued)"
+}

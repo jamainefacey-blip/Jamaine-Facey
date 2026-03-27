@@ -1,0 +1,17 @@
+{
+  "allowedTypes": [
+    "eval",
+    "data"
+  ],
+  "approvalTypes": [
+    "write",
+    "repo",
+    "transform"
+  ],
+  "blockedTypes": [
+    "deploy",
+    "notify"
+  ],
+  "maxAttempts": 3,
+  "overnightMode": true
+}
