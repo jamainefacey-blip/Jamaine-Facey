@@ -1,0 +1,35 @@
+{
+  "task": "pc-control-01",
+  "completedAt": "2026-03-27T17:32:50.838Z",
+  "controlFile": "engine/data/auto-control.json",
+  "finalState": {
+    "mode": "CONTROLLED",
+    "fullAutoLocked": true,
+    "killSwitch": false,
+    "backlogLock": false,
+    "lanes": [
+      {
+        "lane": "VST",
+        "enabled": true
+      },
+      {
+        "lane": "FHI",
+        "enabled": true
+      },
+      {
+        "lane": "AI_LAB",
+        "enabled": true
+      },
+      {
+        "lane": "ADMIN",
+        "enabled": true
+      },
+      {
+        "lane": "BACKYARD",
+        "enabled": false
+      }
+    ]
+  },
+  "testsRun": 10,
+  "testsPassed": 10
+}
