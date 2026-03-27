@@ -97,13 +97,12 @@
         "branch": "claude/ai-lab-orchestrator-jI7p6",
         "task": "multi-lane-routing"
       },
-      "status": "awaiting_approval",
+      "status": "queued",
       "attempts": 0,
       "createdAt": "2026-03-27T11:01:46.687Z",
-      "updatedAt": "2026-03-27T11:01:48.194Z",
+      "updatedAt": "2026-03-27T11:33:52.551Z",
       "risk": "medium",
-      "decision": "approval_required",
-      "blockReason": "Type 'repo' requires explicit approval"
+      "decision": "approval_required"
     },
     {
       "id": "pc-workflow-01",
