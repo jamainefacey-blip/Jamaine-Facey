@@ -1,0 +1,14 @@
+{
+  "runId": "257a504e-aac8-40f9-aa53-62148fa0fec7",
+  "taskId": "task-t2-fail",
+  "lane": "BACKYARD",
+  "status": "failed",
+  "startedAt": "2026-03-27T09:36:40.789Z",
+  "completedAt": "2026-03-27T09:36:40.789Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Unsafe expression rejected: require(\"fs\").readFileSync(\"/etc/passwd\",\"utf8\")",
+  "claudeSummary": "FAIL: Unsafe expression rejected: require(\"fs\").readFileSync(\"/etc/passwd\",\"utf8\")"
+}

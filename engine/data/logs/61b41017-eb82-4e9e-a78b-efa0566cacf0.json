@@ -1,0 +1,13 @@
+{
+  "runId": "61b41017-eb82-4e9e-a78b-efa0566cacf0",
+  "taskId": "task-t1-b",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T09:36:39.882Z",
+  "completedAt": "2026-03-27T09:36:39.883Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"file\":\"status.json\",\"recordCount\":1}"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "idle",
+  "intervalMs": 30000,
+  "lastRunAt": null,
+  "lastRunDurationMs": null,
+  "lastError": null,
+  "totalRuns": 0,
+  "tasks": []
+}
