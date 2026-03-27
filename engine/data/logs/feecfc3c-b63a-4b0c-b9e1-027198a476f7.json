@@ -1,0 +1,13 @@
+{
+  "runId": "feecfc3c-b63a-4b0c-b9e1-027198a476f7",
+  "taskId": "r1-a",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T15:31:25.239Z",
+  "completedAt": "2026-03-27T15:31:25.240Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 2"
+}

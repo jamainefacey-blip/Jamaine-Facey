@@ -60,6 +60,9 @@
   .btn--reset    { background:transparent; color:var(--muted); border:1px solid var(--border); font-size:12px; }
   .btn--overnight{ background:transparent; color:var(--yellow); border:1px solid var(--yellow); font-size:12px; }
   .btn--approve  { background:rgba(62,207,142,.15); color:var(--green); border:1px solid rgba(62,207,142,.3); font-size:11px; padding:4px 10px; }
+  /* Prominent approve button — used on awaiting_approval rows */
+  .btn--approve-lg { background:var(--green); color:#0B0F19; border:none; font-size:13px; font-weight:700; padding:8px 18px; border-radius:var(--radius); min-width:110px; }
+  .btn--approve-lg:hover { opacity:.88; }
   .btn--promote  { background:rgba(62,207,142,.12); color:var(--green);  border:1px solid rgba(62,207,142,.3); font-size:11px; padding:3px 9px; }
   .btn--demote   { background:rgba(224,169,82,.12); color:var(--yellow); border:1px solid rgba(224,169,82,.3); font-size:11px; padding:3px 9px; }
   .btn--policy-reset { background:transparent; color:var(--muted); border:1px solid var(--border); font-size:12px; }
@@ -67,6 +70,7 @@
   @media(max-width:600px){
     button { min-height:44px; }
     .btn--approve { min-height:40px; padding:8px 14px; font-size:13px; }
+    .btn--approve-lg { width:100%; min-height:48px; font-size:15px; }
     .btn--promote, .btn--demote { min-height:38px; padding:7px 12px; font-size:12px; }
   }
   @media(max-width:480px){
@@ -93,17 +97,27 @@
   th { text-align:left; padding:6px 10px; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; }
   td { padding:7px 10px; border-bottom:1px solid rgba(30,45,66,.5); vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
+  /* Awaiting approval row — yellow left border highlight */
+  tr.tr--awaiting td:first-child { border-left:3px solid var(--yellow); }
+  @media(min-width:601px){
+    tr.tr--awaiting { background:rgba(224,169,82,.04); }
+    tr.tr--awaiting:hover { background:rgba(224,169,82,.08); }
+  }
   /* Mobile table → card-per-row layout */
   @media(max-width:600px){
     .table-wrap { background:transparent; border:none; border-radius:0; overflow:visible; }
     table thead { display:none; }
     table tbody tr { display:block; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; overflow:hidden; }
+    table tbody tr.tr--awaiting { border-color:rgba(224,169,82,.5); border-left:3px solid var(--yellow); }
     table tbody tr:last-child { margin-bottom:0; }
     table td { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid rgba(30,45,66,.3); font-size:13px; }
     table td:last-child { border-bottom:none; }
     table td::before { content:attr(data-label); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); flex-shrink:0; margin-right:12px; }
     table td.empty { display:table-cell; text-align:center; }
     table td.empty::before { display:none; }
+    /* Action cell first on mobile for awaiting tasks */
+    table tbody tr.tr--awaiting td[data-label="Action"] { order:-1; border-bottom:2px solid rgba(224,169,82,.3); background:rgba(224,169,82,.05); padding:12px; }
+    table tbody tr.tr--awaiting td[data-label="Action"]::before { display:none; }
     .truncate { max-width:160px; }
   }
 
@@ -518,17 +532,29 @@ function renderQueue(tasks) {
     tbody.innerHTML = '<tr><td colspan="9" class="empty">No tasks in queue</td></tr>';
     return;
   }
+
+  // Inline approval count label
+  const awaitingIds = tasks.filter(t => t.status === 'awaiting_approval').map(t => t.id);
+  const queueTitle  = document.getElementById('queue-table');
+  if (queueTitle) {
+    queueTitle.innerHTML = awaitingIds.length
+      ? `Task Queue <span style="color:var(--yellow);font-size:11px;font-weight:700;margin-left:8px">⏳ ${awaitingIds.length} awaiting approval</span>`
+      : 'Task Queue';
+  }
+
   tbody.innerHTML = tasks.map(t => {
+    const isAwaiting = t.status === 'awaiting_approval';
     const riskLabel  = t.risk     ?? '—';
     const decCls     = t.decision ?? 'blocked';
     const decLabel   = t.decision ?? '—';
     const detail     = t.result != null
       ? JSON.stringify(t.result)
       : (t.blockReason ? `⚠ ${t.blockReason}` : (t.lastError ? `⚠ ${t.lastError}` : '—'));
-    const action     = t.status === 'awaiting_approval'
-      ? `<button class="btn--approve" onclick="apiApprove('${t.id}')">Approve</button>`
+    const action     = isAwaiting
+      ? `<button class="btn--approve-lg" onclick="apiApprove('${t.id}')">✓ Approve</button>`
       : '—';
-    return `<tr>
+    const rowCls = isAwaiting ? ' class="tr--awaiting"' : '';
+    return `<tr${rowCls}>
       <td data-label="ID"       class="mono">${t.id}</td>
       <td data-label="Type"     >${t.type}${t.lane && t.lane !== 'BACKYARD' ? ` <span style="font-size:10px;color:var(--muted)">${t.lane}</span>` : ''}</td>
       <td data-label="Risk"     >${pill('risk-'+riskLabel, riskLabel)}</td>

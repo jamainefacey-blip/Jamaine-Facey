@@ -91,3 +91,13 @@
 [2026-03-27T15:08:02.386Z] policy-update 0cd4730d: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true
 [2026-03-27T15:08:02.388Z] policy-update 06919733: allowedTypes: [eval,data] → [eval,data,write], approvalTypes: [write,repo,transform] → [repo,transform], overnightMode: true → true
 [2026-03-27T15:08:02.955Z] policy-update 223650a7: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true
+[2026-03-27T15:31:15.518Z] policy-update 4f13bc34: allowedTypes: [eval,data] → [eval,data,transform], approvalTypes: [write,repo,transform] → [write,repo], overnightMode: true → true
+[2026-03-27T15:31:23.769Z] policy-update e64b31c8: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true
+[2026-03-27T15:31:23.769Z] policy-update 4d185e31: allowedTypes: [eval,data] → [eval,data,transform], approvalTypes: [write,repo,transform] → [write,repo], overnightMode: true → true
+[2026-03-27T15:31:23.770Z] policy-update 6e9b3fbb: allowedTypes: [eval,data] → [eval,data], approvalTypes: [write,repo,transform] → [write,repo,transform], overnightMode: true → true | ERRORS: REJECTED: 'deploy' is in the immutable blocked list and cannot be promoted
+[2026-03-27T15:31:23.771Z] policy-update 2503a07b: allowedTypes: [eval,data] → [eval,data], approvalTypes: [write,repo,transform] → [write,repo,transform], overnightMode: true → true | ERRORS: REJECTED: 'notify' is in the immutable blocked list and cannot be promoted
+[2026-03-27T15:31:23.771Z] policy-update dbd7bf36: allowedTypes: [eval,data] → [eval,data], approvalTypes: [write,repo,transform] → [write,repo,transform], overnightMode: true → true | ERRORS: REJECTED: 'mystery_xyz' is not in approvalTypes — nothing to promote
+[2026-03-27T15:31:23.771Z] policy-update ead8cf3a: allowedTypes: [eval,data] → [data], approvalTypes: [write,repo,transform] → [write,repo,transform,eval], overnightMode: true → true
+[2026-03-27T15:31:23.772Z] policy-update a3b87fdc: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true
+[2026-03-27T15:31:23.775Z] policy-update ebac29c2: allowedTypes: [eval,data] → [eval,data,write], approvalTypes: [write,repo,transform] → [repo,transform], overnightMode: true → true
+[2026-03-27T15:31:24.343Z] policy-update ad4d24d2: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true

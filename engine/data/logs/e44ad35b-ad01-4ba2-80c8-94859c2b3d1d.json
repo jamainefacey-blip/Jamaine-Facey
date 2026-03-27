@@ -1,0 +1,13 @@
+{
+  "runId": "e44ad35b-ad01-4ba2-80c8-94859c2b3d1d",
+  "taskId": "w1-valid",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T15:31:23.775Z",
+  "completedAt": "2026-03-27T15:31:23.776Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "write task result: {\"file\":\"test-write-output.json\",\"written\":true,\"bytes\":34}"
+}

@@ -1,0 +1,13 @@
+{
+  "runId": "8eb4981e-42e8-486d-a5f7-ba25a5d4ca3e",
+  "taskId": "p8-repo",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T15:31:23.773Z",
+  "completedAt": "2026-03-27T15:31:23.774Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "repo task result: {\"branch\":\"claude/ai-lab-orchestrator-jI7p6\",\"lastCommitMessage\":\"queue-pack-4: register UI visibility layer\",\"head\":\"ref: refs/heads/claude/ai-lab-orchestrator-jI7p6\"}"
+}
