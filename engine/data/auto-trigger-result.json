@@ -1,0 +1,23 @@
+{
+  "task": "pc-auto-01",
+  "completedAt": "2026-03-27T17:38:46.151Z",
+  "outcome": "QUEUED",
+  "controlMode": "CONTROLLED",
+  "selectedItem": {
+    "id": "bl-ai-001",
+    "name": "Scheduler Health Dashboard Panel",
+    "lane": "AI_LAB",
+    "priority": 9.1,
+    "source": "internal"
+  },
+  "preBuildVerdict": "READY_FOR_GATE",
+  "preBuildFlags": 0,
+  "generatedProgramId": "gen-1774633126149-d827",
+  "queuedTaskCount": 2,
+  "queuedTaskIds": [
+    "auto-bl-ai-001-step-1-6f236f",
+    "auto-bl-ai-001-step-2-c54944"
+  ],
+  "testsRun": 10,
+  "testsPassed": 10
+}

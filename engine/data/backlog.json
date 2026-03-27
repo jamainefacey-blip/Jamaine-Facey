@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T00:00:00.000Z",
+  "description": "Pain Engine backlog — structured idea store",
+  "items": [
+    {
+      "id": "bl-ai-001",
+      "name": "Scheduler Health Dashboard Panel",
+      "lane": "AI_LAB",
+      "description": "Add a real-time health panel to scheduler-ui.html showing queue depth, failure rate, avg task duration, and overnight mode status.",
+      "monetisationType": "internal_tooling",
+      "priorityScore": 9.1,
+      "complexity": "medium",
+      "status": "building",
+      "source": "internal",
+      "createdAt": "2026-03-27T00:00:00.000Z",
+      "updatedAt": "2026-03-27T17:38:46.150Z"
+    },
+    {
+      "id": "bl-vst-001",
+      "name": "VST Hero Section — Booking CTA + Destination Carousel",
+      "lane": "VST",
+      "description": "Build hero section with primary booking CTA button, destination image carousel, and trust signals. Gate-ready asset.",
+      "monetisationType": "direct_revenue",
+      "priorityScore": 8.9,
+      "complexity": "medium",
+      "status": "blueprint",
+      "source": "internal",
+      "createdAt": "2026-03-27T00:00:00.000Z",
+      "updatedAt": "2026-03-27T00:00:00.000Z"
+    },
+    {
+      "id": "bl-fhi-001",
+      "name": "FHI Fraud Report Submission Form",
+      "lane": "FHI",
+      "description": "Accessible multi-step fraud report form. Compliant, mobile-first, validates on submit. Required for FHI v1 launch.",
+      "monetisationType": "grant_eligible",
+      "priorityScore": 8.5,
+      "complexity": "high",
+      "status": "ready_to_build",
+      "source": "internal",
+      "createdAt": "2026-03-27T00:00:00.000Z",
+      "updatedAt": "2026-03-27T00:00:00.000Z"
+    },
+    {
+      "id": "bl-ai-002",
+      "name": "Pre-Gate Audit UI Panel",
+      "lane": "AI_LAB",
+      "description": "Surface pre-gate audit results directly in scheduler-ui.html — verdict badge, flag list, dimension floor breaches.",
+      "monetisationType": "internal_tooling",
+      "priorityScore": 7.8,
+      "complexity": "low",
+      "status": "blueprint",
+      "source": "signal",
+      "createdAt": "2026-03-27T00:00:00.000Z",
+      "updatedAt": "2026-03-27T00:00:00.000Z"
+    },
+    {
+      "id": "bl-vst-002",
+      "name": "VST Pricing Plans Page",
+      "lane": "VST",
+      "description": "White-label pricing page with 3-tier plan cards, comparison table, and Stripe-ready CTAs.",
+      "monetisationType": "subscription_revenue",
+      "priorityScore": 9.4,
+      "complexity": "medium",
+      "status": "blueprint",
+      "source": "internal",
+      "createdAt": "2026-03-27T00:00:00.000Z",
+      "updatedAt": "2026-03-27T00:00:00.000Z"
+    },
+    {
+      "id": "bl-back-001",
+      "name": "Experimental Dark Mode Theme",
+      "lane": "BACKYARD",
+      "description": "Prototype dark mode CSS variables for scheduler UI. Not production-ready.",
+      "monetisationType": "none",
+      "priorityScore": 3.2,
+      "complexity": "low",
+      "status": "blueprint",
+      "source": "internal",
+      "createdAt": "2026-03-27T00:00:00.000Z",
+      "updatedAt": "2026-03-27T00:00:00.000Z"
+    }
+  ]
+}

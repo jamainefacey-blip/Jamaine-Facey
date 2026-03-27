@@ -1,0 +1,40 @@
+{
+  "programId": "gen-1774633126149-d827",
+  "instruction": "Add a real-time health panel to scheduler-ui.html showing queue depth, failure rate, avg task duration, and overnight mode status.",
+  "lane": "AI_LAB",
+  "intent": "data_read",
+  "generatedAt": "2026-03-27T17:38:46.149Z",
+  "steps": [
+    {
+      "type": "data",
+      "lane": "AI_LAB",
+      "description": "Read target data",
+      "payload": {
+        "task": "data-read"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-1-6f236f",
+      "order": 1
+    },
+    {
+      "type": "eval",
+      "lane": "AI_LAB",
+      "description": "Evaluate / summarise result",
+      "payload": {
+        "task": "eval-result"
+      },
+      "risk": "low",
+      "requiresApproval": false,
+      "stepId": "step-2-c54944",
+      "order": 2,
+      "dependsOn": [
+        "step-1"
+      ]
+    }
+  ],
+  "totalSteps": 2,
+  "estimatedRisk": "low",
+  "requiresFounderApproval": false,
+  "warnings": []
+}
