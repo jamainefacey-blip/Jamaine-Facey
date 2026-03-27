@@ -10,6 +10,7 @@
 //   POST /guardrail/overnight → toggle overnight mode (body: { enabled: boolean })
 //   GET  /queue               → list all tasks
 //   POST /queue/add           → enqueue a new task (body: { type, payload, id? })
+//   POST /queue/approve/:id   → approve an awaiting_approval task → queued
 //   POST /queue/reset         → reset all state (testing only)
 
 import http from 'http';
@@ -23,6 +24,7 @@ import {
   resetScheduler,
   setOvernightMode,
   getGuardrailPolicy,
+  approveTask,
 } from './scheduler';
 import { log } from './logger';
 import type { SchedulerTask } from './types';
@@ -132,6 +134,21 @@ const server = http.createServer(async (req, res) => {
       // Accept any string type — guardrail will decide at pick-up
       const task = addTask(body.type as SchedulerTask['type'], body.payload ?? {}, body.id);
       return json(res, 201, { ok: true, task });
+    }
+
+    // ── POST /queue/approve/:id ───────────────────────────────────────────────
+    // Only tasks with status=awaiting_approval may be approved.
+    // Blocked/failed tasks are rejected with 409.
+    const approveMatch = url.match(/^\/queue\/approve\/([^/]+)$/);
+    if (method === 'POST' && approveMatch) {
+      const taskId = decodeURIComponent(approveMatch[1]);
+      try {
+        const task = approveTask(taskId);
+        return json(res, 200, { ok: true, task });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return json(res, 409, { error: msg });
+      }
     }
 
     // ── POST /queue/reset ────────────────────────────────────────────────────

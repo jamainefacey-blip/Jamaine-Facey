@@ -308,3 +308,58 @@ export function getGuardrailPolicy() {
   const state = loadState();
   return { ...GUARDRAIL_POLICY, overnightMode: state.overnightMode };
 }
+
+/**
+ * Approve a task that is in awaiting_approval status.
+ * Returns the updated task, or throws if the task cannot be approved.
+ *
+ * Safety:
+ *   - Only awaiting_approval tasks may be approved.
+ *   - failed/blocked tasks are NOT revivable via this action.
+ *   - Approval resets status to 'queued' and clears blockReason.
+ *   - decision and risk are preserved (scheduler will re-evaluate on next pick-up).
+ */
+export function approveTask(taskId: string): SchedulerTask {
+  const state = loadState();
+  const task = state.tasks.find(t => t.id === taskId);
+
+  if (!task) {
+    throw new Error(`Task not found: ${taskId}`);
+  }
+
+  if (task.status !== 'awaiting_approval') {
+    throw new Error(
+      `Cannot approve task ${taskId}: status is '${task.status}' (only awaiting_approval tasks may be approved)`
+    );
+  }
+
+  const prevStatus = task.status;
+  const approvedAt = new Date().toISOString();
+
+  task.status      = 'queued';
+  task.blockReason = undefined;
+  task.updatedAt   = approvedAt;
+
+  saveState(state);
+
+  log('INFO', `Approval: task ${taskId} approved — ${prevStatus} → queued at ${approvedAt}`);
+
+  // Write approval log entry (reuse engine run-log format)
+  const runLog = {
+    runId:            randomUUID(),
+    taskId,
+    lane:             'BACKYARD' as const,
+    status:           'pending' as const,
+    startedAt:        approvedAt,
+    completedAt:      approvedAt,
+    durationMs:       0,
+    filesChanged:     [] as string[],
+    validationPassed: false,
+    deployed:         false,
+    error:            undefined as string | undefined,
+    claudeSummary:    `APPROVAL: task ${taskId} manually approved (${prevStatus} → queued)`,
+  };
+  writeRunLog(runLog);
+
+  return task;
+}

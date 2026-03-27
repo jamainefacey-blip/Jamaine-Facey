@@ -53,6 +53,7 @@
   .btn--add      { background:transparent; color:var(--text); border:1px solid var(--border); }
   .btn--reset    { background:transparent; color:var(--muted); border:1px solid var(--border); font-size:12px; }
   .btn--overnight{ background:transparent; color:var(--yellow); border:1px solid var(--yellow); font-size:12px; }
+  .btn--approve  { background:rgba(62,207,142,.15); color:var(--green); border:1px solid rgba(62,207,142,.3); font-size:11px; padding:4px 10px; }
 
   /* Table */
   .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:10px; }
@@ -182,10 +183,11 @@
         <th>Attempts</th>
         <th>Result / Block Reason</th>
         <th>Updated</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody id="queue-body">
-      <tr><td colspan="8" class="empty">No tasks</td></tr>
+      <tr><td colspan="9" class="empty">No tasks</td></tr>
     </tbody>
   </table>
 </div>
@@ -228,6 +230,14 @@ async function apiFetch(path, opts={}) {
 async function apiStart()    { await apiFetch('/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}); await refresh(); }
 async function apiStop()     { await apiFetch('/stop',{method:'POST'}); await refresh(); }
 async function apiReset()    { if(!confirm('Reset all state?')) return; await apiFetch('/queue/reset',{method:'POST'}); await refresh(); }
+
+async function apiApprove(taskId) {
+  try {
+    await apiFetch(`/queue/approve/${encodeURIComponent(taskId)}`, { method: 'POST' });
+    setError(null);
+    await refresh();
+  } catch(e) { setError(`Approve failed: ${e.message}`); }
+}
 
 async function toggleOvernight() {
   const cur = cache('overnight') ?? true;
@@ -277,18 +287,19 @@ function renderStatus(s) {
 function renderQueue(tasks) {
   const tbody = document.getElementById('queue-body');
   if (!tasks || tasks.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">No tasks in queue</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">No tasks in queue</td></tr>';
     return;
   }
   tbody.innerHTML = tasks.map(t => {
-    const riskCls    = t.risk     ? `risk-${t.risk}` : 'risk-low';
     const riskLabel  = t.risk     ?? '—';
     const decCls     = t.decision ?? 'blocked';
     const decLabel   = t.decision ?? '—';
-    const statusCls  = t.status.replace(/_/g,'-');  // awaiting_approval → awaiting-approval for CSS fallback
     const detail     = t.result != null
       ? JSON.stringify(t.result)
       : (t.blockReason ? `⚠ ${t.blockReason}` : (t.lastError ? `⚠ ${t.lastError}` : '—'));
+    const action     = t.status === 'awaiting_approval'
+      ? `<button class="btn--approve" onclick="apiApprove('${t.id}')">Approve</button>`
+      : '—';
     return `<tr>
       <td class="mono">${t.id}</td>
       <td>${t.type}</td>
@@ -298,6 +309,7 @@ function renderQueue(tasks) {
       <td>${t.attempts}</td>
       <td class="mono truncate" title="${detail}">${detail}</td>
       <td class="mono">${fmtTime(t.updatedAt)}</td>
+      <td>${action}</td>
     </tr>`;
   }).join('');
 }
