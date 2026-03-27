@@ -1,0 +1,54 @@
+{
+  "releaseId": "rel-1774628666953-9fqi",
+  "programId": "gen-1774628397639-3637",
+  "instruction": "audit AI Lab scheduler gate results and flag any dimension below floor",
+  "lane": "AI_LAB",
+  "intent": "gate_eval",
+  "releasedAt": "2026-03-27T16:24:26.958Z",
+  "state": "COMPLETE",
+  "stepsExecuted": 4,
+  "stepsTotal": 4,
+  "stepRecords": [
+    {
+      "stepId": "step-1-495924",
+      "order": 1,
+      "type": "data",
+      "description": "Load gate config and asset",
+      "status": "executed",
+      "note": "data step executed — payload.task=load-gate-input"
+    },
+    {
+      "stepId": "step-2-1447ec",
+      "order": 2,
+      "type": "eval",
+      "description": "Run pre-gate audit",
+      "status": "executed",
+      "note": "eval step executed — payload.task=pre-gate-audit"
+    },
+    {
+      "stepId": "step-3-5ad03e",
+      "order": 3,
+      "type": "transform",
+      "description": "Execute Pain Gate evaluation",
+      "status": "executed",
+      "note": "transform step executed under controlled release — approval granted"
+    },
+    {
+      "stepId": "step-4-1ab675",
+      "order": 4,
+      "type": "write",
+      "description": "Persist gate result",
+      "status": "executed",
+      "note": "write step executed under controlled release — approval granted"
+    }
+  ],
+  "preGateVerdict": "READY_FOR_GATE",
+  "preGateFlags": 2,
+  "preGateBlockers": 0,
+  "gateScore": 95,
+  "gateStatus": "pass",
+  "gateResultId": "2dc78b2c-5b54-4cb1-adfd-c57eaba38729",
+  "founderReviewReady": true,
+  "blockerReason": null,
+  "warnings": []
+}

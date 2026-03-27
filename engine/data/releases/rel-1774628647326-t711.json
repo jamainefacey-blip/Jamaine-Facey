@@ -1,0 +1,70 @@
+{
+  "releaseId": "rel-1774628647326-t711",
+  "programId": "gen-1774628397638-0feb",
+  "instruction": "build VST feature — hero section with booking CTA and destination carousel",
+  "lane": "VST",
+  "intent": "build_feature",
+  "releasedAt": "2026-03-27T16:24:07.328Z",
+  "state": "BLOCKED",
+  "stepsExecuted": 6,
+  "stepsTotal": 6,
+  "stepRecords": [
+    {
+      "stepId": "step-1-f22561",
+      "order": 1,
+      "type": "data",
+      "description": "Read current state / existing asset",
+      "status": "executed",
+      "note": "data step executed — payload.task=pre-build-read"
+    },
+    {
+      "stepId": "step-2-39a4ff",
+      "order": 2,
+      "type": "eval",
+      "description": "Evaluate pre-gate readiness baseline",
+      "status": "executed",
+      "note": "eval step executed — payload.task=pre-gate-eval"
+    },
+    {
+      "stepId": "step-3-b32ecc",
+      "order": 3,
+      "type": "transform",
+      "description": "Build feature implementation",
+      "status": "executed",
+      "note": "transform step executed under controlled release — approval granted"
+    },
+    {
+      "stepId": "step-4-690cab",
+      "order": 4,
+      "type": "eval",
+      "description": "Run pre-gate audit on built asset",
+      "status": "executed",
+      "note": "eval step executed — payload.task=pre-gate-audit"
+    },
+    {
+      "stepId": "step-5-75a0d8",
+      "order": 5,
+      "type": "transform",
+      "description": "Gate evaluation — score & verdict",
+      "status": "executed",
+      "note": "transform step executed under controlled release — approval granted"
+    },
+    {
+      "stepId": "step-6-3528af",
+      "order": 6,
+      "type": "write",
+      "description": "Persist gate result and audit trail",
+      "status": "executed",
+      "note": "write step executed under controlled release — approval granted"
+    }
+  ],
+  "preGateVerdict": "BLOCKED",
+  "preGateFlags": 3,
+  "preGateBlockers": 2,
+  "gateScore": null,
+  "gateStatus": null,
+  "gateResultId": null,
+  "founderReviewReady": false,
+  "blockerReason": "Pre-gate BLOCKED: VST asset missing CTA — monetisation path required before gate; Lane VST requires CTA — not found",
+  "warnings": []
+}

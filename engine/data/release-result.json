@@ -1,0 +1,18 @@
+{
+  "task": "pc-release-01",
+  "completedAt": "2026-03-27T16:24:26.959Z",
+  "programId": "gen-1774628397639-3637",
+  "instruction": "audit AI Lab scheduler gate results and flag any dimension below floor",
+  "lane": "AI_LAB",
+  "intent": "gate_eval",
+  "state": "COMPLETE",
+  "gateScore": 95,
+  "gateStatus": "pass",
+  "founderReviewReady": true,
+  "releaseId": "rel-1774628666953-9fqi",
+  "releaseFile": "engine/data/releases/rel-1774628666953-9fqi.json",
+  "stepsExecuted": 4,
+  "stepsTotal": 4,
+  "preGateVerdict": "READY_FOR_GATE",
+  "warnings": []
+}
