@@ -1,47 +1,47 @@
 {
-  "id": "0629ea48-1b66-4a60-9eaf-a55e612b665a",
-  "taskId": "gate-test-build-fail",
+  "id": "8b76aa0b-0c92-4f07-95a6-bd6f704a800e",
+  "taskId": "gate-test-no-proof",
   "lane": "AI_LAB",
-  "assetType": "api",
-  "evaluatedAt": "2026-03-27T17:52:16.903Z",
+  "assetType": "ui",
+  "evaluatedAt": "2026-03-27T17:52:16.898Z",
   "overallStatus": "fail",
   "founderReviewReady": false,
-  "score": 64,
+  "score": 59,
   "hardBlockers": [
-    "BUILD_FAILED"
+    "NO_PREVIEW_PROOF"
   ],
   "dimensions": {
     "BUILD_HEALTH": {
       "dimension": "BUILD_HEALTH",
-      "score": 0,
-      "status": "fail",
-      "findings": [
-        "Task reported buildStatus=fail"
-      ],
-      "hardBlocker": "BUILD_FAILED"
-    },
-    "PREVIEW_PROOF": {
-      "dimension": "PREVIEW_PROOF",
       "score": 100,
       "status": "pass",
       "findings": [
-        "Proof provided: none — build failed"
+        "Task completed successfully"
       ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 0,
+      "status": "fail",
+      "findings": [
+        "No preview proof attached — screenshot, URL, or render evidence required"
+      ],
+      "hardBlocker": "NO_PREVIEW_PROOF"
     },
     "UX_VISUAL": {
       "dimension": "UX_VISUAL",
-      "score": 90,
-      "status": "pass",
+      "score": 60,
+      "status": "warn",
       "findings": [
-        "Asset type 'api' — UX/visual check not applicable"
+        "No content provided — cannot evaluate UX quality"
       ]
     },
     "MONETISATION": {
       "dimension": "MONETISATION",
-      "score": 90,
-      "status": "pass",
+      "score": 50,
+      "status": "warn",
       "findings": [
-        "Asset type 'api' — monetisation path check not applicable"
+        "No content — cannot verify monetisation path present"
       ]
     },
     "COPY_QUALITY": {
@@ -62,10 +62,10 @@
     },
     "SEO": {
       "dimension": "SEO",
-      "score": 90,
-      "status": "pass",
+      "score": 50,
+      "status": "warn",
       "findings": [
-        "Asset type 'api' — SEO check not applicable"
+        "No content — cannot evaluate SEO readiness"
       ]
     },
     "COMPLIANCE_SAFETY": {
@@ -78,22 +78,22 @@
     },
     "RERUN_RISK": {
       "dimension": "RERUN_RISK",
-      "score": 30,
-      "status": "fail",
+      "score": 80,
+      "status": "pass",
       "findings": [
-        "Build health is low — high rerun risk",
-        "1 fail(s) + 2 warn(s) — moderate rerun risk"
+        "1 fail(s) + 5 warn(s) — moderate rerun risk"
       ]
     }
   },
   "requiredFixes": [
-    "HARD BLOCKERS: BUILD_FAILED — must resolve before founder review",
-    "[BUILD_HEALTH] Task reported buildStatus=fail",
-    "[RERUN_RISK] Build health is low — high rerun risk",
-    "[RERUN_RISK] 1 fail(s) + 2 warn(s) — moderate rerun risk"
+    "HARD BLOCKERS: NO_PREVIEW_PROOF — must resolve before founder review",
+    "[PREVIEW_PROOF] No preview proof attached — screenshot, URL, or render evidence required"
   ],
   "warnings": [
+    "[UX_VISUAL] No content provided — cannot evaluate UX quality",
+    "[MONETISATION] No content — cannot verify monetisation path present",
     "[COPY_QUALITY] No content provided — cannot evaluate copy quality",
-    "[ACCESSIBILITY] No content — accessibility check skipped"
+    "[ACCESSIBILITY] No content — accessibility check skipped",
+    "[SEO] No content — cannot evaluate SEO readiness"
   ]
 }

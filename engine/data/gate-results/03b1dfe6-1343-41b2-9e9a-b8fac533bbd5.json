@@ -1,0 +1,89 @@
+{
+  "id": "03b1dfe6-1343-41b2-9e9a-b8fac533bbd5",
+  "taskId": "gate-test-no-cta",
+  "lane": "VST",
+  "assetType": "ui",
+  "evaluatedAt": "2026-03-27T17:52:16.901Z",
+  "overallStatus": "pass",
+  "founderReviewReady": true,
+  "score": 86,
+  "hardBlockers": [],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Task completed successfully"
+      ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Proof provided: http://localhost:3000/vst"
+      ]
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 80,
+      "status": "pass",
+      "findings": [
+        "Content very short for a UI asset — may be stub/incomplete"
+      ]
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 20,
+      "status": "fail",
+      "findings": [
+        "VST lane: no CTA or pricing language detected — monetisation path missing"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 75,
+      "status": "pass",
+      "findings": [
+        "Very thin copy (12 words) — content may be incomplete"
+      ]
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Accessibility structure check passed"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Missing <meta name=\"viewport\"> — mobile SEO signal absent"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 80,
+      "status": "pass",
+      "findings": [
+        "1 fail(s) + 0 warn(s) — moderate rerun risk"
+      ]
+    }
+  },
+  "requiredFixes": [
+    "[MONETISATION] VST lane: no CTA or pricing language detected — monetisation path missing"
+  ],
+  "warnings": []
+}
