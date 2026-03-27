@@ -1,0 +1,13 @@
+{
+  "runId": "fff13830-8bbc-49a1-803b-9aee9fcc3ef7",
+  "taskId": "p8-repo",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T13:23:34.394Z",
+  "completedAt": "2026-03-27T13:23:34.395Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "repo task result: {\"branch\":\"claude/ai-lab-orchestrator-jI7p6\",\"lastCommitMessage\":\"nap-run: pc-persist-01 complete + queue pack 2 registered\",\"head\":\"ref: refs/heads/claude/ai-lab-orchestrator-jI7p6\"}"
+}

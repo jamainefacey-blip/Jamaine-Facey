@@ -1,0 +1,13 @@
+{
+  "runId": "9bfe1903-6ec5-4a59-b74c-95d3a6c4e9d3",
+  "taskId": "w2-noprefix",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T13:23:34.397Z",
+  "completedAt": "2026-03-27T13:23:34.398Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "write task result: {\"file\":\"test-write2.json\",\"written\":true,\"bytes\":18}"
+}

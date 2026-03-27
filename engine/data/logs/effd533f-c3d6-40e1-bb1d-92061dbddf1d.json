@@ -1,0 +1,13 @@
+{
+  "runId": "effd533f-c3d6-40e1-bb1d-92061dbddf1d",
+  "taskId": "pc-audit-01",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T13:23:21.855Z",
+  "completedAt": "2026-03-27T13:23:21.855Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "claudeSummary": "APPROVAL: task pc-audit-01 manually approved (awaiting_approval → queued)"
+}
