@@ -1,0 +1,14 @@
+{
+  "runId": "9dbe299d-6d8e-4cf4-9253-6809ef801c9d",
+  "taskId": "r2-fail",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T17:52:16.332Z",
+  "completedAt": "2026-03-27T17:52:16.332Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Unsafe expression rejected: process.exit(1)",
+  "claudeSummary": "FAIL: Unsafe expression rejected: process.exit(1)"
+}
