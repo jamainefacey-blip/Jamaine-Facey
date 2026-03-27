@@ -1,10 +1,85 @@
 {
   "status": "idle",
-  "intervalMs": 30000,
-  "lastRunAt": null,
-  "lastRunDurationMs": null,
+  "intervalMs": 200,
+  "lastRunAt": "2026-03-27T14:22:41.829Z",
+  "lastRunDurationMs": 0,
   "lastError": null,
-  "totalRuns": 0,
-  "tasks": [],
-  "overnightMode": true
+  "totalRuns": 3,
+  "tasks": [
+    {
+      "id": "pc-ava-ops-02",
+      "type": "data",
+      "payload": {
+        "file": "audit-result.json",
+        "task": "ava-operator-mode-upgrade",
+        "notes": "Ava operator mode — morning brief, system summary, what-happened recap, priority ranking of tasks. Reads latest audit result as briefing source."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T14:22:41.223Z",
+      "updatedAt": "2026-03-27T14:22:41.227Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "audit-result.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-preview-02",
+      "type": "data",
+      "payload": {
+        "file": "gate-latest.json",
+        "task": "preview-system-upgrade",
+        "notes": "Preview system upgrade — attach preview URL or render reference to tasks, snapshot tracking (before/after), gate preview-proof auto-linking. Reads gate-latest as proof registry source."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T14:22:41.223Z",
+      "updatedAt": "2026-03-27T14:22:41.530Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "gate-latest.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-progress-02",
+      "type": "eval",
+      "payload": {
+        "expression": "(9 + 4 + 4)",
+        "task": "progress-system-upgrade",
+        "notes": "Progress system upgrade — % completion per pack, per-task progress indicators, stage tracking (build/test/gate/done). Evaluates cumulative registered task count across all 3 packs."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T14:22:41.224Z",
+      "updatedAt": "2026-03-27T14:22:41.829Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": 17
+    },
+    {
+      "id": "pc-audit-02",
+      "type": "transform",
+      "payload": {
+        "input": "engine/data/gate-latest.json",
+        "task": "audit-system-upgrade",
+        "notes": "Audit system upgrade — detect missing layers (SEO, monetisation, UX), compare against expected system standard, flag deficiencies before gate runs. Transforms gate-latest as audit source."
+      },
+      "status": "awaiting_approval",
+      "attempts": 0,
+      "createdAt": "2026-03-27T14:22:41.224Z",
+      "updatedAt": "2026-03-27T14:22:41.834Z",
+      "lane": "AI_LAB",
+      "risk": "medium",
+      "decision": "approval_required",
+      "blockReason": "Type 'transform' requires explicit approval"
+    }
+  ],
+  "overnightMode": false
 }
