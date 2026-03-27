@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-03-27T00:00:00.000Z",
-  "description": "Pain Engine security log — suspicious pattern detection, override attempts, and data classification events.",
+  "description": "Pain Engine security log \u2014 suspicious pattern detection, override attempts, and data classification events.",
   "rotationPolicy": {
     "maxEntries": 500,
     "rotateAfterDays": 30,
@@ -18,19 +18,19 @@
   "logTypes": {
     "SUSPICIOUS_PATTERN": "Input matched a known injection or override pattern",
     "OVERRIDE_ATTEMPT": "Input attempted to override canon, guardrail, or governance",
-    "SECRET_DETECTED": "Credential or secret pattern found in input — redacted, not logged",
+    "SECRET_DETECTED": "Credential or secret pattern found in input \u2014 redacted, not logged",
     "DATA_CLASSIFIED": "Data received and classified (public/internal/sensitive/secret)",
-    "POLICY_CHANGE": "Guardrail policy was modified — who, what, when",
+    "POLICY_CHANGE": "Guardrail policy was modified \u2014 who, what, when",
     "KILL_SWITCH_EVENT": "Kill switch activated or deactivated",
     "LANE_DISABLE_EVENT": "Lane enabled or disabled via auto-control",
     "BACKLOG_LOCK_EVENT": "Backlog lock activated or deactivated",
     "CANON_ACCESS": "Canon vault read or write attempt"
   },
   "dataClassificationLevels": {
-    "public": "Safe for external exposure — no restrictions",
-    "internal": "Internal Pain System use only — not for client or public output",
-    "sensitive": "Contains PII or commercially sensitive data — access restricted",
-    "secret": "Credentials, API keys, private keys — never logged, never exposed"
+    "public": "Safe for external exposure \u2014 no restrictions",
+    "internal": "Internal Pain System use only \u2014 not for client or public output",
+    "sensitive": "Contains PII or commercially sensitive data \u2014 access restricted",
+    "secret": "Credentials, API keys, private keys \u2014 never logged, never exposed"
   },
   "entries": [
     {
@@ -64,10 +64,18 @@
       "id": "sec-1774647018646-1utw",
       "type": "SECRET_DETECTED",
       "timestamp": "2026-03-27T21:30:18.646Z",
-      "message": "Credential pattern found — not logged",
+      "message": "Credential pattern found \u2014 not logged",
       "classification": "secret",
       "lane": "AI_LAB",
       "redacted": true
+    },
+    {
+      "timestamp": "2026-03-27T22:40:00.000Z",
+      "type": "system_event",
+      "classification": "internal",
+      "event": "defence-rules-v2-expanded",
+      "detail": "Defence rules expanded: 15 tier-1 hard blocks, 12 tier-2 suspicious patterns, encoding variant detection, 7 anomaly rules, full data classification schema, role boundaries documented.",
+      "source": "system"
     }
   ]
 }

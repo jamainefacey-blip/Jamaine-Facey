@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T22:45:00.000Z",
+  "asset": "VST \u2014 Voyage Smart Travel",
+  "lane": "VST",
+  "description": "VST intelligence dataset \u2014 user journey flows, monetisation pathways, safety logic, SEO/AEO structures.",
+  "userJourneys": {
+    "primaryFlow": [
+      "search",
+      "policy-check",
+      "booking",
+      "approval",
+      "journey",
+      "expense",
+      "complete"
+    ],
+    "flows": [
+      {
+        "id": "jrn-001",
+        "name": "Standard Business Trip",
+        "steps": [
+          "submit trip request",
+          "Ava policy check",
+          "search results",
+          "compliance filter",
+          "select options",
+          "approval request",
+          "approval received",
+          "book",
+          "travel",
+          "expense claim"
+        ],
+        "dropoffRisks": [
+          "complex approval chains",
+          "limited policy-compliant options",
+          "unclear expense rules"
+        ],
+        "optimisations": [
+          "pre-approve common trips",
+          "show compliance score on search",
+          "inline expense guidance"
+        ]
+      },
+      {
+        "id": "jrn-002",
+        "name": "Solo Travel Safety Flow",
+        "steps": [
+          "book trip",
+          "safety brief",
+          "destination risk check",
+          "emergency contacts set",
+          "travel",
+          "check-in notifications",
+          "complete"
+        ],
+        "safetySignals": [
+          "destination risk level",
+          "FCO travel advice",
+          "lone worker policy",
+          "emergency contact confirmed"
+        ],
+        "fhiOverlap": "Travel fraud awareness: accommodation scams, taxi scams, ATM skimming \u2014 surface FHI fraud type guidance in safety brief"
+      }
+    ]
+  },
+  "monetisationPathways": {
+    "primary": [
+      {
+        "type": "subscription_revenue",
+        "description": "Monthly/annual platform subscription per seat",
+        "targetSegment": "UK SMEs 10-500 employees",
+        "pricingSignal": "per-seat per-month",
+        "ctaPattern": "Start free trial \u2014 no card required",
+        "conversionPath": [
+          "homepage",
+          "features",
+          "pricing",
+          "trial-signup",
+          "onboarding",
+          "convert"
+        ]
+      }
+    ],
+    "secondary": [
+      {
+        "type": "affiliate",
+        "description": "Booking commissions via GDS/hotel partners",
+        "revenueTrigger": "each confirmed booking",
+        "requiresGDSIntegration": true
+      },
+      {
+        "type": "white_label",
+        "description": "VST platform licensed to travel management companies",
+        "targetSegment": "TMCs wanting tech capability without building",
+        "pricePoint": "custom enterprise deal"
+      }
+    ],
+    "opportunityFlags": [
+      {
+        "id": "opp-vst-001",
+        "name": "FHI cross-sell in travel safety brief",
+        "value": "MEDIUM",
+        "effort": "LOW",
+        "description": "Surface FHI fraud awareness content in VST safety briefing flow \u2014 zero cost, high trust signal"
+      },
+      {
+        "id": "opp-vst-002",
+        "name": "Travel insurance affiliate",
+        "value": "HIGH",
+        "effort": "MEDIUM",
+        "description": "Affiliate partnership with travel insurance provider \u2014 show in booking confirmation"
+      },
+      {
+        "id": "opp-vst-003",
+        "name": "Expense analytics upsell",
+        "value": "HIGH",
+        "effort": "HIGH",
+        "description": "Premium analytics dashboard showing spend trends \u2014 upsell to enterprise tier"
+      }
+    ]
+  },
+  "aeoTargets": [
+    {
+      "query": "business travel management software UK",
+      "contentTarget": "pages/index.tsx",
+      "answerPattern": "product-overview"
+    },
+    {
+      "query": "corporate travel policy tool",
+      "contentTarget": "pages/compliance.tsx",
+      "answerPattern": "compliance-feature"
+    },
+    {
+      "query": "travel expense management UK",
+      "contentTarget": "pages/how-it-works.tsx",
+      "answerPattern": "how-it-works"
+    }
+  ],
+  "safetyLogicGaps": [
+    "No FCO travel advice integration detected",
+    "No lone worker check-in system",
+    "No destination risk scoring",
+    "FHI fraud awareness not surfaced in booking flow"
+  ],
+  "clarityIssues": [
+    {
+      "location": "pages/index.tsx",
+      "issue": "Hero headline does not clearly state primary value proposition for decision makers",
+      "fix": "Lead with outcome: Save X on travel costs or Eliminate expense chaos"
+    },
+    {
+      "location": "pages/pricing.tsx",
+      "issue": "Pricing page content unknown \u2014 likely needs CTA optimisation",
+      "fix": "Audit pricing page \u2014 ensure free trial CTA is above fold"
+    }
+  ]
+}

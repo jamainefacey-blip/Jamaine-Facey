@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T22:50:00.000Z",
+  "description": "SEO/AEO/GEO content structure rules for all Pain System public assets.",
+  "global": {
+    "principles": [
+      "Answer-first: lead with the answer, not the context",
+      "Scannable: short paragraphs, numbered lists, clear headers",
+      "Action-oriented headings: use verb phrases, not noun phrases",
+      "No filler: cut any sentence that does not add information",
+      "Trust signals above fold: always show credibility markers early"
+    ],
+    "structuredDataRequired": [
+      "Organization",
+      "WebPage",
+      "FAQPage where applicable",
+      "HowTo for step sequences"
+    ]
+  },
+  "assets": {
+    "FHI": {
+      "primaryTarget": "what to do if scammed UK",
+      "answerFirstRequirement": "Direct answer within first 100 words of each guidance page",
+      "featuredSnippetTargets": [
+        "what to do if scammed",
+        "how to report fraud UK",
+        "investment scam what to do",
+        "romance scam help UK",
+        "APP fraud reimbursement",
+        "phishing text what to do"
+      ],
+      "weaknesses": [
+        "FHI homepage has no structured data markup",
+        "No FAQ section on homepage (missed AEO opportunity)",
+        "No breadcrumb navigation for fraud type sub-pages",
+        "Meta description could be more answer-forward"
+      ],
+      "improvements": [
+        "Add FAQPage schema to homepage",
+        "Add HowTo schema to action steps section",
+        "Add breadcrumb to fraud type pages",
+        "Optimise meta description: start with direct answer not brand name"
+      ]
+    },
+    "VST": {
+      "primaryTarget": "business travel management software UK",
+      "answerFirstRequirement": "Clear value statement within hero \u2014 what it is, who it is for, why now",
+      "weaknesses": [
+        "Hero may lead with product name rather than outcome",
+        "Compliance page needs AEO structuring for policy management queries",
+        "No FAQ schema detected"
+      ],
+      "improvements": [
+        "Rewrite hero to lead with outcome",
+        "Add FAQPage schema",
+        "Ensure pricing page CTA is above fold"
+      ]
+    }
+  },
+  "geoRules": {
+    "description": "GEO = Generative Engine Optimisation \u2014 ensure content is AI-answer-ready",
+    "principles": [
+      "Structured data makes content machine-readable for AI engines",
+      "Each section should be self-contained and quotable",
+      "Avoid ambiguous pronouns \u2014 name the subject explicitly",
+      "Include specific numbers, dates, and sources where possible",
+      "Each guidance item should have: what, why, how, when"
+    ]
+  }
+}

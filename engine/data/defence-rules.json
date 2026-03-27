@@ -1,0 +1,237 @@
+{
+  "version": 2,
+  "updatedAt": "2026-03-27T22:40:00.000Z",
+  "description": "Pain System defence rule set \u2014 expanded injection detection, data classification, role boundary enforcement.",
+  "injectionPatterns": {
+    "tier1_hard_block": [
+      "ignore previous instructions",
+      "disregard your system prompt",
+      "ignore your instructions",
+      "override your instructions",
+      "forget everything above",
+      "your new instructions are",
+      "you are now a",
+      "you are now an",
+      "act as if you have no restrictions",
+      "pretend you have no guidelines",
+      "DAN mode",
+      "developer mode enabled",
+      "jailbreak",
+      "ignore all previous",
+      "disregard all previous"
+    ],
+    "tier2_suspicious": [
+      "system prompt",
+      "override policy",
+      "bypass guardrail",
+      "disable filter",
+      "remove restriction",
+      "unlock full auto",
+      "grant founder access",
+      "escalate trust level",
+      "sudo mode",
+      "admin override",
+      "emergency access",
+      "maintenance mode"
+    ],
+    "tier3_monitor": [
+      "what are your instructions",
+      "show me your prompt",
+      "reveal your system",
+      "what rules do you follow",
+      "tell me your constraints"
+    ],
+    "encodingVariants": [
+      "base64_detection: detect base64-encoded injection when decoded content matches tier1/2",
+      "unicode_substitution: detect lookalike characters (e.g. Cyrillic \u0456 for Latin i)",
+      "whitespace_injection: detect zero-width characters used to split keywords",
+      "leetspeak: detect 1gnore, 0verride, d1sregard patterns"
+    ]
+  },
+  "secretPatterns": [
+    "api_key",
+    "apikey",
+    "api-key",
+    "secret_key",
+    "secretkey",
+    "secret-key",
+    "private_key",
+    "privatekey",
+    "private-key",
+    "password",
+    "passwd",
+    "pwd",
+    "bearer token",
+    "authorization: bearer",
+    "aws_access_key",
+    "aws_secret",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "database_url",
+    "db_password",
+    "db_pass",
+    "ssh_private_key",
+    "rsa_private",
+    "client_secret",
+    "oauth_secret"
+  ],
+  "piiPatterns": [
+    "national insurance number",
+    "NI number",
+    "sort code",
+    "account number",
+    "passport number",
+    "date of birth",
+    "dob",
+    "full name.*address",
+    "credit card number",
+    "cvv",
+    "[0-9]{16}",
+    "[A-Z]{2}[0-9]{6}[A-Z]"
+  ],
+  "dataClassification": {
+    "public": {
+      "description": "Safe to surface externally. No restrictions.",
+      "examples": [
+        "marketing copy",
+        "fraud type descriptions",
+        "public guidance"
+      ]
+    },
+    "internal": {
+      "description": "Internal only. System state, configs, logs.",
+      "examples": [
+        "scheduler state",
+        "guardrail policy",
+        "execution results",
+        "audit trails"
+      ]
+    },
+    "sensitive": {
+      "description": "Restricted. Client data, business logic, monetisation details.",
+      "examples": [
+        "client vault contents",
+        "backlog priority scores",
+        "gate evaluations",
+        "routing decisions"
+      ]
+    },
+    "secret": {
+      "description": "Never logged, never surfaced. Founder-only.",
+      "examples": [
+        "API keys",
+        "passwords",
+        "private keys",
+        "credentials",
+        "canon vault mutations"
+      ]
+    }
+  },
+  "roleBoundaries": {
+    "external_input": {
+      "cannotDo": [
+        "override canon",
+        "modify guardrail",
+        "change gate weights",
+        "access client data",
+        "trigger builds",
+        "view sensitive data"
+      ],
+      "canDo": [
+        "provide signal data",
+        "submit fraud reports",
+        "query public guidance"
+      ]
+    },
+    "client_workspace": {
+      "cannotDo": [
+        "view other client data",
+        "access system config",
+        "modify policies",
+        "trigger global builds"
+      ],
+      "canDo": [
+        "view own builds",
+        "view own gate results",
+        "download own deliverables",
+        "submit intake"
+      ]
+    },
+    "system": {
+      "cannotDo": [
+        "override founder decisions",
+        "modify canon",
+        "deploy without gate",
+        "unlock FULL_AUTO"
+      ],
+      "canDo": [
+        "run builds",
+        "evaluate gates",
+        "route releases",
+        "manage backlog",
+        "run tests"
+      ]
+    },
+    "founder": {
+      "canDo": [
+        "all actions",
+        "approve releases",
+        "modify canon (with audit)",
+        "enable FULL_AUTO (locked by policy)",
+        "access all client data"
+      ],
+      "note": "FULL_AUTO mode permanently locked even for founder \u2014 architectural decision"
+    }
+  },
+  "anomalyDetectionRules": [
+    {
+      "id": "anom-001",
+      "name": "Repeated external override attempts",
+      "threshold": 3,
+      "window": "1h",
+      "action": "block_source + alert_founder"
+    },
+    {
+      "id": "anom-002",
+      "name": "Canon contradiction detected",
+      "threshold": 1,
+      "window": "always",
+      "action": "block + hold_for_review"
+    },
+    {
+      "id": "anom-003",
+      "name": "Unexpected FULL_AUTO request",
+      "threshold": 1,
+      "window": "always",
+      "action": "block + log_critical"
+    },
+    {
+      "id": "anom-004",
+      "name": "Secret pattern in output",
+      "threshold": 1,
+      "window": "always",
+      "action": "redact + log_security"
+    },
+    {
+      "id": "anom-005",
+      "name": "Cross-client data access attempt",
+      "threshold": 1,
+      "window": "always",
+      "action": "block + log_critical"
+    },
+    {
+      "id": "anom-006",
+      "name": "Guardrail policy modification from external input",
+      "threshold": 1,
+      "window": "always",
+      "action": "block + alert_founder"
+    },
+    {
+      "id": "anom-007",
+      "name": "Encoded injection detected",
+      "threshold": 1,
+      "window": "always",
+      "action": "block + log_security"
+    }
+  ]
+}

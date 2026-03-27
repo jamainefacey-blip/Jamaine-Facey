@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "updatedAt": "2026-03-27T17:52:06.390Z",
+  "version": 3,
+  "updatedAt": "2026-03-27T22:30:00.000Z",
   "patterns": [
     {
       "patternId": "pat-gen-1774-build-health",
@@ -186,6 +186,155 @@
       "linkedPollinationRecords": [
         "poll-1774633926379-e36k"
       ]
+    },
+    {
+      "patternId": "skp-fhi-001",
+      "type": "UI",
+      "sourceLane": "FHI",
+      "sourceTaskId": "fhi-homepage-hero-v1",
+      "dimension": "UX_VISUAL",
+      "dimensionScore": 93,
+      "title": "Trust-First Dark Hero with Empathetic CTA",
+      "description": "Full-width hero section with trust badge row (Free/Confidential/Instant), large headline with accent colour, empathetic CTA (\"I've been scammed\") above fold. Converts better for distressed users than directive CTAs.",
+      "name": "FHI Trust-First Hero",
+      "whenToUse": "When building public-facing help or crisis pages where user is in distress or needs reassurance before taking action.",
+      "whereReusable": [
+        "FHI",
+        "VST",
+        "BACKYARD"
+      ],
+      "qualityScore": 93,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "Use clamp() for responsive headline, #E85D3A accent for urgency without alarm, dark bg #0A0E1A for readability.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
+    },
+    {
+      "patternId": "skp-fhi-002",
+      "type": "UI",
+      "sourceLane": "FHI",
+      "sourceTaskId": "fhi-homepage-hero-v1",
+      "dimension": "UX_VISUAL",
+      "dimensionScore": 92,
+      "title": "Numbered Action Step Cards (mobile-first)",
+      "description": "Vertical stack of ordered step cards with numbered badge (accent colour), bold action verb heading, plain-English instruction. Reduces decision paralysis for distressed users. Works for any sequential guidance flow.",
+      "name": "Numbered Guidance Step Cards",
+      "whenToUse": "Any sequential action sequence where user must follow steps in order. Particularly effective for crisis or high-stakes flows.",
+      "whereReusable": [
+        "FHI",
+        "VST",
+        "ADMIN",
+        "BACKYARD"
+      ],
+      "qualityScore": 90,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "Step card: flex with numbered pill, bold strong heading, muted-colour body. Gap: 14-16px. Border: 1px solid dark. Background: slightly lighter than page bg.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
+    },
+    {
+      "patternId": "skp-fhi-003",
+      "type": "UI",
+      "sourceLane": "FHI",
+      "sourceTaskId": "fhi-homepage-hero-v1",
+      "dimension": "UX_VISUAL",
+      "dimensionScore": 90,
+      "title": "4-Signal Trust Bar (sticky credibility)",
+      "description": "4-column trust signal bar below hero with icon, label, and short detail. Signals: compliance/regulation, privacy, cost, and speed. Collapses to 2-column on mobile. Increases credibility without cluttering hero.",
+      "name": "Trust Signal Bar (4-item)",
+      "whenToUse": "Any public-facing page where trust and credibility must be established quickly. Use directly below hero section.",
+      "whereReusable": [
+        "FHI",
+        "VST",
+        "BACKYARD"
+      ],
+      "qualityScore": 88,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "Grid: repeat(4,1fr). Icon 20px. Label bold 13px. Detail muted 11px. Bg slightly different from hero and page. Responsive: 2-col at 700px, 1-col at 420px.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
+    },
+    {
+      "patternId": "skp-fhi-004",
+      "type": "logic",
+      "sourceLane": "FHI",
+      "sourceTaskId": "fhi-mvp-001",
+      "dimension": "BUILD_HEALTH",
+      "dimensionScore": 88,
+      "title": "Fraud Type Classification Matrix",
+      "description": "Signal-to-type mapping with confidence scores. Input: user-described signals. Output: fraud type match with confidence. Supports multi-type matches (e.g. crypto can be investment or job scam). Threshold: 0.70.",
+      "name": "Fraud Classification Engine",
+      "whenToUse": "FHI fraud type detection flows. Classify user input against known fraud patterns.",
+      "whereReusable": [
+        "FHI"
+      ],
+      "qualityScore": 85,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "See engine/data/fhi-intelligence.json classificationMatrix. 10 rules, 10 signal types. Confidence threshold 0.70. Fallback: general-fraud.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
+    },
+    {
+      "patternId": "skp-exec-001",
+      "type": "workflow",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "exec-layer",
+      "dimension": "BUILD_HEALTH",
+      "dimensionScore": 95,
+      "title": "PLAN \u2192 BUILD \u2192 PREVIEW \u2192 TEST \u2192 FIX \u2192 GATE Execution Loop",
+      "description": "Governed execution loop with hard stops. Requires preview proof before gate. Max 2 fix cycles. Rollback snapshot before any mutation. Visual QA threshold 60. No auto-deploy \u2014 gate outputs READY_FOR_REVIEW only.",
+      "name": "Governed Execution Loop",
+      "whenToUse": "Any multi-file build task requiring governance, preview proof, and structured rollback.",
+      "whereReusable": [
+        "AI_LAB",
+        "VST",
+        "FHI",
+        "ADMIN"
+      ],
+      "qualityScore": 95,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "See engine/execution-orchestrator.ts. Hard stops: POLICY_BREACH, BLOCKED, RETRY_CAP. Audit trail: all stages logged.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
+    },
+    {
+      "patternId": "skp-exec-002",
+      "type": "workflow",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "exec-layer",
+      "dimension": "RERUN_RISK",
+      "dimensionScore": 90,
+      "title": "Snapshot-Before-Mutation Rollback Pattern",
+      "description": "Take file snapshot before any mutation step. On failure: restore exact original content, delete newly created files. Rollback result stored with RESTORED/PARTIAL/FAILED status. Verified: restores exact byte content.",
+      "name": "Pre-Mutation Snapshot Rollback",
+      "whenToUse": "Any build step that writes or modifies files. Always snapshot before first mutation in a plan.",
+      "whereReusable": [
+        "AI_LAB",
+        "VST",
+        "FHI",
+        "ADMIN",
+        "BACKYARD"
+      ],
+      "qualityScore": 92,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "See engine/rollback.ts. takeSnapshot() \u2192 build \u2192 on failure: rollback(snapshot). Files with rollbackPoint=true are snapshotted.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
+    },
+    {
+      "patternId": "skp-seo-001",
+      "type": "SEO",
+      "sourceLane": "FHI",
+      "sourceTaskId": "fhi-homepage-hero-v1",
+      "dimension": "COPY_QUALITY",
+      "dimensionScore": 88,
+      "title": "AEO Answer-First Page Structure for Help Queries",
+      "description": "Lead with a direct answer to the primary query within first 300 words. Use <ol> for step sequences. Action verbs as headings. Meta description = full 1-sentence answer. Targets featured snippet extraction by search engines.",
+      "name": "AEO Featured Snippet Structure",
+      "whenToUse": "Any public-facing help or instructional page targeting search traffic on how-to or what-to-do queries.",
+      "whereReusable": [
+        "FHI",
+        "VST",
+        "BACKYARD"
+      ],
+      "qualityScore": 85,
+      "linkedPollinationRecords": [],
+      "technicalNotes": "H1 = primary query match. First paragraph = direct answer. <ol> not <ul> for steps. Schema.org HowTo markup recommended.",
+      "extractedAt": "2026-03-27T22:30:00.000Z"
     }
   ],
   "upgradedAt": "2026-03-27T18:20:00.000Z",

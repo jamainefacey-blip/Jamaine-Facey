@@ -1,0 +1,618 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T22:30:00.000Z",
+  "description": "FHI fraud type dataset \u2014 classification logic, action mappings, severity scores, reporting routes, recovery pathways.",
+  "classificationRules": {
+    "primarySignals": [
+      "payment_method",
+      "contact_channel",
+      "impersonation_target",
+      "promised_return",
+      "urgency_level"
+    ],
+    "confidenceThreshold": 0.7,
+    "fallback": "general-fraud"
+  },
+  "fraudTypes": [
+    {
+      "id": "ft-001",
+      "name": "Online Purchase Scam",
+      "slug": "online-purchase-scam",
+      "severity": "medium",
+      "prevalence": "very_high",
+      "typicalLoss": {
+        "min": 50,
+        "max": 5000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "paid online",
+        "item not received",
+        "seller disappeared",
+        "marketplace",
+        "social media shop"
+      ],
+      "keywords": [
+        "ebay",
+        "facebook marketplace",
+        "gumtree",
+        "depop",
+        "item not arrived",
+        "seller unresponsive"
+      ],
+      "immediateActions": [
+        "Stop all further payment",
+        "Screenshot all communications with seller",
+        "Contact your bank for a chargeback claim",
+        "Report to the platform where purchase was made",
+        "Report to Action Fraud: actionfraud.police.uk"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "bank-chargeback",
+        "platform-report",
+        "trading-standards"
+      ],
+      "recoveryChance": "medium",
+      "recoveryNotes": "Chargeback success rate is moderate for card payments. Bank transfer losses harder to recover.",
+      "timeToReport": "Report to bank within 24 hours for best chargeback chance",
+      "aeoAnswer": "Stop all contact, screenshot everything, contact your bank immediately for a chargeback, and report to Action Fraud at actionfraud.police.uk",
+      "seoKeywords": [
+        "online shopping scam",
+        "item not received refund",
+        "fake seller",
+        "chargeback scam"
+      ],
+      "legalRoute": "small-claims-court",
+      "preventionTips": [
+        "Use PayPal Goods & Services for buyer protection",
+        "Research sellers before buying",
+        "Be suspicious of prices far below market value"
+      ]
+    },
+    {
+      "id": "ft-002",
+      "name": "Investment Fraud",
+      "slug": "investment-fraud",
+      "severity": "critical",
+      "prevalence": "high",
+      "typicalLoss": {
+        "min": 5000,
+        "max": 500000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "promised high returns",
+        "crypto investment",
+        "exclusive opportunity",
+        "investment platform",
+        "broker contacted you"
+      ],
+      "keywords": [
+        "crypto",
+        "forex",
+        "binary options",
+        "guaranteed returns",
+        "investment platform",
+        "trading account",
+        "clone firm"
+      ],
+      "immediateActions": [
+        "Stop all further investment immediately",
+        "Do not accept recovery offers (likely a recovery scam)",
+        "Contact your bank to freeze transfers to the platform",
+        "Report to Action Fraud",
+        "Report to FCA if a regulated firm is being impersonated: fca.org.uk/scamsmart"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "fca-scamsmart",
+        "bank-urgent",
+        "financial-ombudsman"
+      ],
+      "recoveryChance": "low",
+      "recoveryNotes": "Most investment fraud losses are unrecoverable. Bank transfer clawback depends on speed of reporting. Avoid recovery scams \u2014 a second layer of fraud.",
+      "timeToReport": "Report to bank immediately \u2014 same day if possible",
+      "aeoAnswer": "Stop investing immediately. Do not accept recovery offers. Contact your bank and Action Fraud. Check FCA ScamSmart at fca.org.uk/scamsmart.",
+      "seoKeywords": [
+        "investment scam UK",
+        "crypto fraud",
+        "forex scam",
+        "clone firm fraud",
+        "FCA scam"
+      ],
+      "legalRoute": "financial-ombudsman-then-court",
+      "preventionTips": [
+        "Always check FCA register before investing",
+        "Guaranteed returns are always a red flag",
+        "Never invest based on social media ads or cold calls"
+      ]
+    },
+    {
+      "id": "ft-003",
+      "name": "Romance Scam",
+      "slug": "romance-scam",
+      "severity": "critical",
+      "prevalence": "high",
+      "typicalLoss": {
+        "min": 1000,
+        "max": 100000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "met online",
+        "never met in person",
+        "requests money",
+        "abroad",
+        "emergency situation",
+        "military person"
+      ],
+      "keywords": [
+        "dating site",
+        "facebook",
+        "instagram",
+        "met online",
+        "visa fees",
+        "stuck abroad",
+        "military overseas"
+      ],
+      "immediateActions": [
+        "Stop all money transfers immediately",
+        "Do not send more money regardless of the story",
+        "Document all communications",
+        "Report to the platform where you met",
+        "Report to Action Fraud",
+        "Contact a trusted friend or family member"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "platform-report",
+        "bank-urgent"
+      ],
+      "recoveryChance": "very_low",
+      "recoveryNotes": "Bank transfer losses are very difficult to recover. Emotional recovery support is also important \u2014 Victim Support can help.",
+      "timeToReport": "As soon as you suspect fraud",
+      "aeoAnswer": "Stop all payments. Do not send more money. Report to Action Fraud. The person is almost certainly not who they say they are.",
+      "seoKeywords": [
+        "romance scam UK",
+        "online dating scam",
+        "catfish money",
+        "met online sending money"
+      ],
+      "legalRoute": "action-fraud-police",
+      "supportResources": [
+        "Victim Support: victimsupport.org.uk",
+        "National Fraud Intelligence Bureau"
+      ],
+      "preventionTips": [
+        "Never send money to someone you have not met in person",
+        "Reverse image search their photos",
+        "Be suspicious of those who avoid video calls"
+      ]
+    },
+    {
+      "id": "ft-004",
+      "name": "Impersonation Fraud",
+      "slug": "impersonation-fraud",
+      "severity": "high",
+      "prevalence": "very_high",
+      "typicalLoss": {
+        "min": 500,
+        "max": 50000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "bank called you",
+        "HMRC contacted you",
+        "police called",
+        "amazon contact",
+        "microsoft support",
+        "urgent tax demand"
+      ],
+      "keywords": [
+        "HMRC",
+        "NatWest",
+        "Barclays",
+        "police",
+        "National Crime Agency",
+        "Amazon",
+        "Microsoft",
+        "TV Licence",
+        "council tax"
+      ],
+      "immediateActions": [
+        "Hang up immediately \u2014 do not engage",
+        "Call the real organisation using the number from their official website",
+        "Do not call back any number they gave you",
+        "Check your accounts for unauthorised activity",
+        "Report to Action Fraud",
+        "Report to the impersonated organisation"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "bank-urgent",
+        "ofcom-if-telecom",
+        "hmrc-phishing"
+      ],
+      "recoveryChance": "medium",
+      "recoveryNotes": "If no money was transferred, recovery is straightforward. Banks are improving reimbursement for Authorised Push Payment fraud from impersonation.",
+      "timeToReport": "Immediately \u2014 same day",
+      "aeoAnswer": "Hang up. Call the real organisation using their official website number. Never call back numbers given by the suspected fraudster. Report to Action Fraud.",
+      "seoKeywords": [
+        "bank impersonation scam",
+        "HMRC scam call",
+        "police impersonation fraud",
+        "Microsoft scam"
+      ],
+      "legalRoute": "action-fraud-bank-dispute",
+      "preventionTips": [
+        "Legitimate organisations never ask for full passwords",
+        "Never transfer money to a safe account",
+        "Your bank will never ask you to move money"
+      ]
+    },
+    {
+      "id": "ft-005",
+      "name": "Phishing / Smishing",
+      "slug": "phishing-smishing",
+      "severity": "medium",
+      "prevalence": "very_high",
+      "typicalLoss": {
+        "min": 0,
+        "max": 10000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "suspicious email",
+        "suspicious text",
+        "link clicked",
+        "entered credentials",
+        "package notification",
+        "delivery failed"
+      ],
+      "keywords": [
+        "royal mail",
+        "parcel",
+        "HMRC refund",
+        "bank verification",
+        "click link",
+        "confirm details",
+        "account suspended"
+      ],
+      "immediateActions": [
+        "Change all passwords for affected accounts immediately",
+        "Enable two-factor authentication on all accounts",
+        "Contact your bank if any financial details were entered",
+        "Run a malware scan on your device",
+        "Report the phishing email/text to report@phishing.gov.uk or 7726 for texts"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "ncsc-report-phishing",
+        "bank-urgent-if-financial-loss",
+        "forward-to-7726"
+      ],
+      "recoveryChance": "high",
+      "recoveryNotes": "If credentials only were entered (not money transferred), recovery is possible through account reset. Financial loss recovery depends on bank.",
+      "timeToReport": "Within hours \u2014 speed matters for account security",
+      "aeoAnswer": "Change your passwords immediately. Contact your bank if financial details were shared. Report the text to 7726 or email to report@phishing.gov.uk.",
+      "seoKeywords": [
+        "phishing scam UK",
+        "smishing text scam",
+        "suspicious text message",
+        "fake email bank"
+      ],
+      "legalRoute": "action-fraud-ncsc",
+      "preventionTips": [
+        "Never click links in unexpected texts or emails",
+        "Go directly to official websites",
+        "Check sender email addresses carefully"
+      ]
+    },
+    {
+      "id": "ft-006",
+      "name": "Authorised Push Payment (APP) Fraud",
+      "slug": "authorised-push-payment",
+      "severity": "critical",
+      "prevalence": "high",
+      "typicalLoss": {
+        "min": 1000,
+        "max": 200000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "transferred money yourself",
+        "thought you were paying a legitimate company",
+        "invoice fraud",
+        "property purchase",
+        "urgency to transfer"
+      ],
+      "keywords": [
+        "bank transfer",
+        "BACS",
+        "invoice changed",
+        "solicitor account",
+        "property fraud",
+        "approved payment"
+      ],
+      "immediateActions": [
+        "Call your bank immediately on the number on your card",
+        "Ask for the Payment Services team \u2014 reference the APP fraud protocol",
+        "Your bank is legally required to reimburse most APP fraud losses (PSR rules from 2024)",
+        "Contact the receiving bank if known",
+        "Report to Action Fraud"
+      ],
+      "reportingRoutes": [
+        "bank-immediate-psr",
+        "action-fraud",
+        "financial-ombudsman"
+      ],
+      "recoveryChance": "medium_to_high",
+      "recoveryNotes": "UK PSR mandatory reimbursement rules (Oct 2024) require banks to reimburse most APP fraud up to \u00a385,000. Act within 13 months. Some exceptions apply.",
+      "timeToReport": "Immediately \u2014 same day is critical for freezing receiving accounts",
+      "aeoAnswer": "Call your bank immediately. Reference APP fraud. Under UK PSR rules (2024), your bank is required to reimburse most APP fraud up to \u00a385,000.",
+      "seoKeywords": [
+        "bank transfer scam",
+        "APP fraud reimbursement",
+        "PSR reimbursement",
+        "authorised payment scam"
+      ],
+      "legalRoute": "psr-mandatory-reimbursement-then-fos",
+      "regulatoryBasis": "Payment Systems Regulator (PSR) Mandatory Reimbursement \u2014 effective October 2024",
+      "preventionTips": [
+        "Always call the payee directly on a known number to verify bank details",
+        "Never change bank details based on an email",
+        "Solicitors do not change account details by email"
+      ]
+    },
+    {
+      "id": "ft-007",
+      "name": "Recovery Fraud",
+      "slug": "recovery-fraud",
+      "severity": "high",
+      "prevalence": "medium",
+      "typicalLoss": {
+        "min": 200,
+        "max": 20000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "previously scammed",
+        "offered help recovering money",
+        "upfront fee required",
+        "government recovery scheme",
+        "contacted out of the blue"
+      ],
+      "keywords": [
+        "recover your money",
+        "compensation scheme",
+        "fraud recovery service",
+        "upfront fee",
+        "government agency",
+        "unclaimed compensation"
+      ],
+      "immediateActions": [
+        "Do not pay any upfront fee",
+        "Legitimate recovery services do not charge upfront fees",
+        "Report to Action Fraud",
+        "Seek help from Victim Support or Citizens Advice instead"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "trading-standards",
+        "citizens-advice"
+      ],
+      "recoveryChance": "low",
+      "recoveryNotes": "Recovery fraud adds to previous losses. No legitimate service charges upfront fees to recover money.",
+      "timeToReport": "Immediately \u2014 before any payment",
+      "aeoAnswer": "Do not pay any fee. This is almost certainly a second scam targeting people who were previously defrauded. Report to Action Fraud.",
+      "seoKeywords": [
+        "recovery scam UK",
+        "fraud recovery service scam",
+        "money recovery fraud"
+      ],
+      "legalRoute": "action-fraud",
+      "preventionTips": [
+        "Legitimate recovery help is free (Action Fraud, Citizens Advice)",
+        "Unsolicited recovery offers are almost always scams"
+      ]
+    },
+    {
+      "id": "ft-008",
+      "name": "Job / Employment Scam",
+      "slug": "job-employment-scam",
+      "severity": "medium",
+      "prevalence": "high",
+      "typicalLoss": {
+        "min": 100,
+        "max": 5000,
+        "currency": "GBP"
+      },
+      "signals": [
+        "job offer out of nowhere",
+        "asked to pay upfront",
+        "work from home",
+        "easy money",
+        "task-based job",
+        "crypto wallet required"
+      ],
+      "keywords": [
+        "remote job",
+        "easy income",
+        "work from home",
+        "product tester",
+        "crypto wallet",
+        "task app",
+        "upfront payment"
+      ],
+      "immediateActions": [
+        "Stop engagement with the employer immediately",
+        "Do not make any further payments",
+        "Report to Action Fraud",
+        "Report to the job board or platform where you found the listing"
+      ],
+      "reportingRoutes": [
+        "action-fraud",
+        "platform-report",
+        "bank-if-paid"
+      ],
+      "recoveryChance": "low_to_medium",
+      "recoveryNotes": "If paid by card, chargeback is possible. Bank transfer losses are harder to recover.",
+      "timeToReport": "As soon as fraud is suspected",
+      "aeoAnswer": "Stop all payments and communication. Report to Action Fraud and the platform where you found the job. Legitimate employers never ask for upfront payments.",
+      "seoKeywords": [
+        "job scam UK",
+        "fake job offer",
+        "work from home scam",
+        "employment fraud"
+      ],
+      "legalRoute": "action-fraud",
+      "preventionTips": [
+        "Legitimate employers never ask for payment",
+        "Research companies thoroughly before accepting offers",
+        "Be suspicious of unusually high pay for simple tasks"
+      ]
+    }
+  ],
+  "classificationMatrix": {
+    "description": "Signal \u2192 fraud type mapping for classification engine",
+    "rules": [
+      {
+        "signal": "paid_online_item_not_received",
+        "fraudTypes": [
+          "ft-001"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "signal": "investment_promised_high_returns",
+        "fraudTypes": [
+          "ft-002"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "signal": "met_online_requesting_money",
+        "fraudTypes": [
+          "ft-003"
+        ],
+        "confidence": 0.92
+      },
+      {
+        "signal": "received_call_from_bank_or_hmrc",
+        "fraudTypes": [
+          "ft-004"
+        ],
+        "confidence": 0.88
+      },
+      {
+        "signal": "clicked_link_entered_details",
+        "fraudTypes": [
+          "ft-005"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "signal": "transferred_money_self_thought_legitimate",
+        "fraudTypes": [
+          "ft-006"
+        ],
+        "confidence": 0.87
+      },
+      {
+        "signal": "offered_recovery_of_previous_fraud",
+        "fraudTypes": [
+          "ft-007"
+        ],
+        "confidence": 0.93
+      },
+      {
+        "signal": "job_offer_required_upfront_payment",
+        "fraudTypes": [
+          "ft-008"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "signal": "crypto_investment_platform",
+        "fraudTypes": [
+          "ft-002",
+          "ft-008"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "signal": "invoice_payment_changed_account",
+        "fraudTypes": [
+          "ft-006"
+        ],
+        "confidence": 0.95
+      }
+    ]
+  },
+  "reportingRouteDefinitions": {
+    "action-fraud": {
+      "name": "Action Fraud",
+      "url": "https://www.actionfraud.police.uk/",
+      "phone": "0300 123 2040",
+      "priority": 1
+    },
+    "bank-immediate-psr": {
+      "name": "Your Bank (PSR)",
+      "instruction": "Call number on back of card, reference APP Fraud PSR reimbursement",
+      "priority": 1
+    },
+    "fca-scamsmart": {
+      "name": "FCA ScamSmart",
+      "url": "https://www.fca.org.uk/scamsmart",
+      "priority": 2
+    },
+    "financial-ombudsman": {
+      "name": "Financial Ombudsman Service",
+      "url": "https://www.financial-ombudsman.org.uk/",
+      "priority": 3
+    },
+    "ncsc-report-phishing": {
+      "name": "NCSC Phishing Report",
+      "email": "report@phishing.gov.uk",
+      "priority": 2
+    },
+    "forward-to-7726": {
+      "name": "SMS Spam Report",
+      "instruction": "Forward suspicious text to 7726",
+      "priority": 2
+    },
+    "trading-standards": {
+      "name": "Trading Standards",
+      "url": "https://www.tradingstandards.uk/",
+      "priority": 3
+    },
+    "citizens-advice": {
+      "name": "Citizens Advice",
+      "url": "https://www.citizensadvice.org.uk/",
+      "priority": 3
+    },
+    "platform-report": {
+      "name": "Report to Platform",
+      "instruction": "Use built-in reporting tool on the platform where fraud occurred",
+      "priority": 2
+    }
+  },
+  "aeoPatterns": {
+    "description": "Answer-first patterns for featured snippet targeting",
+    "queryTemplates": [
+      {
+        "query": "what to do if scammed online UK",
+        "answerStart": "If you have been scammed online: 1) Stop all payments 2) Contact your bank immediately 3) Report to Action Fraud at actionfraud.police.uk"
+      },
+      {
+        "query": "how to report investment fraud UK",
+        "answerStart": "Report investment fraud to Action Fraud (actionfraud.police.uk) and the FCA (fca.org.uk/scamsmart). Contact your bank immediately if money was transferred."
+      },
+      {
+        "query": "can I get my money back from a scam",
+        "answerStart": "You may be able to recover money through: bank chargeback (card payments), APP fraud reimbursement (bank transfers \u2014 PSR rules 2024), or the Financial Ombudsman Service."
+      }
+    ]
+  }
+}

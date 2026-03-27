@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-03-27T22:45:00.000Z",
+  "scope": "system-wide",
+  "assetsChecked": [
+    "AI_LAB",
+    "FHI",
+    "VST",
+    "ADMIN",
+    "GOVERNANCE"
+  ],
+  "overallStatus": "ALIGNED",
+  "score": 1.0,
+  "checksTotal": 20,
+  "checksPassed": 20,
+  "checks": [
+    {
+      "check": "module-exists:canon-vault",
+      "passed": true,
+      "detail": "engine/data/canon-vault.json"
+    },
+    {
+      "check": "module-exists:role-model",
+      "passed": true,
+      "detail": "engine/data/role-model.json"
+    },
+    {
+      "check": "module-exists:auto-control",
+      "passed": true,
+      "detail": "engine/data/auto-control.json"
+    },
+    {
+      "check": "module-exists:skill-library",
+      "passed": true,
+      "detail": "engine/data/skill-library.json"
+    },
+    {
+      "check": "module-exists:skeleton-library",
+      "passed": true,
+      "detail": "engine/data/skeleton-library.json"
+    },
+    {
+      "check": "module-exists:knowledge-library",
+      "passed": true,
+      "detail": "engine/data/knowledge-library.json"
+    },
+    {
+      "check": "module-exists:fhi-intelligence",
+      "passed": true,
+      "detail": "engine/data/fhi-intelligence.json"
+    },
+    {
+      "check": "module-exists:defence-rules",
+      "passed": true,
+      "detail": "engine/data/defence-rules.json"
+    },
+    {
+      "check": "module-exists:backlog",
+      "passed": true,
+      "detail": "engine/data/backlog.json"
+    },
+    {
+      "check": "module-exists:working-memory",
+      "passed": true,
+      "detail": "engine/data/working-memory.json"
+    },
+    {
+      "check": "auto-control-safe",
+      "passed": true,
+      "detail": "mode=CONTROLLED locked=True"
+    },
+    {
+      "check": "canon-vault-populated",
+      "passed": true,
+      "detail": "10 laws"
+    },
+    {
+      "check": "fhi-intelligence-populated",
+      "passed": true,
+      "detail": "8 fraud types"
+    },
+    {
+      "check": "skill-library-quality",
+      "passed": true,
+      "detail": "15 patterns, avg quality=92.5"
+    },
+    {
+      "check": "skeleton-coverage",
+      "passed": true,
+      "detail": "10 skeletons, lanes={'AI_LAB', 'multi', 'VST', 'ADMIN', 'FHI'}"
+    },
+    {
+      "check": "knowledge-library-quality",
+      "passed": true,
+      "detail": "18 entries, 15 confirmed, 0 stale"
+    },
+    {
+      "check": "backlog-readiness",
+      "passed": true,
+      "detail": "6 items, 4 high-priority (\u22658.0)"
+    },
+    {
+      "check": "defence-rules-expanded",
+      "passed": true,
+      "detail": "15 tier-1 patterns"
+    },
+    {
+      "check": "vst-homepage-exists",
+      "passed": true,
+      "detail": "pages/index.tsx"
+    },
+    {
+      "check": "fhi-homepage-exists",
+      "passed": true,
+      "detail": "pages/fhi/index.tsx"
+    }
+  ],
+  "drifts": [],
+  "criticals": [],
+  "moduleHealth": {
+    "canon-vault": true,
+    "role-model": true,
+    "auto-control": true,
+    "skill-library": true,
+    "skeleton-library": true,
+    "knowledge-library": true,
+    "fhi-intelligence": true,
+    "defence-rules": true,
+    "backlog": true,
+    "working-memory": true
+  }
+}

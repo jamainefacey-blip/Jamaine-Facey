@@ -1,29 +1,48 @@
 {
-  "version": 1,
+  "version": 2,
   "createdAt": "2026-03-27T00:00:00.000Z",
-  "description": "Pain Engine Knowledge Library — structured external and internal learnings. All entries tagged, sourced, and revalidatable.",
+  "description": "Pain Engine Knowledge Library \u2014 structured external and internal learnings. All entries tagged, sourced, and revalidatable.",
   "schema": {
-    "id":           "string — unique knowledge entry identifier (kl-XXX-NNN)",
-    "topic":        "string — subject area",
-    "source":       "string — origin of knowledge (internal/signal/research/observation)",
-    "summary":      "string — concise statement of the knowledge",
-    "confidence":   "number — 0.0 to 1.0",
-    "lastChecked":  "ISO date string",
-    "status":       "confirmed | inferred | unknown | stale",
-    "tags":         "string[] — required, no untagged entries",
-    "laneRelevance": "string[] — which lanes this applies to"
+    "id": "string \u2014 unique knowledge entry identifier (kl-XXX-NNN)",
+    "topic": "string \u2014 subject area",
+    "source": "string \u2014 origin of knowledge (internal/signal/research/observation)",
+    "summary": "string \u2014 concise statement of the knowledge",
+    "confidence": "number \u2014 0.0 to 1.0",
+    "lastChecked": "ISO date string",
+    "status": "confirmed | inferred | unknown | stale",
+    "tags": "string[] \u2014 required, no untagged entries",
+    "laneRelevance": "string[] \u2014 which lanes this applies to",
+    "truthScore": "number \u2014 0.0 to 1.0 (confidence x verifiability x recency)",
+    "verifiability": "high | medium | low \u2014 how easily can this be re-checked?",
+    "expiresAfter": "string \u2014 ISO duration before status becomes stale",
+    "linkedEvidence": "string[] \u2014 file paths or test IDs that prove this"
   },
   "entries": [
     {
       "id": "kl-gate-001",
-      "topic": "Gate scoring — MONETISATION dimension",
+      "topic": "Gate scoring \u2014 MONETISATION dimension",
       "source": "internal/observation",
       "summary": "MONETISATION weight=10 alone cannot drag overall gate score below pass threshold (70) when 8 other dimensions score well. VST assets with no CTA will fail MONETISATION dimension but may still pass overall gate.",
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["gate", "monetisation", "scoring", "VST"],
-      "laneRelevance": ["VST", "AI_LAB"]
+      "tags": [
+        "gate",
+        "monetisation",
+        "scoring",
+        "VST"
+      ],
+      "laneRelevance": [
+        "VST",
+        "AI_LAB"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "linkedEvidence": [
+        "engine/gate.ts",
+        "engine/data/fhi-gate-result.json"
+      ]
     },
     {
       "id": "kl-gate-002",
@@ -33,19 +52,46 @@
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["gate", "monetisation", "regex", "CTA"],
-      "laneRelevance": ["VST", "FHI", "AI_LAB"]
+      "tags": [
+        "gate",
+        "monetisation",
+        "regex",
+        "CTA"
+      ],
+      "laneRelevance": [
+        "VST",
+        "FHI",
+        "AI_LAB"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "linkedEvidence": [
+        "engine/gate.ts"
+      ]
     },
     {
       "id": "kl-scheduler-001",
       "topic": "Transform executor behaviour outside engine/data/",
       "source": "internal/observation",
-      "summary": "Transform executor returns {transformed:true, input:..., note:'outside engine/data — metadata only'} when target file is outside engine/data/. Actual build work must be done by close script.",
+      "summary": "Transform executor returns {transformed:true, input:..., note:'outside engine/data \u2014 metadata only'} when target file is outside engine/data/. Actual build work must be done by close script.",
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["scheduler", "transform", "executor"],
-      "laneRelevance": ["AI_LAB"]
+      "tags": [
+        "scheduler",
+        "transform",
+        "executor"
+      ],
+      "laneRelevance": [
+        "AI_LAB"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P60D",
+      "linkedEvidence": [
+        "engine/executors/transform-executor.ts"
+      ]
     },
     {
       "id": "kl-scheduler-002",
@@ -55,8 +101,21 @@
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["scheduler", "approval", "guardrail"],
-      "laneRelevance": ["AI_LAB"]
+      "tags": [
+        "scheduler",
+        "approval",
+        "guardrail"
+      ],
+      "laneRelevance": [
+        "AI_LAB"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "linkedEvidence": [
+        "engine/scheduler.ts",
+        "engine/guardrail.ts"
+      ]
     },
     {
       "id": "kl-scheduler-003",
@@ -66,8 +125,20 @@
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["scheduler", "eval", "security"],
-      "laneRelevance": ["AI_LAB"]
+      "tags": [
+        "scheduler",
+        "eval",
+        "security"
+      ],
+      "laneRelevance": [
+        "AI_LAB"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "linkedEvidence": [
+        "engine/executors/eval-executor.ts"
+      ]
     },
     {
       "id": "kl-auto-001",
@@ -77,19 +148,45 @@
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["auto-mode", "scheduler", "trigger"],
-      "laneRelevance": ["AI_LAB"]
+      "tags": [
+        "auto-mode",
+        "scheduler",
+        "trigger"
+      ],
+      "laneRelevance": [
+        "AI_LAB"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P60D",
+      "linkedEvidence": [
+        "engine/auto-trigger.ts"
+      ]
     },
     {
       "id": "kl-routing-001",
-      "topic": "Internal tooling → HANGAR routing",
+      "topic": "Internal tooling \u2192 HANGAR routing",
       "source": "internal/observation",
       "summary": "Assets with monetisationType=internal_tooling always route to HANGAR regardless of gate score. SHOWROOM requires monetisationTag=READY or POTENTIAL, which internal tooling never achieves.",
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["routing", "hangar", "showroom", "monetisation"],
-      "laneRelevance": ["AI_LAB", "ADMIN"]
+      "tags": [
+        "routing",
+        "hangar",
+        "showroom",
+        "monetisation"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "ADMIN"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "linkedEvidence": [
+        "engine/router.ts"
+      ]
     },
     {
       "id": "kl-pollination-001",
@@ -99,19 +196,47 @@
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["pollination", "patterns", "gate"],
-      "laneRelevance": ["AI_LAB", "VST", "FHI"]
+      "tags": [
+        "pollination",
+        "patterns",
+        "gate"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "VST",
+        "FHI"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P60D",
+      "linkedEvidence": [
+        "engine/pollinator.ts"
+      ]
     },
     {
       "id": "kl-biab-001",
-      "topic": "BIAB law — every asset needs a monetisation path",
+      "topic": "BIAB law \u2014 every asset needs a monetisation path",
       "source": "internal/canon",
       "summary": "Every Pain System output must declare monetisationType before gate. Internal tooling is the only valid exemption. Assets without monetisationType and non-internal classification should be flagged at pre-build gate.",
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["BIAB", "monetisation", "gate", "canon"],
-      "laneRelevance": ["VST", "FHI"]
+      "tags": [
+        "BIAB",
+        "monetisation",
+        "gate",
+        "canon"
+      ],
+      "laneRelevance": [
+        "VST",
+        "FHI"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P180D",
+      "linkedEvidence": [
+        "engine/data/canon-vault.json"
+      ]
     },
     {
       "id": "kl-defence-001",
@@ -121,8 +246,238 @@
       "confidence": 1.0,
       "lastChecked": "2026-03-27T00:00:00.000Z",
       "status": "confirmed",
-      "tags": ["defence", "security", "canon", "external-input"],
-      "laneRelevance": ["AI_LAB", "VST", "FHI", "ADMIN"]
+      "tags": [
+        "defence",
+        "security",
+        "canon",
+        "external-input"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "VST",
+        "FHI",
+        "ADMIN"
+      ],
+      "truthScore": 1.0,
+      "verifiability": "high",
+      "expiresAfter": "P180D",
+      "linkedEvidence": [
+        "engine/defence.ts",
+        "engine/roles.ts"
+      ]
+    },
+    {
+      "id": "kl-execution-001",
+      "topic": "Execution layer: F3 guard blocks protected zone writes at entry",
+      "source": "internal/observation",
+      "summary": "runBuild() pre-checks all patches against PROTECTED_ZONES before executing any steps. A matching patch throws F3 immediately. Canon vault, guardrail, gate, defence, roles are all in PROTECTED_ZONES.",
+      "confidence": 1.0,
+      "truthScore": 1.0,
+      "lastChecked": "2026-03-27T22:00:00.000Z",
+      "status": "confirmed",
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "tags": [
+        "execution",
+        "builder",
+        "F3",
+        "protection",
+        "canon"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "VST",
+        "FHI",
+        "ADMIN"
+      ],
+      "linkedEvidence": [
+        "engine/builder.ts",
+        "engine/close-execution-layer.ts"
+      ]
+    },
+    {
+      "id": "kl-execution-002",
+      "topic": "Preview proof required before gate \u2014 no bypass",
+      "source": "internal/observation",
+      "summary": "Orchestrator hard-stops with BLOCKED if preview status is MISSING or FAILED. assertPreviewProof() enforces this. No flag exists to skip proof requirement.",
+      "confidence": 1.0,
+      "truthScore": 1.0,
+      "lastChecked": "2026-03-27T22:00:00.000Z",
+      "status": "confirmed",
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "tags": [
+        "execution",
+        "preview",
+        "proof",
+        "gate",
+        "hard-stop"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "VST",
+        "FHI"
+      ],
+      "linkedEvidence": [
+        "engine/preview-engine.ts",
+        "engine/execution-orchestrator.ts"
+      ]
+    },
+    {
+      "id": "kl-execution-003",
+      "topic": "Visual QA pass threshold=60, HIGH VALUE at score>=80",
+      "source": "internal/observation",
+      "summary": "Visual QA blocks gate if overallScore < 60 or any check=FAIL. FHI MVP scored 93/100, monetisationTag=HIGH VALUE. Commercial lanes (VST, FHI) trigger CTA visibility check.",
+      "confidence": 1.0,
+      "truthScore": 1.0,
+      "lastChecked": "2026-03-27T22:10:00.000Z",
+      "status": "confirmed",
+      "verifiability": "high",
+      "expiresAfter": "P60D",
+      "tags": [
+        "visual-qa",
+        "gate",
+        "FHI",
+        "HIGH VALUE",
+        "monetisation"
+      ],
+      "laneRelevance": [
+        "FHI",
+        "VST"
+      ],
+      "linkedEvidence": [
+        "engine/visual-qa.ts",
+        "engine/data/fhi-visual-result.json"
+      ]
+    },
+    {
+      "id": "kl-fhi-001",
+      "topic": "FHI: trust-first architecture drives conversion",
+      "source": "internal/research",
+      "summary": "Fraud victims seek reassurance before action. Trust signals above fold (Action Fraud alignment, ICO, free, instant) increase conversion to guidance flow. CTA must be empathetic, not directive.",
+      "confidence": 0.85,
+      "truthScore": 0.78,
+      "lastChecked": "2026-03-27T22:10:00.000Z",
+      "status": "inferred",
+      "verifiability": "medium",
+      "expiresAfter": "P60D",
+      "tags": [
+        "FHI",
+        "UX",
+        "trust",
+        "conversion",
+        "CTA"
+      ],
+      "laneRelevance": [
+        "FHI"
+      ],
+      "linkedEvidence": [
+        "pages/fhi/index.tsx"
+      ]
+    },
+    {
+      "id": "kl-fhi-002",
+      "topic": "FHI: 5-step sequence reduces victim decision paralysis",
+      "source": "internal/research",
+      "summary": "Fraud victims experience decision paralysis. Numbered 5-step sequence (stop \u2192 bank \u2192 report \u2192 secure \u2192 assess) reduces cognitive load. Steps must be time-ordered and actionable, not advisory.",
+      "confidence": 0.85,
+      "truthScore": 0.76,
+      "lastChecked": "2026-03-27T22:10:00.000Z",
+      "status": "inferred",
+      "verifiability": "medium",
+      "expiresAfter": "P90D",
+      "tags": [
+        "FHI",
+        "UX",
+        "guidance",
+        "victim",
+        "action-sequence"
+      ],
+      "laneRelevance": [
+        "FHI"
+      ],
+      "linkedEvidence": [
+        "pages/fhi/index.tsx"
+      ]
+    },
+    {
+      "id": "kl-seo-001",
+      "topic": "AEO: answer-first layout for scam help queries",
+      "source": "internal/research",
+      "summary": "Search engines surface answer boxes for instructional queries. \"What to do if scammed\" targets featured snippets. Numbered steps in <ol> with action verbs as headings perform best. Answer within first 300 words.",
+      "confidence": 0.8,
+      "truthScore": 0.72,
+      "lastChecked": "2026-03-27T22:15:00.000Z",
+      "status": "inferred",
+      "verifiability": "medium",
+      "expiresAfter": "P45D",
+      "tags": [
+        "SEO",
+        "AEO",
+        "FHI",
+        "search",
+        "featured-snippet"
+      ],
+      "laneRelevance": [
+        "FHI"
+      ],
+      "linkedEvidence": [
+        "pages/fhi/index.tsx"
+      ]
+    },
+    {
+      "id": "kl-security-001",
+      "topic": "Injection patterns: system prompt override variants",
+      "source": "internal/observation",
+      "summary": "Most common injection: ignore previous instructions, disregard system prompt, override policy, you are now. Defence must detect all variants including base64-encoded and Unicode-substituted forms.",
+      "confidence": 0.9,
+      "truthScore": 0.85,
+      "lastChecked": "2026-03-27T22:20:00.000Z",
+      "status": "confirmed",
+      "verifiability": "high",
+      "expiresAfter": "P30D",
+      "tags": [
+        "security",
+        "injection",
+        "defence",
+        "prompt-injection"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "ADMIN",
+        "VST",
+        "FHI"
+      ],
+      "linkedEvidence": [
+        "engine/defence.ts"
+      ]
+    },
+    {
+      "id": "kl-rollback-001",
+      "topic": "Rollback: snapshot must precede any mutation step",
+      "source": "internal/observation",
+      "summary": "takeSnapshot() must be called before the first file write. Snapshot files populated from rollbackPoint=true steps only. If no steps have rollbackPoint=true, snapshot is empty and rollback is a no-op.",
+      "confidence": 1.0,
+      "truthScore": 1.0,
+      "lastChecked": "2026-03-27T22:00:00.000Z",
+      "status": "confirmed",
+      "verifiability": "high",
+      "expiresAfter": "P90D",
+      "tags": [
+        "rollback",
+        "execution",
+        "snapshot",
+        "safety"
+      ],
+      "laneRelevance": [
+        "AI_LAB",
+        "VST",
+        "FHI"
+      ],
+      "linkedEvidence": [
+        "engine/rollback.ts"
+      ]
     }
-  ]
+  ],
+  "updatedAt": "2026-03-27T22:30:00.000Z"
 }

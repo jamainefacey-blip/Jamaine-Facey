@@ -1,22 +1,22 @@
 {
-  "version": 1,
+  "version": 2,
   "createdAt": "2026-03-27T00:00:00.000Z",
-  "description": "Pain Engine Skeleton Library — reusable build skeletons for faster, consistent asset construction.",
+  "description": "Pain Engine Skeleton Library \u2014 reusable build skeletons for faster, consistent asset construction.",
   "schema": {
-    "id":                   "string — unique skeleton identifier (skel-XXX-NNN)",
-    "name":                 "string — human-readable name",
-    "category":             "string — dashboard | product | tool | portal | landing | report",
-    "lane":                 "string — primary lane (or 'multi')",
-    "useCase":              "string — when to use this skeleton",
-    "components":           "string[] — UI/functional components included",
-    "logicModules":         "string[] — logic layers included",
-    "monetisationHooks":    "string[] — CTA/pricing/conversion hooks included",
-    "complianceBaseline":   "string[] — compliance elements pre-baked",
-    "accessibilityBaseline":"string[] — a11y elements pre-baked",
-    "deploySurface":        "string — target deploy surface (web/api/embedded)",
-    "reusable":             "boolean",
-    "qualityScore":         "number — baseline gate score expected (0-100)",
-    "linkedPatterns":       "string[] — pattern IDs from skill library"
+    "id": "string \u2014 unique skeleton identifier (skel-XXX-NNN)",
+    "name": "string \u2014 human-readable name",
+    "category": "string \u2014 dashboard | product | tool | portal | landing | report",
+    "lane": "string \u2014 primary lane (or 'multi')",
+    "useCase": "string \u2014 when to use this skeleton",
+    "components": "string[] \u2014 UI/functional components included",
+    "logicModules": "string[] \u2014 logic layers included",
+    "monetisationHooks": "string[] \u2014 CTA/pricing/conversion hooks included",
+    "complianceBaseline": "string[] \u2014 compliance elements pre-baked",
+    "accessibilityBaseline": "string[] \u2014 a11y elements pre-baked",
+    "deploySurface": "string \u2014 target deploy surface (web/api/embedded)",
+    "reusable": "boolean",
+    "qualityScore": "number \u2014 baseline gate score expected (0-100)",
+    "linkedPatterns": "string[] \u2014 pattern IDs from skill library"
   },
   "skeletons": [
     {
@@ -24,7 +24,7 @@
       "name": "Dashboard Skeleton",
       "category": "dashboard",
       "lane": "AI_LAB",
-      "useCase": "Internal operator dashboards — queue management, gate results, health monitoring, control panels",
+      "useCase": "Internal operator dashboards \u2014 queue management, gate results, health monitoring, control panels",
       "components": [
         "header-nav",
         "status-badge",
@@ -65,7 +65,7 @@
       "name": "BIAB Product Skeleton",
       "category": "product",
       "lane": "VST",
-      "useCase": "Client-facing BIAB product pages — hero, features, pricing, CTA, trust signals",
+      "useCase": "Client-facing BIAB product pages \u2014 hero, features, pricing, CTA, trust signals",
       "components": [
         "hero-section",
         "feature-grid",
@@ -114,7 +114,7 @@
       "name": "Internal Tool Skeleton",
       "category": "tool",
       "lane": "ADMIN",
-      "useCase": "Internal Pain System tools — policy editors, audit viewers, config managers",
+      "useCase": "Internal Pain System tools \u2014 policy editors, audit viewers, config managers",
       "components": [
         "form-builder",
         "json-editor",
@@ -153,7 +153,7 @@
       "name": "Client Portal Skeleton",
       "category": "portal",
       "lane": "multi",
-      "useCase": "Private client workspaces — BIAB delivery portals, intake dashboards, build progress views",
+      "useCase": "Private client workspaces \u2014 BIAB delivery portals, intake dashboards, build progress views",
       "components": [
         "client-header",
         "progress-tracker",
@@ -192,6 +192,257 @@
         "pat-gen-1774-compliance",
         "pat-gen-1774-accessibility"
       ]
+    },
+    {
+      "id": "skel-fhi-001",
+      "name": "FHI Fraud Type Guidance Page",
+      "assetType": "guidance-page",
+      "lane": "FHI",
+      "description": "Single fraud type guidance page: hero with fraud type name + severity badge, immediate actions section (numbered), reporting routes section, recovery chance indicator, FAQs, related types.",
+      "structure": {
+        "sections": [
+          "nav",
+          "type-hero",
+          "severity-indicator",
+          "immediate-actions",
+          "reporting-routes",
+          "recovery-info",
+          "faqs",
+          "related-types",
+          "footer"
+        ],
+        "requiredComponents": [
+          "SeverityBadge",
+          "ActionStepList",
+          "ReportingRouteCard",
+          "RecoveryMeter"
+        ],
+        "dataSource": "engine/data/fhi-intelligence.json fraudTypes[*]"
+      },
+      "seoPattern": "answer-first",
+      "aeoTarget": "[fraud type] + what to do + UK",
+      "monetisationType": "affiliate",
+      "qualityScore": 87,
+      "previewTarget": {
+        "type": "local",
+        "path": "engine/data/fhi-preview/"
+      },
+      "buildOrder": [
+        "nav",
+        "hero",
+        "actions",
+        "reporting",
+        "recovery",
+        "faqs",
+        "footer"
+      ],
+      "createdAt": "2026-03-27T22:30:00.000Z",
+      "status": "ready"
+    },
+    {
+      "id": "skel-fhi-002",
+      "name": "FHI Fraud Checker Starter",
+      "assetType": "interactive-tool",
+      "lane": "FHI",
+      "description": "Multi-step fraud type checker: step 1 channel selection, step 2 signal collection, step 3 classification result + immediate actions + reporting routes. No account required.",
+      "structure": {
+        "sections": [
+          "nav",
+          "checker-hero",
+          "step-channel",
+          "step-signals",
+          "step-result",
+          "action-output",
+          "footer"
+        ],
+        "requiredComponents": [
+          "ProgressBar",
+          "ChannelSelector",
+          "SignalCheckboxList",
+          "ClassificationResult",
+          "ActionOutput"
+        ],
+        "dataSource": "engine/data/fhi-intelligence.json classificationMatrix"
+      },
+      "seoPattern": "tool-page",
+      "aeoTarget": "fraud checker online UK",
+      "monetisationType": "lead_generation",
+      "qualityScore": 88,
+      "previewTarget": {
+        "type": "local",
+        "path": "engine/data/fhi-preview/"
+      },
+      "buildOrder": [
+        "state-machine",
+        "channel-step",
+        "signal-step",
+        "classification-logic",
+        "result-render",
+        "ui-shell"
+      ],
+      "createdAt": "2026-03-27T22:30:00.000Z",
+      "status": "ready"
+    },
+    {
+      "id": "skel-biab-002",
+      "name": "BIAB Client Delivery Portal",
+      "assetType": "client-portal",
+      "lane": "ADMIN",
+      "description": "Client-specific delivery portal. Private by default. Shows: active builds, gate results, preview links, release history, next actions. No cross-client data. Each client sees only their own data.",
+      "structure": {
+        "sections": [
+          "nav-client",
+          "status-overview",
+          "active-builds",
+          "gate-results",
+          "preview-proof",
+          "release-history",
+          "next-actions"
+        ],
+        "requiredComponents": [
+          "BuildStatusCard",
+          "GateResultPanel",
+          "PreviewProofViewer",
+          "ReleaseTimeline"
+        ],
+        "dataSource": "engine/data/clients/{clientId}/"
+      },
+      "monetisationType": "subscription_revenue",
+      "qualityScore": 85,
+      "privacyRules": [
+        "no cross-client data",
+        "private by default",
+        "client workspace isolation",
+        "founder can view all"
+      ],
+      "buildOrder": [
+        "auth-check",
+        "data-scope-client",
+        "status-section",
+        "builds-section",
+        "releases-section",
+        "preview-section"
+      ],
+      "createdAt": "2026-03-27T22:30:00.000Z",
+      "status": "ready"
+    },
+    {
+      "id": "skel-dash-002",
+      "name": "Pain System Execution Dashboard",
+      "assetType": "dashboard",
+      "lane": "AI_LAB",
+      "description": "Live execution layer dashboard. Shows: current stage, build status, test results, visual QA score, preview proof chips, retry count, blocker summary, audit trail. Connects to execution-panel-result.json.",
+      "structure": {
+        "sections": [
+          "header-status",
+          "stage-bar",
+          "stat-grid",
+          "preview-proof-row",
+          "test-class-table",
+          "visual-qa-panel",
+          "audit-trail",
+          "blocker-list"
+        ],
+        "requiredComponents": [
+          "StageBadge",
+          "StatCard",
+          "ProofChip",
+          "TestClassRow",
+          "VisualScore",
+          "AuditEntry"
+        ],
+        "dataSource": "engine/data/execution-panel-result.json"
+      },
+      "monetisationType": "internal",
+      "qualityScore": 88,
+      "autoRefresh": 5000,
+      "buildOrder": [
+        "data-fetch",
+        "stage-render",
+        "stats-render",
+        "preview-render",
+        "tests-render",
+        "audit-render"
+      ],
+      "createdAt": "2026-03-27T22:30:00.000Z",
+      "status": "ready"
+    },
+    {
+      "id": "skel-vst-001",
+      "name": "VST BIAB Travel Policy Page",
+      "assetType": "product-page",
+      "lane": "VST",
+      "description": "BIAB-ready travel policy configuration page. Shows: policy rules, approval flow, spend limits, preferred suppliers, compliance score. Designed for travel managers at target accounts.",
+      "structure": {
+        "sections": [
+          "nav",
+          "policy-hero",
+          "policy-rules",
+          "approval-workflow",
+          "spend-limits",
+          "supplier-preferences",
+          "compliance-score",
+          "cta-configure",
+          "footer"
+        ],
+        "requiredComponents": [
+          "PolicyRuleCard",
+          "ApprovalFlowDiagram",
+          "SpendLimitTable",
+          "ComplianceGauge"
+        ],
+        "dataSource": "pages/index.tsx VST policy data"
+      },
+      "monetisationType": "subscription_revenue",
+      "qualityScore": 84,
+      "targetPersona": "travel-manager-uk-sme",
+      "buildOrder": [
+        "nav",
+        "hero",
+        "policy-rules",
+        "approval-flow",
+        "spend-limits",
+        "cta",
+        "footer"
+      ],
+      "createdAt": "2026-03-27T22:30:00.000Z",
+      "status": "ready"
+    },
+    {
+      "id": "skel-admin-001",
+      "name": "ADMIN Lane Audit Report",
+      "assetType": "report",
+      "lane": "ADMIN",
+      "description": "System-wide audit report surface. Lists: module health, alignment score per lane, failed checks, knowledge gaps, recommended actions. Read-only \u2014 no mutations from report surface.",
+      "structure": {
+        "sections": [
+          "report-header",
+          "alignment-summary",
+          "module-health-table",
+          "gap-analysis",
+          "recommendations",
+          "export-button"
+        ],
+        "requiredComponents": [
+          "AlignmentScore",
+          "ModuleHealthRow",
+          "GapItem",
+          "RecommendationCard"
+        ],
+        "dataSource": "engine/data/alignment-result.json"
+      },
+      "monetisationType": "internal",
+      "qualityScore": 82,
+      "buildOrder": [
+        "data-fetch",
+        "summary-render",
+        "health-table",
+        "gaps",
+        "recommendations"
+      ],
+      "createdAt": "2026-03-27T22:30:00.000Z",
+      "status": "ready"
     }
-  ]
+  ],
+  "updatedAt": "2026-03-27T22:35:00.000Z"
 }
