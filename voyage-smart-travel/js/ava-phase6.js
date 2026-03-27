@@ -19,11 +19,12 @@ window.VSTAvaPhase6 = (function () {
   'use strict';
 
   /* ── Config ──────────────────────────────────────────────────────────────── */
-  var CFG      = window.VST_CONFIG || {};
-  var API_KEY  = CFG.avaApiKey   || null;
-  var ENDPOINT = CFG.avaEndpoint || 'https://api.anthropic.com/v1/messages';
-  var MODEL    = CFG.avaModel    || 'claude-haiku-4-5-20251001';
-  var TIMEOUT  = CFG.avaTimeout  || 12000;
+  var CFG        = window.VST_CONFIG || {};
+  var API_KEY    = CFG.avaApiKey    || null;
+  var ENDPOINT   = CFG.avaEndpoint  || 'https://api.anthropic.com/v1/messages';
+  var MODEL      = CFG.avaModel     || 'claude-haiku-4-5-20251001';
+  var TIMEOUT    = CFG.avaTimeout   || 12000;
+  var AUTH_SCHEME = CFG.avaAuthScheme || 'x-api-key'; /* 'x-api-key' | 'bearer' */
 
   /* ── Valid enum values ───────────────────────────────────────────────────── */
   var VALID_RISK       = ['LOW', 'MEDIUM', 'HIGH'];
@@ -316,14 +317,16 @@ window.VSTAvaPhase6 = (function () {
 
   /* ── Live API call ───────────────────────────────────────────────────────── */
   function liveEvaluate(fd) {
+    var authHeader = AUTH_SCHEME === 'bearer'
+      ? { 'Authorization': 'Bearer ' + API_KEY }
+      : { 'x-api-key': API_KEY };
     return fetchWithTimeout(ENDPOINT, {
       method: 'POST',
-      headers: {
+      headers: Object.assign({
         'content-type':      'application/json',
-        'x-api-key':         API_KEY,
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-api-access': 'true',
-      },
+      }, authHeader),
       body: JSON.stringify({
         model:      MODEL,
         max_tokens: 1024,
