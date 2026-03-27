@@ -1,31 +1,28 @@
 {
-  "id": "00e81554-bde5-4cf9-a62c-f2bb0ac28079",
-  "taskId": "gate-test-build-fail",
-  "lane": "AI_LAB",
-  "assetType": "api",
-  "evaluatedAt": "2026-03-27T17:33:00.091Z",
-  "overallStatus": "fail",
-  "founderReviewReady": false,
-  "score": 64,
-  "hardBlockers": [
-    "BUILD_FAILED"
-  ],
+  "id": "21246496-1589-409d-91da-9590780726ea",
+  "taskId": "gate-test-healthy",
+  "lane": "BACKYARD",
+  "assetType": "data",
+  "evaluatedAt": "2026-03-27T17:33:00.083Z",
+  "overallStatus": "pass",
+  "founderReviewReady": true,
+  "score": 91,
+  "hardBlockers": [],
   "dimensions": {
     "BUILD_HEALTH": {
       "dimension": "BUILD_HEALTH",
-      "score": 0,
-      "status": "fail",
+      "score": 100,
+      "status": "pass",
       "findings": [
-        "Task reported buildStatus=fail"
-      ],
-      "hardBlocker": "BUILD_FAILED"
+        "Task completed successfully"
+      ]
     },
     "PREVIEW_PROOF": {
       "dimension": "PREVIEW_PROOF",
       "score": 100,
       "status": "pass",
       "findings": [
-        "Proof provided: none — build failed"
+        "Proof provided: engine/data/scheduler-state.json — verified present"
       ]
     },
     "UX_VISUAL": {
@@ -33,7 +30,7 @@
       "score": 90,
       "status": "pass",
       "findings": [
-        "Asset type 'api' — UX/visual check not applicable"
+        "Asset type 'data' — UX/visual check not applicable"
       ]
     },
     "MONETISATION": {
@@ -41,7 +38,7 @@
       "score": 90,
       "status": "pass",
       "findings": [
-        "Asset type 'api' — monetisation path check not applicable"
+        "Asset type 'data' — monetisation path check not applicable"
       ]
     },
     "COPY_QUALITY": {
@@ -65,7 +62,7 @@
       "score": 90,
       "status": "pass",
       "findings": [
-        "Asset type 'api' — SEO check not applicable"
+        "Asset type 'data' — SEO check not applicable"
       ]
     },
     "COMPLIANCE_SAFETY": {
@@ -78,20 +75,14 @@
     },
     "RERUN_RISK": {
       "dimension": "RERUN_RISK",
-      "score": 30,
-      "status": "fail",
+      "score": 100,
+      "status": "pass",
       "findings": [
-        "Build health is low — high rerun risk",
-        "1 fail(s) + 2 warn(s) — moderate rerun risk"
+        "Low rerun risk"
       ]
     }
   },
-  "requiredFixes": [
-    "HARD BLOCKERS: BUILD_FAILED — must resolve before founder review",
-    "[BUILD_HEALTH] Task reported buildStatus=fail",
-    "[RERUN_RISK] Build health is low — high rerun risk",
-    "[RERUN_RISK] 1 fail(s) + 2 warn(s) — moderate rerun risk"
-  ],
+  "requiredFixes": [],
   "warnings": [
     "[COPY_QUALITY] No content provided — cannot evaluate copy quality",
     "[ACCESSIBILITY] No content — accessibility check skipped"
