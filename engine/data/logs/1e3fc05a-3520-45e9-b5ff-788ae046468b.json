@@ -1,0 +1,13 @@
+{
+  "runId": "1e3fc05a-3520-45e9-b5ff-788ae046468b",
+  "taskId": "a1-repo",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T11:40:33.765Z",
+  "completedAt": "2026-03-27T11:40:33.765Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "claudeSummary": "APPROVAL: task a1-repo manually approved (awaiting_approval → queued)"
+}

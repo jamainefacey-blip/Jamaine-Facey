@@ -30,7 +30,9 @@ import {
 } from './scheduler';
 import { updateGuardrailPolicy, resetGuardrailPolicy } from './guardrail';
 import { log } from './logger';
-import type { SchedulerTask } from './types';
+import type { SchedulerTask, TaskLane } from './types';
+
+const ALL_LANES: TaskLane[] = ['AI_LAB', 'VST', 'FHI', 'ADMIN', 'BACKYARD'];
 
 const PORT = SCHEDULER_CONFIG.apiPort;
 
@@ -79,6 +81,11 @@ const server = http.createServer(async (req, res) => {
     // ── GET /status ──────────────────────────────────────────────────────────
     if (method === 'GET' && url === '/status') {
       const state = getSchedulerStatus();
+      const byLane: Record<string, number> = {};
+      for (const ln of ALL_LANES) {
+        const c = state.tasks.filter(t => (t.lane ?? 'BACKYARD') === ln).length;
+        if (c > 0) byLane[ln] = c;
+      }
       return json(res, 200, {
         status: state.status,
         isTimerActive: state.isTimerActive,
@@ -96,6 +103,7 @@ const server = http.createServer(async (req, res) => {
         awaitingApprovalCount: state.tasks.filter(t => t.status === 'awaiting_approval').length,
         allowedCount: state.tasks.filter(t => t.decision === 'allowed').length,
         blockedCount: state.tasks.filter(t => t.decision === 'blocked').length,
+        byLane,
       });
     }
 
@@ -154,10 +162,10 @@ const server = http.createServer(async (req, res) => {
 
     // ── POST /queue/add ──────────────────────────────────────────────────────
     if (method === 'POST' && url === '/queue/add') {
-      const body = await readBody(req) as { type?: string; payload?: Record<string, unknown>; id?: string };
+      const body = await readBody(req) as { type?: string; payload?: Record<string, unknown>; id?: string; lane?: string };
       if (!body.type) return json(res, 400, { error: 'Missing type' });
-      // Accept any string type — guardrail will decide at pick-up
-      const task = addTask(body.type as SchedulerTask['type'], body.payload ?? {}, body.id);
+      const lane = ALL_LANES.includes(body.lane as TaskLane) ? (body.lane as TaskLane) : undefined;
+      const task = addTask(body.type as SchedulerTask['type'], body.payload ?? {}, body.id, lane);
       return json(res, 201, { ok: true, task });
     }
 

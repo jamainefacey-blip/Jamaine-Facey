@@ -1,0 +1,14 @@
+{
+  "runId": "7d258571-b637-4fa5-9afc-063fc7632f77",
+  "taskId": "p8-repo",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T11:40:33.764Z",
+  "completedAt": "2026-03-27T11:40:33.764Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Task type 'repo' not handled in safe executor",
+  "claudeSummary": "FAIL: Task type 'repo' not handled in safe executor"
+}

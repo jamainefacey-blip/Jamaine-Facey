@@ -10,6 +10,7 @@ import {
   resetScheduler,
   approveTask,
   setOvernightMode,
+  getGuardrailPolicy,
 } from './scheduler';
 import {
   decide,
@@ -77,6 +78,33 @@ async function runTests(): Promise<void> {
   assert(decide(mkTask('deploy')).decision  === 'blocked',           'deploy → blocked');
   assert(decide(mkTask('notify')).decision  === 'blocked',           'notify → blocked');
   assert(decide(mkTask('unknown')).decision === 'blocked',           'unknown → blocked (safety rule)');
+
+  // ── pc-routing-01: lane field tests ──────────────────────────────────────
+  log('INFO', '\n[LANE] Lane field — addTask, default, RunLog stamping');
+  resetScheduler();
+
+  const laneTask = addTask('eval' as SchedulerTask['type'], { expression: '1' }, 'lane-explicit', 'AI_LAB');
+  assert(laneTask.lane === 'AI_LAB',  'LANE: explicit lane=AI_LAB stamped on task');
+
+  const defaultTask = addTask('eval' as SchedulerTask['type'], { expression: '2' }, 'lane-default');
+  assert(defaultTask.lane === 'BACKYARD', 'LANE: omitted lane defaults to BACKYARD');
+
+  // Run both — verify lane survives execution and is stamped on RunLog
+  startScheduler(INTERVAL);
+  await waitFor(
+    () => listTasks().filter(t => ['lane-explicit','lane-default'].includes(t.id) && t.status === 'done').length === 2,
+    'lane tasks done',
+  );
+  stopScheduler();
+
+  const laneAfter = listTasks().find(t => t.id === 'lane-explicit')!;
+  const defAfter  = listTasks().find(t => t.id === 'lane-default')!;
+  assert(laneAfter.lane === 'AI_LAB',   'LANE: AI_LAB preserved after execution');
+  assert(defAfter.lane  === 'BACKYARD', 'LANE: BACKYARD preserved after execution');
+
+  // getSchedulerStatus should have correct byLane counts once tasks are loaded
+  // (status counts are derived from tasks at call time — just verify field exists)
+  resetScheduler();
 
   // ── PC-POLICY-01 tests ────────────────────────────────────────────────────
 

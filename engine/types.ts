@@ -69,6 +69,8 @@ export interface SchedulerTask {
   updatedAt: string;
   lastError?: string;
   result?: unknown;
+  /** Lane this task belongs to — used for routing and run-log stamping */
+  lane?: TaskLane;
   /** Risk level assigned by guardrail classifier */
   risk?: 'low' | 'medium' | 'high';
   /** Execution decision from guardrail policy */

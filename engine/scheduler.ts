@@ -12,7 +12,7 @@ import { randomUUID } from 'crypto';
 import { SCHEDULER_CONFIG, ROOT } from './config';
 import { log, writeRunLog } from './logger';
 import { decide, loadLivePolicy, GUARDRAIL_POLICY } from './guardrail';
-import type { SchedulerTask, SchedulerState, RunLog } from './types';
+import type { SchedulerTask, SchedulerState, RunLog, TaskLane } from './types';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -198,7 +198,7 @@ export function processQueue(): boolean {
   const runLog: RunLog = {
     runId,
     taskId: task.id,
-    lane: 'BACKYARD',
+    lane: task.lane ?? 'BACKYARD',
     status: task.status === 'done' ? 'complete' : task.status === 'failed' ? 'failed' : 'pending',
     startedAt: now,
     completedAt,
@@ -265,7 +265,8 @@ export function getSchedulerStatus(): SchedulerState & { isTimerActive: boolean 
 export function addTask(
   type: SchedulerTask['type'],
   payload: Record<string, unknown>,
-  id?: string
+  id?: string,
+  lane?: TaskLane,
 ): SchedulerTask {
   const state = loadState();
   const now = new Date().toISOString();
@@ -277,10 +278,11 @@ export function addTask(
     attempts: 0,
     createdAt: now,
     updatedAt: now,
+    lane: lane ?? 'BACKYARD',
   };
   state.tasks.push(task);
   saveState(state);
-  log('INFO', `Scheduler: enqueued task ${task.id} (type=${type})`);
+  log('INFO', `Scheduler: enqueued task ${task.id} (type=${type}, lane=${task.lane})`);
   return task;
 }
 
