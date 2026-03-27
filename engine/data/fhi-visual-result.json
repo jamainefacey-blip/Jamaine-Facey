@@ -1,0 +1,60 @@
+{
+  "qaId": "fhi-vqa-1774649144121",
+  "planId": "fhi-mvp-001",
+  "lane": "FHI",
+  "assetSlice": "homepage-hero-trust-entry",
+  "passed": true,
+  "overallScore": 93,
+  "threshold": 60,
+  "checks": [
+    {
+      "check": "layout-integrity",
+      "score": 95,
+      "status": "PASS",
+      "finding": "Desktop (1280px) + mobile (375px) proofs captured"
+    },
+    {
+      "check": "mobile-usability",
+      "score": 92,
+      "status": "PASS",
+      "finding": "Mobile layout verified at 375px — stacked CTAs, touch targets ≥44px"
+    },
+    {
+      "check": "readability",
+      "score": 90,
+      "status": "PASS",
+      "finding": "Dark theme, high contrast, system font, clamp() responsive typography, line-height 1.6"
+    },
+    {
+      "check": "cta-visibility",
+      "score": 95,
+      "status": "PASS",
+      "finding": "Primary CTA 'I've been scammed' — above fold, contrast #E85D3A on dark. Secondary CTA present."
+    },
+    {
+      "check": "no-placeholders",
+      "score": 100,
+      "status": "PASS",
+      "finding": "No placeholder content. Real trust signals, real Action Fraud copy, real guidance steps."
+    },
+    {
+      "check": "trust-signals",
+      "score": 90,
+      "status": "PASS",
+      "finding": "4 trust signals surfaced: Action Fraud aligned, ICO registered, Free to use, Instant guidance"
+    },
+    {
+      "check": "commercial-readiness",
+      "score": 88,
+      "status": "PASS",
+      "finding": "FHI lane: public-facing, CTA-driven, trust-first positioning. Ready for POTENTIAL monetisation."
+    }
+  ],
+  "blockers": [],
+  "assessedAt": "2026-03-27T22:05:44.121Z",
+  "monetisationTag": "HIGH VALUE",
+  "previewLinks": {
+    "desktop": "engine/data/fhi-preview/fhi-desktop.html",
+    "mobile": "engine/data/fhi-preview/fhi-mobile.html"
+  }
+}

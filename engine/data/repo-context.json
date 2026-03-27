@@ -1,9 +1,8 @@
 {
-  "contextId": "ctx-1774648320394",
+  "contextId": "ctx-1774649144119",
   "rootDir": "/home/user/Jamaine-Facey",
   "changedFiles": [
-    "engine/data/builder-result.json",
-    "engine/scheduler-ui.html"
+    "engine/data/execution-plan.json"
   ],
   "protectedFiles": [
     "engine/data/canon-vault.json",
@@ -24,10 +23,10 @@
     "*.log",
     "engine/data/logs/"
   ],
-  "indexedAt": "2026-03-27T21:52:00.394Z",
+  "indexedAt": "2026-03-27T22:05:44.119Z",
   "stats": {
-    "totalFiles": 312,
+    "totalFiles": 318,
     "protectedCount": 8,
-    "changedCount": 2
+    "changedCount": 1
   }
 }

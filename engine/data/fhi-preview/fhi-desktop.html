@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FHI Preview — Desktop (1280px)</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Inter', system-ui, sans-serif; background: #0A0E1A; color: #F0F2F7; }
+/* Nav */
+.nav { background: rgba(10,14,26,.95); border-bottom: 1px solid #1C2540; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
+.logo-mark { background: #E85D3A; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 7px; border-radius: 5px; letter-spacing: .04em; }
+.logo-name { font-weight: 600; font-size: 14px; color: #F0F2F7; margin-left: 8px; }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { color: #8A9AC0; font-size: 13px; text-decoration: none; font-weight: 500; }
+/* Hero */
+.hero { padding: 80px 40px 72px; text-align: center; background: linear-gradient(180deg, #0D1120 0%, #0A0E1A 100%); }
+.hero-inner { max-width: 720px; margin: 0 auto; }
+.badge { display: inline-block; background: rgba(232,93,58,.12); color: #E85D3A; border: 1px solid rgba(232,93,58,.3); border-radius: 100px; font-size: 11px; font-weight: 700; padding: 4px 14px; margin-bottom: 20px; letter-spacing: .05em; text-transform: uppercase; }
+.headline { font-size: 52px; font-weight: 800; line-height: 1.15; margin-bottom: 18px; }
+.accent { color: #E85D3A; }
+.sub { font-size: 18px; color: #8A9AC0; line-height: 1.65; margin-bottom: 32px; }
+.cta-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 16px; }
+.cta-primary { background: #E85D3A; color: #fff; padding: 15px 28px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none; }
+.cta-secondary { background: rgba(232,93,58,.1); color: #E85D3A; border: 1px solid rgba(232,93,58,.35); padding: 15px 24px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none; }
+.note { font-size: 12px; color: #5A6A8A; }
+/* Trust */
+.trust { background: #0D1120; border-top: 1px solid #1C2540; border-bottom: 1px solid #1C2540; padding: 24px 40px; }
+.trust-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.trust-item { display: flex; align-items: flex-start; gap: 12px; }
+.trust-icon { font-size: 20px; }
+.trust-label { font-size: 13px; font-weight: 700; color: #C8D0E8; }
+.trust-detail { font-size: 11px; color: #5A6A8A; }
+/* Steps */
+.steps-section { background: #0D1120; padding: 64px 40px; }
+.section-inner { max-width: 760px; margin: 0 auto; }
+.section-title { font-size: 30px; font-weight: 800; margin-bottom: 10px; }
+.section-sub { color: #8A9AC0; font-size: 15px; margin-bottom: 32px; }
+.steps { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+.step { display: flex; align-items: flex-start; gap: 16px; background: #111827; border: 1px solid #1C2540; border-radius: 10px; padding: 18px 20px; }
+.step-num { background: #E85D3A; color: #fff; font-size: 13px; font-weight: 800; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+.step p { font-size: 13px; color: #8A9AC0; }
+/* Types */
+.types-section { padding: 64px 40px; }
+.types-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.type-card { background: #111827; border: 1px solid #1C2540; border-radius: 10px; padding: 18px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.type-icon { font-size: 20px; }
+.type-label { font-size: 13px; font-weight: 600; color: #C8D0E8; flex: 1; }
+.type-arrow { color: #E85D3A; font-weight: 700; }
+/* Report */
+.report { background: #0D1120; border-top: 1px solid #1C2540; padding: 64px 40px; text-align: center; }
+.report-title { font-size: 30px; font-weight: 800; margin-bottom: 10px; }
+.report-sub { color: #8A9AC0; font-size: 15px; margin-bottom: 28px; }
+/* Footer */
+footer { background: #060810; border-top: 1px solid #1C2540; padding: 20px 40px; display: flex; align-items: center; gap: 12px; }
+.footer-text { font-size: 12px; color: #5A6A8A; flex: 1; }
+.footer-legal { font-size: 11px; color: #3A4A6A; }
+/* Proof stamp */
+.proof-stamp { position: fixed; bottom: 16px; right: 16px; background: rgba(62,207,142,.9); color: #0A0E1A; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 100px; z-index: 999; }
+</style>
+</head>
+<body>
+
+<div class="proof-stamp">✓ FHI Desktop Preview — 1280px</div>
+
+<nav class="nav">
+  <div style="display:flex;align-items:center">
+    <span class="logo-mark">FHI</span>
+    <span class="logo-name">Fraud Help Index</span>
+  </div>
+  <div class="nav-links">
+    <a href="#">What to do</a>
+    <a href="#">Fraud types</a>
+    <a href="#">Report</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge">Free · Confidential · Instant</div>
+    <h1 class="headline">Been scammed?<br><span class="accent">We'll help you fight back.</span></h1>
+    <p class="sub">Fraud Help Index gives you clear, step-by-step guidance — from what to do right now, to who to report it to, to how to start recovering.</p>
+    <div class="cta-row">
+      <a href="#" class="cta-primary">I've been scammed — what now?</a>
+      <a href="#" class="cta-secondary">Identify your fraud type</a>
+    </div>
+    <p class="note">No sign-up required. Guidance is instant and free.</p>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="trust-inner">
+    <div class="trust-item"><span class="trust-icon">🛡️</span><div><div class="trust-label">Action Fraud aligned</div><div class="trust-detail">Reporting flows follow Action Fraud guidance</div></div></div>
+    <div class="trust-item"><span class="trust-icon">🔒</span><div><div class="trust-label">ICO registered</div><div class="trust-detail">Your data is never sold or shared</div></div></div>
+    <div class="trust-item"><span class="trust-icon">📋</span><div><div class="trust-label">Free to use</div><div class="trust-detail">No sign-up required to get help</div></div></div>
+    <div class="trust-item"><span class="trust-icon">⚡</span><div><div class="trust-label">Instant guidance</div><div class="trust-detail">Know your next step in under 2 minutes</div></div></div>
+  </div>
+</section>
+
+<section class="steps-section">
+  <div class="section-inner">
+    <h2 class="section-title">What to do right now</h2>
+    <p class="section-sub">Follow these steps immediately. Time matters.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-num">1</div><div><strong>Stop all contact</strong><p>Do not send any more money. Block the scammer on all platforms.</p></div></li>
+      <li class="step"><div class="step-num">2</div><div><strong>Contact your bank immediately</strong><p>Call the number on the back of your card. Ask for the fraud team.</p></div></li>
+      <li class="step"><div class="step-num">3</div><div><strong>Report to Action Fraud</strong><p>Report online at actionfraud.police.uk or call 0300 123 2040.</p></div></li>
+      <li class="step"><div class="step-num">4</div><div><strong>Secure your accounts</strong><p>Change passwords on any accounts that may be compromised.</p></div></li>
+      <li class="step"><div class="step-num">5</div><div><strong>Get a full fraud assessment</strong><p>Use Fraud Help Index to identify your fraud type and get tailored guidance.</p></div></li>
+    </ol>
+    <div style="text-align:center"><a href="#" class="cta-primary">Identify my fraud type →</a></div>
+  </div>
+</section>
+
+<section class="types-section">
+  <div class="section-inner">
+    <h2 class="section-title">What type of fraud?</h2>
+    <p class="section-sub">Select your fraud type to get tailored guidance and reporting steps.</p>
+    <div class="types-grid">
+      <div class="type-card"><span class="type-icon">🛒</span><span class="type-label">Online purchase scam</span><span class="type-arrow">→</span></div>
+      <div class="type-card"><span class="type-icon">📈</span><span class="type-label">Investment fraud</span><span class="type-arrow">→</span></div>
+      <div class="type-card"><span class="type-icon">💔</span><span class="type-label">Romance scam</span><span class="type-arrow">→</span></div>
+      <div class="type-card"><span class="type-icon">🎭</span><span class="type-label">Impersonation fraud</span><span class="type-arrow">→</span></div>
+      <div class="type-card"><span class="type-icon">📱</span><span class="type-label">Phishing / smishing</span><span class="type-arrow">→</span></div>
+      <div class="type-card"><span class="type-icon">🏦</span><span class="type-label">Authorised push payment</span><span class="type-arrow">→</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="report">
+  <div style="max-width:760px;margin:0 auto">
+    <h2 class="report-title">Ready to report?</h2>
+    <p class="report-sub">Reporting protects you and stops others from being targeted.</p>
+    <div class="cta-row">
+      <a href="#" class="cta-primary">Report to Action Fraud</a>
+      <a href="#" class="cta-secondary">Financial Ombudsman</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="logo-mark" style="font-size:12px">FHI</span>
+  <span class="footer-text">Fraud Help Index — free guidance for fraud victims.</span>
+  <span class="footer-legal">Not legal advice. Always report to Action Fraud.</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "testId": "test-1774649145848",
+  "planId": "plan-1774649143361",
+  "buildId": "build-1774649144120",
+  "overallPass": true,
+  "classes": [
+    {
+      "class": "build-health",
+      "status": "PASS",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "failingSurface": [],
+      "output": "",
+      "runAt": "2026-03-27T22:05:44.122Z"
+    },
+    {
+      "class": "lint",
+      "status": "SKIP",
+      "passed": 0,
+      "failed": 0,
+      "skipped": 1,
+      "failingSurface": [],
+      "output": "no TS files in scope",
+      "runAt": "2026-03-27T22:05:44.122Z"
+    },
+    {
+      "class": "unit",
+      "status": "PASS",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "failingSurface": [],
+      "output": "",
+      "runAt": "2026-03-27T22:05:44.122Z"
+    },
+    {
+      "class": "visual",
+      "status": "PASS",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "failingSurface": [],
+      "output": "preview proof exists — visual gate deferred to visual-qa",
+      "runAt": "2026-03-27T22:05:45.848Z"
+    }
+  ],
+  "failingSurfaces": [],
+  "blockedClasses": [],
+  "runAt": "2026-03-27T22:05:45.848Z"
+}

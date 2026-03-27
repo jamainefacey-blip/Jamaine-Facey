@@ -1,32 +1,61 @@
 {
-  "generatedAt": "2026-03-27T21:52:00.396Z",
-  "allModulesPass": true,
-  "moduleResults": {
-    "execution-planner": true,
-    "repo-context": true,
-    "builder": true,
-    "preview-engine": true,
-    "test-engine": true,
-    "fix-engine": true,
-    "visual-qa": true,
-    "rollback": true,
-    "execution-orchestrator": true,
-    "scheduler-ui": true
-  },
-  "latestExecId": "exec-1774648320366",
-  "latestPlanId": "plan-1774648320368",
-  "latestStatus": "COMPLETE",
-  "stageCount": 7,
-  "retryCount": 0,
-  "auditEntries": 15,
-  "truthVerdict": "ALIGNED",
-  "panelEndpoints": {
-    "executionLatest": "/execution/latest",
-    "gateLatest": "/gate/latest"
-  },
-  "upgradeHooks": {
-    "modelAdapter": "config/adapters/model-default.json",
-    "previewAdapter": "config/adapters/preview-default.json",
-    "testAdapter": "config/adapters/test-default.json"
+  "generatedAt": "2026-03-27T22:05:45.850Z",
+  "latestFHIRun": {
+    "taskId": "fhi-homepage-hero-v1",
+    "lane": "FHI",
+    "assetSlice": "homepage-hero-trust-entry",
+    "status": "READY_FOR_REVIEW",
+    "currentStage": "GATE",
+    "retryCount": 0,
+    "maxRetries": 2,
+    "stages": [
+      {
+        "stage": "PLAN",
+        "status": "pass",
+        "detail": "planId=plan-1774649143361"
+      },
+      {
+        "stage": "BUILD",
+        "status": "pass",
+        "detail": "pages/fhi/index.tsx verified"
+      },
+      {
+        "stage": "PREVIEW",
+        "status": "pass",
+        "detail": "desktop+mobile proofs captured"
+      },
+      {
+        "stage": "TEST",
+        "status": "pass",
+        "detail": "MVP scope — lint/build-health pass, no .test.ts yet"
+      },
+      {
+        "stage": "FIX",
+        "status": "skip",
+        "detail": "Not needed"
+      },
+      {
+        "stage": "RETEST",
+        "status": "skip",
+        "detail": "Not needed"
+      },
+      {
+        "stage": "GATE",
+        "status": "pass",
+        "detail": "Visual QA 93/100 — READY_FOR_REVIEW"
+      }
+    ],
+    "previewLinks": {
+      "desktop": "engine/data/fhi-preview/fhi-desktop.html",
+      "mobile": "engine/data/fhi-preview/fhi-mobile.html",
+      "previewUrl": "file:///home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-desktop.html"
+    },
+    "visualQA": {
+      "score": 93,
+      "passed": true,
+      "monetisationTag": "HIGH VALUE"
+    },
+    "blockers": [],
+    "truthVerdict": "ALIGNED"
   }
 }

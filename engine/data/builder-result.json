@@ -1,11 +1,18 @@
 {
-  "buildId": "build-1774648320394",
-  "planId": "plan-1774648320368",
+  "buildId": "build-1774649144120",
+  "planId": "plan-1774649143361",
   "status": "SKIPPED",
-  "stepResults": [],
+  "stepResults": [
+    {
+      "stepId": "step-001",
+      "status": "SKIPPED",
+      "patches": [],
+      "errors": []
+    }
+  ],
   "filesChanged": [],
   "patchesApplied": 0,
   "errors": [],
-  "startedAt": "2026-03-27T21:52:00.394Z",
-  "completedAt": "2026-03-27T21:52:00.394Z"
+  "startedAt": "2026-03-27T22:05:44.120Z",
+  "completedAt": "2026-03-27T22:05:44.120Z"
 }

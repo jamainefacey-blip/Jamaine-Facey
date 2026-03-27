@@ -1,0 +1,28 @@
+{
+  "previewId": "fhi-prev-1774649144121",
+  "planId": "plan-1774649143361",
+  "status": "READY",
+  "proofs": [
+    {
+      "target": "desktop",
+      "ref": "engine/data/fhi-preview/fhi-desktop.html",
+      "captured": true,
+      "capturedAt": "2026-03-27T22:05:44.121Z",
+      "notes": "Desktop proof: engine/data/fhi-preview/fhi-desktop.html"
+    },
+    {
+      "target": "mobile",
+      "ref": "engine/data/fhi-preview/fhi-mobile.html",
+      "captured": true,
+      "capturedAt": "2026-03-27T22:05:44.121Z",
+      "notes": "Mobile proof: engine/data/fhi-preview/fhi-mobile.html"
+    }
+  ],
+  "previewUrl": "file:///home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-desktop.html",
+  "allProofsCaptured": true,
+  "generatedAt": "2026-03-27T22:05:44.121Z",
+  "fhiPreviewLinks": {
+    "desktop": "/home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-desktop.html",
+    "mobile": "/home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-mobile.html"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "taskId": "fhi-homepage-hero-v1",
+  "lane": "FHI",
+  "assetSlice": "homepage-hero-trust-entry",
+  "status": "READY_FOR_REVIEW",
+  "gateReadyAt": "2026-03-27T22:05:45.850Z",
+  "buildVerified": true,
+  "previewProof": {
+    "desktop": "engine/data/fhi-preview/fhi-desktop.html",
+    "mobile": "engine/data/fhi-preview/fhi-mobile.html",
+    "previewUrl": "file:///home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-desktop.html",
+    "allCaptured": true
+  },
+  "visualQA": {
+    "score": 93,
+    "threshold": 60,
+    "passed": true,
+    "monetisation": "HIGH VALUE"
+  },
+  "tests": {
+    "overallPass": true,
+    "classes": [
+      {
+        "class": "build-health",
+        "status": "PASS"
+      },
+      {
+        "class": "lint",
+        "status": "SKIP"
+      },
+      {
+        "class": "unit",
+        "status": "PASS"
+      },
+      {
+        "class": "visual",
+        "status": "PASS"
+      }
+    ]
+  },
+  "truthVerdict": "ALIGNED",
+  "rollbackAvailable": true,
+  "snapshotId": "snap-1774649144120",
+  "noAutoDeployConfirmed": true,
+  "founderReviewRequired": true,
+  "files": [
+    "pages/fhi/index.tsx",
+    "engine/data/fhi-preview/fhi-desktop.html",
+    "engine/data/fhi-preview/fhi-mobile.html"
+  ]
+}
