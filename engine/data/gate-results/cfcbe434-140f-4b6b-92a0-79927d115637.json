@@ -1,0 +1,104 @@
+{
+  "id": "cfcbe434-140f-4b6b-92a0-79927d115637",
+  "taskId": "gate-test-placeholder",
+  "lane": "VST",
+  "assetType": "ui",
+  "evaluatedAt": "2026-03-27T17:38:53.809Z",
+  "overallStatus": "fail",
+  "founderReviewReady": false,
+  "score": 67,
+  "hardBlockers": [
+    "PLACEHOLDER_DETECTED"
+  ],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Task completed successfully"
+      ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Proof provided: http://localhost:3000/preview"
+      ]
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 20,
+      "status": "fail",
+      "findings": [
+        "Placeholder patterns detected (3): lorem\\s+ipsum, \\[TBD\\], \\[TODO\\]",
+        "Content very short for a UI asset — may be stub/incomplete"
+      ],
+      "hardBlocker": "PLACEHOLDER_DETECTED"
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 20,
+      "status": "fail",
+      "findings": [
+        "VST lane: no CTA or pricing language detected — monetisation path missing"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 0,
+      "status": "fail",
+      "findings": [
+        "Placeholder/filler copy detected (4 patterns)",
+        "3 unfilled template bracket(s) [LIKE THIS] found",
+        "Very thin copy (15 words) — content may be incomplete"
+      ],
+      "hardBlocker": "PLACEHOLDER_DETECTED"
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Non-HTML content — accessibility structural check not applicable"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 75,
+      "status": "pass",
+      "findings": [
+        "Non-HTML content — SEO check limited"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 60,
+      "status": "warn",
+      "findings": [
+        "3 dimensions failed — output may be incomplete"
+      ]
+    }
+  },
+  "requiredFixes": [
+    "HARD BLOCKERS: PLACEHOLDER_DETECTED — must resolve before founder review",
+    "[UX_VISUAL] Placeholder patterns detected (3): lorem\\s+ipsum, \\[TBD\\], \\[TODO\\]",
+    "[UX_VISUAL] Content very short for a UI asset — may be stub/incomplete",
+    "[MONETISATION] VST lane: no CTA or pricing language detected — monetisation path missing",
+    "[COPY_QUALITY] Placeholder/filler copy detected (4 patterns)",
+    "[COPY_QUALITY] 3 unfilled template bracket(s) [LIKE THIS] found",
+    "[COPY_QUALITY] Very thin copy (15 words) — content may be incomplete"
+  ],
+  "warnings": [
+    "[RERUN_RISK] 3 dimensions failed — output may be incomplete"
+  ]
+}
