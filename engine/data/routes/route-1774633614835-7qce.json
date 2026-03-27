@@ -1,0 +1,25 @@
+{
+  "routeId": "route-1774633614835-7qce",
+  "releaseId": "rel-test-1774633614835",
+  "programId": "prog-test-001",
+  "lane": "VST",
+  "intent": "build_feature",
+  "routedAt": "2026-03-27T17:46:54.835Z",
+  "destination": "HANGAR",
+  "reason": "Hangar: Gate status=fail, score=45 — not passing; founderReviewReady=false — needs founder sign-off",
+  "monetisationTag": "POTENTIAL",
+  "gateScore": 45,
+  "gateStatus": "fail",
+  "founderReviewReady": false,
+  "releaseState": "STAGED",
+  "hangarReasons": [
+    "Gate status=fail, score=45 — not passing",
+    "founderReviewReady=false — needs founder sign-off"
+  ],
+  "showroomCriteria": {
+    "gatePass": false,
+    "monetisationReady": true,
+    "founderReady": false,
+    "noHardBlockers": true
+  }
+}

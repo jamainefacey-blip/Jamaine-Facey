@@ -1,0 +1,35 @@
+{
+  "task": "pc-routing-02",
+  "completedAt": "2026-03-27T17:46:54.836Z",
+  "scenarios": [
+    {
+      "id": "A",
+      "destination": "SHOWROOM",
+      "monetisationTag": "READY",
+      "gateScore": 92,
+      "file": "engine/data/routes/route-1774633614835-8q08.json"
+    },
+    {
+      "id": "B",
+      "destination": "HANGAR",
+      "monetisationTag": "POTENTIAL",
+      "gateScore": 45,
+      "file": "engine/data/routes/route-1774633614835-7qce.json"
+    },
+    {
+      "id": "C",
+      "destination": "HANGAR",
+      "monetisationTag": "INTERNAL",
+      "gateScore": 88,
+      "file": "engine/data/routes/route-1774633614835-80lx.json"
+    },
+    {
+      "id": "LIVE",
+      "destination": "HANGAR",
+      "monetisationTag": "INTERNAL",
+      "gateScore": 95
+    }
+  ],
+  "testsRun": 10,
+  "testsPassed": 10
+}

@@ -1,0 +1,24 @@
+{
+  "routeId": "route-1774633614835-80lx",
+  "releaseId": "rel-test-1774633614835",
+  "programId": "prog-test-001",
+  "lane": "AI_LAB",
+  "intent": "data_read",
+  "routedAt": "2026-03-27T17:46:54.835Z",
+  "destination": "HANGAR",
+  "reason": "Hangar: monetisationType=internal_tooling → tag=INTERNAL — not monetisation-ready",
+  "monetisationTag": "INTERNAL",
+  "gateScore": 88,
+  "gateStatus": "pass",
+  "founderReviewReady": true,
+  "releaseState": "COMPLETE",
+  "hangarReasons": [
+    "monetisationType=internal_tooling → tag=INTERNAL — not monetisation-ready"
+  ],
+  "showroomCriteria": {
+    "gatePass": true,
+    "monetisationReady": false,
+    "founderReady": true,
+    "noHardBlockers": true
+  }
+}

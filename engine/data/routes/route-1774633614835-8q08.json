@@ -1,0 +1,22 @@
+{
+  "routeId": "route-1774633614835-8q08",
+  "releaseId": "rel-test-1774633614834",
+  "programId": "prog-test-001",
+  "lane": "VST",
+  "intent": "build_feature",
+  "routedAt": "2026-03-27T17:46:54.835Z",
+  "destination": "SHOWROOM",
+  "reason": "Gate pass (score=92), monetisation=READY, founderReady=true — Showroom criteria met",
+  "monetisationTag": "READY",
+  "gateScore": 92,
+  "gateStatus": "pass",
+  "founderReviewReady": true,
+  "releaseState": "COMPLETE",
+  "hangarReasons": [],
+  "showroomCriteria": {
+    "gatePass": true,
+    "monetisationReady": true,
+    "founderReady": true,
+    "noHardBlockers": true
+  }
+}
