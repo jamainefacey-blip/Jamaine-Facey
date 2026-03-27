@@ -1,0 +1,24 @@
+{
+  "previewId": "prev-1774648320394",
+  "planId": "plan-1774648320368",
+  "status": "READY",
+  "proofs": [
+    {
+      "target": "desktop",
+      "ref": "http://localhost:3002",
+      "captured": true,
+      "capturedAt": "2026-03-27T21:52:00.394Z",
+      "notes": "Local preview reference registered: http://localhost:3002 (desktop)"
+    },
+    {
+      "target": "mobile",
+      "ref": "http://localhost:3002",
+      "captured": true,
+      "capturedAt": "2026-03-27T21:52:00.394Z",
+      "notes": "Local preview reference registered: http://localhost:3002 (mobile)"
+    }
+  ],
+  "previewUrl": "http://localhost:3002",
+  "allProofsCaptured": true,
+  "generatedAt": "2026-03-27T21:52:00.394Z"
+}

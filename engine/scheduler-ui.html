@@ -155,6 +155,32 @@
     .btn--promote, .btn--demote { flex:1 1 auto; text-align:center; }
   }
 
+  /* Execution Panel */
+  .exec-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px; }
+  .exec-panel__header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .exec-panel__title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); }
+  .exec-stage-bar { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+  .exec-stage { display:inline-flex; align-items:center; padding:3px 10px; border-radius:100px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; background:rgba(122,143,166,.1); color:var(--muted); }
+  .exec-stage--active { background:rgba(62,207,142,.15); color:var(--green); animation:pulse 1.4s ease-in-out infinite; }
+  .exec-stage--pass   { background:rgba(198,168,90,.12); color:var(--gold); }
+  .exec-stage--fail   { background:rgba(224,82,82,.12);  color:var(--red); }
+  .exec-stage--blocked{ background:rgba(224,82,82,.08);  color:var(--red); border:1px solid rgba(224,82,82,.3); }
+  .exec-stage-sep { color:var(--muted); font-size:10px; }
+  .exec-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  @media(max-width:600px){ .exec-stats{ grid-template-columns:1fr 1fr; } }
+  .exec-stat { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px; }
+  .exec-stat__label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:3px; }
+  .exec-stat__value { font-size:15px; font-weight:700; }
+  .exec-stat--pass  .exec-stat__value { color:var(--green); }
+  .exec-stat--fail  .exec-stat__value { color:var(--red); }
+  .exec-stat--warn  .exec-stat__value { color:var(--yellow); }
+  .exec-stat--muted .exec-stat__value { color:var(--muted); }
+  .exec-preview-proof { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  .proof-chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:100px; font-size:11px; font-weight:600; background:rgba(62,207,142,.1); color:var(--green); }
+  .proof-chip--missing { background:rgba(224,82,82,.1); color:var(--red); }
+  .exec-blocker { background:rgba(224,82,82,.06); border:1px solid rgba(224,82,82,.25); border-radius:6px; padding:7px 12px; font-size:11px; color:var(--red); margin-bottom:6px; }
+  .exec-meta { font-size:10px; color:var(--muted); margin-top:6px; }
+
   /* Error */
   .error-banner { background:rgba(224,82,82,.08); border:1px solid rgba(224,82,82,.3); border-radius:var(--radius); padding:9px 14px; color:var(--red); font-size:12px; margin-bottom:14px; display:none; }
   .error-banner.visible { display:block; }
@@ -341,6 +367,46 @@
     <input type="text" id="gate-proof" placeholder="Preview proof URL / desc (optional)" />
     <button class="btn--start" onclick="apiGateEvaluate()">Evaluate</button>
   </div>
+</div>
+
+<!-- Execution Panel -->
+<div class="exec-panel" id="exec-panel">
+  <div class="exec-panel__header">
+    <span class="exec-panel__title">Execution Layer</span>
+    <span id="exec-status-badge" class="gate-badge gate-badge--none">—</span>
+    <span id="exec-retry-badge" class="mono" style="margin-left:auto">retries: —</span>
+  </div>
+  <!-- Stage bar -->
+  <div class="exec-stage-bar" id="exec-stage-bar">
+    <span class="exec-stage" data-stage="PLAN">Plan</span>
+    <span class="exec-stage-sep">›</span>
+    <span class="exec-stage" data-stage="BUILD">Build</span>
+    <span class="exec-stage-sep">›</span>
+    <span class="exec-stage" data-stage="PREVIEW">Preview</span>
+    <span class="exec-stage-sep">›</span>
+    <span class="exec-stage" data-stage="TEST">Test</span>
+    <span class="exec-stage-sep">›</span>
+    <span class="exec-stage" data-stage="FIX">Fix</span>
+    <span class="exec-stage-sep">›</span>
+    <span class="exec-stage" data-stage="RETEST">Retest</span>
+    <span class="exec-stage-sep">›</span>
+    <span class="exec-stage" data-stage="GATE">Gate</span>
+  </div>
+  <!-- Stats -->
+  <div class="exec-stats">
+    <div class="exec-stat exec-stat--muted"><div class="exec-stat__label">Build</div><div class="exec-stat__value" id="exec-build-status">—</div></div>
+    <div class="exec-stat exec-stat--muted"><div class="exec-stat__label">Tests</div><div class="exec-stat__value" id="exec-test-status">—</div></div>
+    <div class="exec-stat exec-stat--muted"><div class="exec-stat__label">Visual</div><div class="exec-stat__value" id="exec-visual-status">—</div></div>
+    <div class="exec-stat exec-stat--muted"><div class="exec-stat__label">Retry</div><div class="exec-stat__value" id="exec-retry-count">0</div></div>
+  </div>
+  <!-- Preview proof -->
+  <div id="exec-preview-proof" class="exec-preview-proof">
+    <span class="proof-chip proof-chip--missing">Desktop: —</span>
+    <span class="proof-chip proof-chip--missing">Mobile: —</span>
+  </div>
+  <!-- Blockers -->
+  <div id="exec-blockers"></div>
+  <div id="exec-meta" class="exec-meta">No execution result loaded.</div>
 </div>
 
 <!-- Task queue table -->
@@ -671,6 +737,74 @@ async function refreshGate() {
   } catch { /* no gate result yet — silent */ }
 }
 
+// ── Execution panel ───────────────────────────────────────────────────────
+function renderExecPanel(r) {
+  if (!r || !r.execId) return;
+
+  // Status badge
+  const badge = document.getElementById('exec-status-badge');
+  const badgeClass = { COMPLETE:'pass', BLOCKED:'fail', FAIL:'fail', POLICY_BREACH:'fail', RETRY_CAP:'warn' }[r.status] || 'none';
+  badge.className = `gate-badge gate-badge--${badgeClass}`;
+  badge.textContent = r.status || '—';
+
+  // Retry badge
+  document.getElementById('exec-retry-badge').textContent = `retries: ${r.retryCount ?? 0}/${r.maxRetries ?? 2}`;
+
+  // Stage bar
+  const stages = document.querySelectorAll('[data-stage]');
+  stages.forEach(el => {
+    const s = el.getAttribute('data-stage');
+    const rec = (r.stages || []).find(x => x.stage === s);
+    el.className = 'exec-stage';
+    if (!rec) return;
+    if (r.currentStage === s) el.classList.add('exec-stage--active');
+    else if (rec.status === 'pass') el.classList.add('exec-stage--pass');
+    else if (rec.status === 'fail') el.classList.add('exec-stage--fail');
+    else if (rec.status === 'blocked') el.classList.add('exec-stage--blocked');
+  });
+
+  // Stats
+  const bRec = (r.stages||[]).find(x=>x.stage==='BUILD');
+  const tRec = (r.stages||[]).find(x=>x.stage==='TEST');
+  const vRec = (r.stages||[]).find(x=>x.stage==='PREVIEW' && x.detail && x.detail.includes('vqa'));
+
+  const setStat = (id, val, cls) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    el.closest('.exec-stat').className = `exec-stat exec-stat--${cls}`;
+  };
+  setStat('exec-build-status', bRec ? bRec.status.toUpperCase() : '—', bRec ? (bRec.status==='pass'?'pass':'fail') : 'muted');
+  setStat('exec-test-status',  tRec ? tRec.status.toUpperCase() : '—', tRec ? (tRec.status==='pass'?'pass':'fail') : 'muted');
+  setStat('exec-visual-status',vRec ? vRec.status.toUpperCase() : '—', vRec ? (vRec.status==='pass'?'pass':'fail') : 'muted');
+  setStat('exec-retry-count',  r.retryCount ?? 0, r.retryCount > 0 ? 'warn' : 'muted');
+
+  // Preview proof — read from stages detail
+  const prevRec = (r.stages||[]).find(x=>x.stage==='PREVIEW' && x.detail && x.detail.includes('prevId'));
+  const proofEl = document.getElementById('exec-preview-proof');
+  if (prevRec && prevRec.status === 'pass') {
+    proofEl.innerHTML = `<span class="proof-chip">Desktop: ✓</span><span class="proof-chip">Mobile: ✓</span>`;
+  } else {
+    proofEl.innerHTML = `<span class="proof-chip proof-chip--missing">Desktop: pending</span><span class="proof-chip proof-chip--missing">Mobile: pending</span>`;
+  }
+
+  // Blockers
+  const blockEl = document.getElementById('exec-blockers');
+  const blockers = (r.auditTrail||[]).filter(l=>l.includes('HARD STOP'));
+  blockEl.innerHTML = blockers.map(b=>`<div class="exec-blocker">${b}</div>`).join('');
+
+  // Meta
+  document.getElementById('exec-meta').textContent =
+    `execId: ${r.execId} · planId: ${r.planId} · completed: ${r.completedAt ? new Date(r.completedAt).toLocaleTimeString() : '—'}`;
+}
+
+async function refreshExecPanel() {
+  try {
+    const r = await apiFetch('/execution/latest');
+    renderExecPanel(r);
+  } catch { /* no execution result yet — silent */ }
+}
+
 // ── Main refresh ──────────────────────────────────────────────────────────────
 async function refresh() {
   try {
@@ -685,7 +819,8 @@ async function refresh() {
     cache('last_state', { status, tasks: queue.tasks, policy });
     setError(null);
     document.getElementById('refresh-ts').textContent = 'refreshed ' + new Date().toLocaleTimeString();
-    refreshGate(); // non-blocking — gate results are optional
+    refreshGate();      // non-blocking — gate results are optional
+    refreshExecPanel(); // non-blocking — execution panel
   } catch(e) {
     setError(`API unreachable: ${e.message}. Run: npm run scheduler`);
     const cached = cache('last_state');

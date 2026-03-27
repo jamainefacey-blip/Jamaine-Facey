@@ -1,0 +1,33 @@
+{
+  "contextId": "ctx-1774648320394",
+  "rootDir": "/home/user/Jamaine-Facey",
+  "changedFiles": [
+    "engine/data/builder-result.json",
+    "engine/scheduler-ui.html"
+  ],
+  "protectedFiles": [
+    "engine/data/canon-vault.json",
+    "engine/data/role-model.json",
+    "engine/data/security-log.json",
+    "engine/defence.ts",
+    "engine/gate.ts",
+    "engine/guardrail.ts",
+    "engine/pre-gate-audit.ts",
+    "engine/roles.ts"
+  ],
+  "ignoredPatterns": [
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".next",
+    "*.log",
+    "engine/data/logs/"
+  ],
+  "indexedAt": "2026-03-27T21:52:00.394Z",
+  "stats": {
+    "totalFiles": 312,
+    "protectedCount": 8,
+    "changedCount": 2
+  }
+}

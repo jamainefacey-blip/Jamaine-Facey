@@ -1,0 +1,41 @@
+{
+  "qaId": "vqa-1774648320394",
+  "planId": "plan-1774648320368",
+  "passed": true,
+  "overallScore": 86,
+  "threshold": 60,
+  "checks": [
+    {
+      "check": "layout-integrity",
+      "status": "PASS",
+      "score": 90,
+      "finding": "desktop=true mobile=true — layout proof complete"
+    },
+    {
+      "check": "mobile-usability",
+      "status": "PASS",
+      "score": 85,
+      "finding": "Local preview reference registered: http://localhost:3002 (mobile)"
+    },
+    {
+      "check": "readability",
+      "status": "PASS",
+      "score": 70,
+      "finding": "Non-skeleton build — readability assumed (no live render check)"
+    },
+    {
+      "check": "cta-visibility",
+      "status": "SKIP",
+      "score": 100,
+      "finding": "CTA check not required for lane: AI_LAB"
+    },
+    {
+      "check": "no-placeholders",
+      "status": "PASS",
+      "score": 100,
+      "finding": "No placeholder content detected"
+    }
+  ],
+  "blockers": [],
+  "assessedAt": "2026-03-27T21:52:00.394Z"
+}

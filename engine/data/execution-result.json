@@ -1,0 +1,71 @@
+{
+  "execId": "exec-1774648320366",
+  "planId": "plan-1774648320368",
+  "programId": "test-exec-001",
+  "status": "COMPLETE",
+  "currentStage": "DONE",
+  "retryCount": 0,
+  "maxRetries": 2,
+  "stages": [
+    {
+      "stage": "PLAN",
+      "status": "pass",
+      "detail": "planId=plan-1774648320368 steps=2 risk=low",
+      "timestamp": "2026-03-27T21:52:00.368Z"
+    },
+    {
+      "stage": "BUILD",
+      "status": "pass",
+      "detail": "buildId=build-1774648320394 status=SKIPPED patches=0 changed=0",
+      "timestamp": "2026-03-27T21:52:00.394Z"
+    },
+    {
+      "stage": "PREVIEW",
+      "status": "pass",
+      "detail": "previewId=prev-1774648320394 status=READY",
+      "timestamp": "2026-03-27T21:52:00.394Z"
+    },
+    {
+      "stage": "PREVIEW",
+      "status": "pass",
+      "detail": "vqaId=vqa-1774648320394 score=86/60",
+      "timestamp": "2026-03-27T21:52:00.394Z"
+    },
+    {
+      "stage": "TEST",
+      "status": "pass",
+      "detail": "testId=test-1774648320394 pass=true blocked=none",
+      "timestamp": "2026-03-27T21:52:00.394Z"
+    },
+    {
+      "stage": "GATE",
+      "status": "pass",
+      "detail": "All stages passed — output: READY_FOR_REVIEW (no auto-deploy)",
+      "timestamp": "2026-03-27T21:52:00.394Z"
+    },
+    {
+      "stage": "DONE",
+      "status": "pass",
+      "detail": "Execution complete",
+      "timestamp": "2026-03-27T21:52:00.394Z"
+    }
+  ],
+  "auditTrail": [
+    "[2026-03-27T21:52:00.366Z] Execution started: programId=test-exec-001 lane=AI_LAB",
+    "[2026-03-27T21:52:00.368Z] Stage: PLAN",
+    "[2026-03-27T21:52:00.368Z] Plan built: plan-1774648320368 (2 steps, risk=low)",
+    "[2026-03-27T21:52:00.368Z] Stage: BUILD — taking snapshot",
+    "[2026-03-27T21:52:00.368Z] Snapshot taken: snap-1774648320368 (1 files)",
+    "[2026-03-27T21:52:00.394Z] Repo context built: 312 files indexed",
+    "[2026-03-27T21:52:00.394Z] Build: status=SKIPPED files=none",
+    "[2026-03-27T21:52:00.394Z] Stage: PREVIEW",
+    "[2026-03-27T21:52:00.394Z] Preview: READY url=http://localhost:3002",
+    "[2026-03-27T21:52:00.394Z] Stage: VISUAL QA",
+    "[2026-03-27T21:52:00.394Z] Visual QA: score=86 passed=true",
+    "[2026-03-27T21:52:00.394Z] Stage: TEST",
+    "[2026-03-27T21:52:00.394Z] Test: pass=true blocked=[]",
+    "[2026-03-27T21:52:00.394Z] Stage: GATE",
+    "[2026-03-27T21:52:00.394Z] Gate: PASSED — status=READY_FOR_REVIEW"
+  ],
+  "completedAt": "2026-03-27T21:52:00.394Z"
+}

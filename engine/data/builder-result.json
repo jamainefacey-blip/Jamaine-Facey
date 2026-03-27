@@ -1,33 +1,11 @@
 {
-  "task": "pc-program-builder-01",
-  "completedAt": "2026-03-27T16:19:57.641Z",
-  "templateSource": "engine/data/task-programs.json",
-  "templatePrograms": 4,
-  "generatedPrograms": [
-    {
-      "programId": "gen-1774628397638-0feb",
-      "intent": "build_feature",
-      "lane": "VST",
-      "steps": 6,
-      "risk": "medium",
-      "file": "engine/data/generated-programs/gen-1774628397638-0feb.json"
-    },
-    {
-      "programId": "gen-1774628397639-3637",
-      "intent": "gate_eval",
-      "lane": "AI_LAB",
-      "steps": 4,
-      "risk": "medium",
-      "file": "engine/data/generated-programs/gen-1774628397639-3637.json"
-    },
-    {
-      "programId": "gen-1774628397640-8b57",
-      "intent": "fix_bug",
-      "lane": "FHI",
-      "steps": 4,
-      "risk": "medium",
-      "file": "engine/data/generated-programs/gen-1774628397640-8b57.json"
-    }
-  ],
-  "summary": "Program builder built and tested. 3 programs generated from representative instructions across VST, AI_LAB, and FHI lanes."
+  "buildId": "build-1774648320394",
+  "planId": "plan-1774648320368",
+  "status": "SKIPPED",
+  "stepResults": [],
+  "filesChanged": [],
+  "patchesApplied": 0,
+  "errors": [],
+  "startedAt": "2026-03-27T21:52:00.394Z",
+  "completedAt": "2026-03-27T21:52:00.394Z"
 }

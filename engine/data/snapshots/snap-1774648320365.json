@@ -1,0 +1,13 @@
+{
+  "snapshotId": "snap-1774648320365",
+  "planId": "plan-1774648320319",
+  "files": [
+    {
+      "file": "engine/data/rollback-test-temp.json",
+      "existed": true,
+      "content": "{\"temp\":true}",
+      "snapshotAt": "2026-03-27T21:52:00.365Z"
+    }
+  ],
+  "createdAt": "2026-03-27T21:52:00.365Z"
+}

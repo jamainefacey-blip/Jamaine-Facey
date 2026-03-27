@@ -1,0 +1,10 @@
+{
+  "fixId": "fix-1774648320364",
+  "planId": "plan-1774648320319",
+  "maxRetries": 2,
+  "attempts": [],
+  "outcome": "RESOLVED",
+  "resolved": true,
+  "blockedBy": [],
+  "completedAt": "2026-03-27T21:52:00.364Z"
+}

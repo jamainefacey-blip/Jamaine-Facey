@@ -1,0 +1,11 @@
+{
+  "rollbackId": "rb-1774648320366",
+  "planId": "plan-1774648320319",
+  "snapshotId": "snap-1774648320365",
+  "status": "RESTORED",
+  "restored": [
+    "restored: engine/data/rollback-test-temp.json"
+  ],
+  "failed": [],
+  "restoredAt": "2026-03-27T21:52:00.366Z"
+}

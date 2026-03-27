@@ -1,0 +1,63 @@
+{
+  "planId": "plan-1774648320368",
+  "taskId": "test-task-001",
+  "programId": "test-exec-001",
+  "lane": "AI_LAB",
+  "steps": [
+    {
+      "stepId": "step-001",
+      "type": "test",
+      "description": "create engine/data/exec-test-output.json",
+      "files": [
+        "engine/data/canon-vault.json"
+      ],
+      "commands": [
+        "npx tsc --noEmit",
+        "npx tsx --version"
+      ],
+      "testSurface": [],
+      "rollbackPoint": true,
+      "protected": true,
+      "dependsOn": []
+    },
+    {
+      "stepId": "step-002",
+      "type": "test",
+      "description": "run test suite on output",
+      "files": [
+        "engine/data/exec-test-output.json"
+      ],
+      "commands": [
+        "npx tsc --noEmit",
+        "npx tsx --version"
+      ],
+      "testSurface": [],
+      "rollbackPoint": false,
+      "protected": false,
+      "dependsOn": [
+        "step-001"
+      ]
+    }
+  ],
+  "protectedFiles": [
+    "engine/data/canon-vault.json",
+    "engine/guardrail.ts",
+    "engine/gate.ts",
+    "engine/pre-gate-audit.ts",
+    "engine/defence.ts",
+    "engine/roles.ts"
+  ],
+  "previewTarget": {
+    "type": "local",
+    "ref": "http://localhost:3002",
+    "mobile": true,
+    "desktop": true
+  },
+  "estimatedRisk": "low",
+  "createdAt": "2026-03-27T21:52:00.368Z",
+  "upgradeHooks": {
+    "modelAdapter": "config/adapters/model-default.json",
+    "previewAdapter": "config/adapters/preview-default.json",
+    "testAdapter": "config/adapters/test-default.json"
+  }
+}
