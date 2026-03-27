@@ -1,0 +1,87 @@
+{
+  "id": "2dc78b2c-5b54-4cb1-adfd-c57eaba38729",
+  "taskId": "gen-1774628397639-3637",
+  "lane": "AI_LAB",
+  "assetType": "data",
+  "evaluatedAt": "2026-03-27T16:24:26.955Z",
+  "overallStatus": "pass",
+  "founderReviewReady": true,
+  "score": 95,
+  "hardBlockers": [],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Task completed successfully"
+      ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Proof provided: scheduler-ui.html verified — 36281 bytes — rendered in browser 2026-03-27"
+      ]
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'data' — UX/visual check not applicable"
+      ]
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'data' — monetisation path check not applicable"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Copy quality check passed — no obvious filler detected"
+      ]
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 80,
+      "status": "pass",
+      "findings": [
+        "No semantic HTML structure detected (nav/main/header/footer/section)"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'data' — SEO check not applicable"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Low rerun risk"
+      ]
+    }
+  },
+  "requiredFixes": [],
+  "warnings": []
+}

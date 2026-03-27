@@ -1,0 +1,13 @@
+{
+  "runId": "a3ae51be-a1e5-45fd-8b5a-8bcdd00e5139",
+  "taskId": "pc-release-01",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T16:24:07.322Z",
+  "completedAt": "2026-03-27T16:24:07.323Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "transform task result: {\"transformed\":true,\"input\":\"gate-latest.json\",\"keys\":12,\"type\":\"object\"}"
+}

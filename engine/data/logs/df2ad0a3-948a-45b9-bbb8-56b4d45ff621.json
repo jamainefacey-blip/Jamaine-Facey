@@ -1,0 +1,14 @@
+{
+  "runId": "df2ad0a3-948a-45b9-bbb8-56b4d45ff621",
+  "taskId": "w3-traversal",
+  "lane": "AI_LAB",
+  "status": "failed",
+  "startedAt": "2026-03-27T16:24:31.924Z",
+  "completedAt": "2026-03-27T16:24:31.925Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Path traversal blocked: ../../package.json",
+  "claudeSummary": "FAIL: Path traversal blocked: ../../package.json"
+}
