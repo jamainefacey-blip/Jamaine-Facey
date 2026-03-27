@@ -6,24 +6,31 @@
     "maxEntries": 500,
     "rotateAfterDays": 30,
     "archiveTo": "engine/data/security-log-archive/",
-    "neverLogFields": ["secret", "credential", "password", "apiKey", "token", "privateKey"]
+    "neverLogFields": [
+      "secret",
+      "credential",
+      "password",
+      "apiKey",
+      "token",
+      "privateKey"
+    ]
   },
   "logTypes": {
-    "SUSPICIOUS_PATTERN":  "Input matched a known injection or override pattern",
-    "OVERRIDE_ATTEMPT":    "Input attempted to override canon, guardrail, or governance",
-    "SECRET_DETECTED":     "Credential or secret pattern found in input — redacted, not logged",
-    "DATA_CLASSIFIED":     "Data received and classified (public/internal/sensitive/secret)",
-    "POLICY_CHANGE":       "Guardrail policy was modified — who, what, when",
-    "KILL_SWITCH_EVENT":   "Kill switch activated or deactivated",
-    "LANE_DISABLE_EVENT":  "Lane enabled or disabled via auto-control",
-    "BACKLOG_LOCK_EVENT":  "Backlog lock activated or deactivated",
-    "CANON_ACCESS":        "Canon vault read or write attempt"
+    "SUSPICIOUS_PATTERN": "Input matched a known injection or override pattern",
+    "OVERRIDE_ATTEMPT": "Input attempted to override canon, guardrail, or governance",
+    "SECRET_DETECTED": "Credential or secret pattern found in input — redacted, not logged",
+    "DATA_CLASSIFIED": "Data received and classified (public/internal/sensitive/secret)",
+    "POLICY_CHANGE": "Guardrail policy was modified — who, what, when",
+    "KILL_SWITCH_EVENT": "Kill switch activated or deactivated",
+    "LANE_DISABLE_EVENT": "Lane enabled or disabled via auto-control",
+    "BACKLOG_LOCK_EVENT": "Backlog lock activated or deactivated",
+    "CANON_ACCESS": "Canon vault read or write attempt"
   },
   "dataClassificationLevels": {
-    "public":    "Safe for external exposure — no restrictions",
-    "internal":  "Internal Pain System use only — not for client or public output",
+    "public": "Safe for external exposure — no restrictions",
+    "internal": "Internal Pain System use only — not for client or public output",
     "sensitive": "Contains PII or commercially sensitive data — access restricted",
-    "secret":    "Credentials, API keys, private keys — never logged, never exposed"
+    "secret": "Credentials, API keys, private keys — never logged, never exposed"
   },
   "entries": [
     {
@@ -34,6 +41,33 @@
       "classification": "internal",
       "lane": "AI_LAB",
       "redacted": false
+    },
+    {
+      "id": "sec-1774647018646-pkls",
+      "type": "SUSPICIOUS_PATTERN",
+      "timestamp": "2026-03-27T21:30:18.646Z",
+      "message": "INJECTION pattern matched: ignore (all )?(previous|prior|above) ins; INJECTION pattern matched: override (your )?(policy|rules?|guardrai; OVERRIDE attempt: override canon",
+      "classification": "public",
+      "lane": "AI_LAB",
+      "redacted": false
+    },
+    {
+      "id": "sec-1774647018646-tjm4",
+      "type": "SUSPICIOUS_PATTERN",
+      "timestamp": "2026-03-27T21:30:18.646Z",
+      "message": "OVERRIDE attempt: disable (the )?(kill switch|guardrail|de",
+      "classification": "public",
+      "lane": "AI_LAB",
+      "redacted": false
+    },
+    {
+      "id": "sec-1774647018646-1utw",
+      "type": "SECRET_DETECTED",
+      "timestamp": "2026-03-27T21:30:18.646Z",
+      "message": "Credential pattern found — not logged",
+      "classification": "secret",
+      "lane": "AI_LAB",
+      "redacted": true
     }
   ]
 }

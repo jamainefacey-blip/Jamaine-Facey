@@ -1,0 +1,51 @@
+{
+  "evaluatedAt": "2026-03-27T21:31:36.226Z",
+  "overallStatus": "ALIGNED",
+  "score": 1,
+  "checks": [
+    {
+      "checkId": "auto-control-safe",
+      "description": "Auto-control must not be FULL_AUTO; fullAutoLocked must be true",
+      "passed": true,
+      "detail": "mode=CONTROLLED, fullAutoLocked=true, killSwitch=false"
+    },
+    {
+      "checkId": "role-model-integrity",
+      "description": "All 4 roles present; ≥10 permissions defined",
+      "passed": true,
+      "detail": "Roles: founder, system, external_input, client_workspace — 15 permissions"
+    },
+    {
+      "checkId": "canon-vault-present",
+      "description": "Canon vault must have ≥5 system laws",
+      "passed": true,
+      "detail": "10 pain system laws loaded"
+    },
+    {
+      "checkId": "defence-active",
+      "description": "Defence layer must have ≥5 tests passing",
+      "passed": true,
+      "detail": "Defence: 5/5 tests passed"
+    },
+    {
+      "checkId": "client-vault-privacy",
+      "description": "Client vault must define ≥4 privacy rules",
+      "passed": true,
+      "detail": "5 privacy rules enforced"
+    },
+    {
+      "checkId": "working-memory-consistency",
+      "description": "Working memory: fullAutoLocked=true, killSwitch=false (default safe state)",
+      "passed": true,
+      "detail": "fullAutoLocked=true, killSwitch=false"
+    },
+    {
+      "checkId": "skill-library-populated",
+      "description": "Skill library must have ≥5 patterns",
+      "passed": true,
+      "detail": "8 patterns in skill library"
+    }
+  ],
+  "drifts": [],
+  "criticals": []
+}

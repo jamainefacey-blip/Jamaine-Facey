@@ -1,0 +1,8 @@
+{
+  "task": "pc-client-vault-01",
+  "completedAt": "2026-03-27T21:30:18.649Z",
+  "vaultIndexFile": "engine/data/client-vault-index.json",
+  "clientsDir": "engine/data/clients/",
+  "privacyRulesCount": 5,
+  "structureKeys": 7
+}

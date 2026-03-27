@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T21:30:18.648Z",
+  "description": "Client Delivery Vault — private by default. Each client has an isolated workspace under engine/data/clients/{clientId}/.",
+  "workspaceStructure": {
+    "intake.json": "Client intake form, requirements, scope",
+    "program.json": "Generated program for this client build",
+    "build/": "Work-in-progress build files",
+    "outputs/": "Completed deliverables",
+    "gate-results/": "Gate evaluation records for this client",
+    "release/": "Release records",
+    "biab-package/": "Final BIAB delivery package"
+  },
+  "privacyRules": [
+    "Private by default — no public exposure",
+    "Hangar only if explicitly routed by founder",
+    "Showroom only from approved publish copy — never raw client workspace",
+    "No cross-client data access — client_workspace role enforced",
+    "All client data classified as sensitive minimum"
+  ],
+  "clients": []
+}

@@ -1,0 +1,34 @@
+{
+  "taskId": "pc-truth-01",
+  "evaluatedAt": "2026-03-27T21:31:36.223Z",
+  "overallScore": 1,
+  "verdict": "ALIGNED",
+  "dimensions": [
+    {
+      "dimension": "lane-conformance",
+      "weight": 0.25,
+      "score": 1,
+      "finding": "All referenced lanes are defined in canon"
+    },
+    {
+      "dimension": "founder-control-respect",
+      "weight": 0.3,
+      "score": 1,
+      "finding": "Founder control respected (undefined rules checked)"
+    },
+    {
+      "dimension": "biab-law-compliance",
+      "weight": 0.2,
+      "score": 1,
+      "finding": "BIAB isolation principles checked (1/0 signals found)"
+    },
+    {
+      "dimension": "guardrail-alignment",
+      "weight": 0.25,
+      "score": 1,
+      "finding": "No guardrail breaches detected"
+    }
+  ],
+  "violations": [],
+  "canonSource": "engine/data/canon-vault.json"
+}

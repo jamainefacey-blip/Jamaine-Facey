@@ -1,0 +1,20 @@
+{
+  "task": "pc-defence-01",
+  "completedAt": "2026-03-27T21:30:18.647Z",
+  "tests": {
+    "clean": "CLEAN",
+    "injection": "BLOCKED",
+    "override": "BLOCKED",
+    "secret": "BLOCKED"
+  },
+  "capabilities": [
+    "injection-resistance",
+    "secret-detection",
+    "override-blocking",
+    "data-classification",
+    "output-filtering",
+    "security-logging"
+  ],
+  "testsRun": 5,
+  "testsPassed": 5
+}
