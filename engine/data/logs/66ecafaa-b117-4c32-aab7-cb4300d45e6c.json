@@ -1,0 +1,13 @@
+{
+  "runId": "66ecafaa-b117-4c32-aab7-cb4300d45e6c",
+  "taskId": "p8-repo",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T16:20:04.764Z",
+  "completedAt": "2026-03-27T16:20:04.765Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "repo task result: {\"branch\":\"claude/ai-lab-orchestrator-jI7p6\",\"lastCommitMessage\":\"queue-pack-5: register final autonomy layer\",\"head\":\"ref: refs/heads/claude/ai-lab-orchestrator-jI7p6\"}"
+}

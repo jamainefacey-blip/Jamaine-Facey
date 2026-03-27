@@ -1,82 +1,10 @@
 {
   "status": "idle",
-  "intervalMs": 200,
-  "lastRunAt": "2026-03-27T15:41:03.720Z",
-  "lastRunDurationMs": 0,
+  "intervalMs": 30000,
+  "lastRunAt": null,
+  "lastRunDurationMs": null,
   "lastError": null,
-  "totalRuns": 2,
-  "tasks": [
-    {
-      "id": "pc-ui-wire-01",
-      "type": "data",
-      "payload": {
-        "file": "audit-upgrade-result.json",
-        "task": "ui-intelligence-wire",
-        "notes": "Wire intelligence layers into UI: pre-gate audit panel, Ava briefing panel, progress % + stage indicators, preview links in task view."
-      },
-      "status": "done",
-      "attempts": 1,
-      "createdAt": "2026-03-27T15:41:03.414Z",
-      "updatedAt": "2026-03-27T15:41:03.418Z",
-      "lane": "AI_LAB",
-      "risk": "low",
-      "decision": "allowed",
-      "result": {
-        "file": "audit-upgrade-result.json",
-        "recordCount": 1
-      }
-    },
-    {
-      "id": "pc-ava-loop-01",
-      "type": "eval",
-      "payload": {
-        "expression": "5 * 4 + 2",
-        "task": "ava-loop-controller",
-        "notes": "Ava loop controller upgrade: auto morning brief, what-happened summary, next-action recommendations, blocker + approval highlighting."
-      },
-      "status": "done",
-      "attempts": 1,
-      "createdAt": "2026-03-27T15:41:03.414Z",
-      "updatedAt": "2026-03-27T15:41:03.720Z",
-      "lane": "AI_LAB",
-      "risk": "low",
-      "decision": "allowed",
-      "result": 22
-    },
-    {
-      "id": "pc-program-builder-01",
-      "type": "transform",
-      "payload": {
-        "input": "engine/data/task-programs.json",
-        "task": "program-builder",
-        "notes": "Program builder: takes high-level instruction (e.g. \"build VST feature X\") and converts into structured task programs. Transforms task-programs.json as template source."
-      },
-      "status": "awaiting_approval",
-      "attempts": 0,
-      "createdAt": "2026-03-27T15:41:03.415Z",
-      "updatedAt": "2026-03-27T15:41:03.722Z",
-      "lane": "AI_LAB",
-      "risk": "medium",
-      "decision": "approval_required",
-      "blockReason": "Type 'transform' requires explicit approval"
-    },
-    {
-      "id": "pc-release-01",
-      "type": "transform",
-      "payload": {
-        "input": "engine/data/gate-latest.json",
-        "task": "controlled-release-workflow",
-        "notes": "Controlled release workflow: mark tasks as release-ready after gate pass, prepare deploy steps (no auto-deploy), define release state (ready/staged/blocked). Transforms gate-latest as release readiness source."
-      },
-      "status": "awaiting_approval",
-      "attempts": 0,
-      "createdAt": "2026-03-27T15:41:03.415Z",
-      "updatedAt": "2026-03-27T15:41:03.922Z",
-      "lane": "AI_LAB",
-      "risk": "medium",
-      "decision": "approval_required",
-      "blockReason": "Type 'transform' requires explicit approval"
-    }
-  ],
-  "overnightMode": false
+  "totalRuns": 0,
+  "tasks": [],
+  "overnightMode": true
 }
