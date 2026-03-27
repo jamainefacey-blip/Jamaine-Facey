@@ -277,6 +277,7 @@ window.VSTAvaEngine = (function () {
       site_inspection:  'Site inspection',
       training:         'Training / workshop',
       internal_project: 'Internal project',
+      leisure:          'Leisure / personal',
       other:            'Other',
     }[purpose] || purpose;
   }

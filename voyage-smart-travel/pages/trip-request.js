@@ -7,54 +7,122 @@
 window.renderEvalResult = function (result, ava) {
   var E  = window.VSTAvaEngine;
   var ev = result.evaluation;
+  var p6 = result.phase6 || null; /* Phase 6 intelligence block — may be null */
 
-  /* Risk badge */
-  var riskClass = { low: 'risk-low', medium: 'risk-medium', high: 'risk-high' }[ev.riskLevel] || 'risk-low';
-  var riskBadge = '<span class="status-badge ' + riskClass + '">' + E.riskLabel(ev.riskLevel) + '</span>';
+  /* ── Badges: prefer Phase 6 values when available ─── */
+  var riskKey, compKey, apprKey;
+  if (p6) {
+    riskKey = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' }[p6.overallRiskLevel]                     || ev.riskLevel;
+    compKey = { COMPLIANT: 'compliant', CHECK_REQUIRED: 'conditional', NON_COMPLIANT: 'non_compliant' }[p6.complianceStatus] || ev.complianceStatus;
+    apprKey = { APPROVED: 'auto_approved', REVIEW: 'pending_approval', ESCALATED: 'requires_escalation' }[p6.approvalStatus] || ev.approvalStatus;
+  } else {
+    riskKey = ev.riskLevel;
+    compKey = ev.complianceStatus;
+    apprKey = ev.approvalStatus;
+  }
 
-  /* Compliance badge */
-  var compClass = { compliant: 'comp-compliant', conditional: 'comp-conditional', non_compliant: 'comp-non-compliant' }[ev.complianceStatus] || 'comp-conditional';
-  var compBadge = '<span class="status-badge ' + compClass + '">' + E.complianceLabel(ev.complianceStatus) + '</span>';
+  var riskClass = { low: 'risk-low', medium: 'risk-medium', high: 'risk-high' }[riskKey] || 'risk-low';
+  var riskBadge = '<span class="status-badge ' + riskClass + '">' + E.riskLabel(riskKey) + '</span>';
 
-  /* Approval badge */
-  var apprClass = { auto_approved: 'appr-approved', pending_approval: 'appr-pending', requires_escalation: 'appr-escalated' }[ev.approvalStatus] || 'appr-pending';
-  var apprBadge = '<span class="status-badge ' + apprClass + '">' + E.approvalLabel(ev.approvalStatus) + '</span>';
+  var compClass = { compliant: 'comp-compliant', conditional: 'comp-conditional', non_compliant: 'comp-non-compliant' }[compKey] || 'comp-conditional';
+  var compLabel = p6
+    ? ({ COMPLIANT: 'Compliant', CHECK_REQUIRED: 'Check required', NON_COMPLIANT: 'Non-compliant' }[p6.complianceStatus] || E.complianceLabel(compKey))
+    : E.complianceLabel(compKey);
+  var compBadge = '<span class="status-badge ' + compClass + '">' + compLabel + '</span>';
 
-  /* Ava tone class */
-  var avaClass = { positive: 'ava-positive', caution: 'ava-caution', alert: 'ava-alert' }[ava.tone] || 'ava-caution';
+  var apprClass = { auto_approved: 'appr-approved', pending_approval: 'appr-pending', requires_escalation: 'appr-escalated' }[apprKey] || 'appr-pending';
+  var apprLabel = p6
+    ? ({ APPROVED: 'Approved', REVIEW: 'Review required', ESCALATED: 'Escalated' }[p6.approvalStatus] || E.approvalLabel(apprKey))
+    : E.approvalLabel(apprKey);
+  var apprBadge = '<span class="status-badge ' + apprClass + '">' + apprLabel + '</span>';
 
-  /* Format dates */
+  /* ── Ava panel tone: Phase 6 approval drives colour when available ─── */
+  var avaTone = p6
+    ? ({ APPROVED: 'positive', REVIEW: 'caution', ESCALATED: 'alert' }[p6.approvalStatus] || ava.tone)
+    : ava.tone;
+  var avaClass = { positive: 'ava-positive', caution: 'ava-caution', alert: 'ava-alert' }[avaTone] || 'ava-caution';
+
+  /* ── Body copy: Phase 6 brief replaces Phase 5 body when available ── */
+  var avaBody = (p6 && p6.avaBrief) ? p6.avaBrief : ava.body;
+
+  /* ── Date helpers ─── */
   function fmtDate(d) {
-    if (!d) return '—';
+    if (!d) return '\u2014';
     var parts = d.split('-');
     if (parts.length !== 3) return d;
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return parseInt(parts[2], 10) + ' ' + months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
   }
 
-  var dateRange = result.tripType === 'one_way'
+  var dateRange    = result.tripType === 'one_way'
     ? fmtDate(result.departureDate) + ' &mdash; One-way'
     : fmtDate(result.departureDate) + ' &mdash; ' + fmtDate(result.returnDate);
-
   var durationText = result.tripType === 'one_way'
     ? '1 night (est.)'
     : result.nights + ' night' + (result.nights !== 1 ? 's' : '');
-
   var originMeta = result.origin ? result.origin + ' &rarr; ' : '';
 
-  var escalationBlock = ev.escalationReason
-    ? '<div class="eval-escalation">' +
-        '<div class="eval-escalation-icon">' + window.VSTComponents.icon('alert') + '</div>' +
-        '<div><strong>Escalation trigger:</strong> ' + ev.escalationReason + '</div>' +
-      '</div>'
+  /* ── Escalation block ─── */
+  var escalationBlock = (p6 && p6.escalationRequired) || ev.escalationReason
+    ? '<div class="eval-escalation">'
+        + '<div class="eval-escalation-icon">' + window.VSTComponents.icon('alert') + '</div>'
+        + '<div><strong>Escalation required.</strong> '
+        + (ev.escalationReason || 'This trip requires senior-level authorisation before any travel can be booked.')
+        + '</div>'
+        + '</div>'
     : '';
 
+  /* ── Accessibility note ─── */
   var accessBlock = result.accessibilityNeeds && result.accessibilityNeeds.length > 0
-    ? '<div class="eval-access-note">' +
-        '<span class="eval-access-label">Accessibility needs noted:</span> ' +
-        result.accessibilityNeeds.join(', ') +
-      '</div>'
+    ? '<div class="eval-access-note">'
+        + '<span class="eval-access-label">Accessibility needs noted:</span> '
+        + result.accessibilityNeeds.join(', ')
+        + '</div>'
     : '';
+
+  /* ── Phase 6 intelligence panel ─── */
+  function p6Panel(p6data) {
+    if (!p6data) return '';
+
+    function flagGroup(title, flags, mod) {
+      if (!flags || !flags.length) return '';
+      return '<div class="p6-flags-group p6-flags-group--' + mod + '">'
+        + '<h4 class="p6-flags-title">' + title + '</h4>'
+        + '<ul class="p6-flags-list">'
+        + flags.map(function (f) { return '<li>' + f + '</li>'; }).join('')
+        + '</ul></div>';
+    }
+
+    var flags = flagGroup('Safety', p6data.safetyFlags, 'safety')
+      + flagGroup('Accessibility', p6data.accessibilityFlags, 'access')
+      + flagGroup('Documentation', p6data.documentationFlags, 'docs');
+
+    var actions = p6data.recommendedActions && p6data.recommendedActions.length
+      ? '<div class="p6-actions">'
+          + '<h4 class="p6-actions-title">Recommended actions</h4>'
+          + '<ol class="p6-actions-list">'
+          + p6data.recommendedActions.map(function (a) { return '<li>' + a + '</li>'; }).join('')
+          + '</ol></div>'
+      : '';
+
+    var hasCostBand = p6data.estimatedCostBand && p6data.estimatedCostBand.indexOf('unavailable') === -1;
+
+    var isLive = p6data.sourceMode === 'live_claude';
+    var sourceDot = '<span class="p6-source-dot' + (isLive ? ' p6-source-dot--live' : '') + '" aria-hidden="true"></span>';
+    var sourceName = isLive ? 'Ava Phase 6 \u00b7 live intelligence' : 'Ava Phase 6 \u00b7 deterministic analysis';
+
+    return '<div class="p6-panel">'
+      + (hasCostBand
+          ? '<div class="p6-cost-band">'
+              + '<span class="p6-cost-label">Estimated cost range</span>'
+              + '<span class="p6-cost-value">' + p6data.estimatedCostBand + '</span>'
+              + '</div>'
+          : '')
+      + (flags ? '<div class="p6-flags">' + flags + '</div>' : '')
+      + actions
+      + '<div class="p6-source">' + sourceDot + sourceName + '</div>'
+      + '</div>';
+  }
 
   return `
     <div class="eval-panel">
@@ -101,7 +169,7 @@ window.renderEvalResult = function (result, ava) {
       ${escalationBlock}
       ${accessBlock}
 
-      <!-- Ava explanation -->
+      <!-- Ava intelligence panel -->
       <div class="ava-panel ${avaClass}">
         <div class="ava-panel-header">
           <div class="ava-avatar">Ava</div>
@@ -110,12 +178,15 @@ window.renderEvalResult = function (result, ava) {
             <strong class="ava-headline">${ava.headline}</strong>
           </div>
         </div>
-        <p class="ava-body">${ava.body}</p>
+        <p class="ava-body">${avaBody}</p>
         <div class="ava-action">
           <div class="ava-action-icon">${window.VSTComponents.icon('arrow')}</div>
           <p class="ava-action-text">${ava.action}</p>
         </div>
       </div>
+
+      <!-- Phase 6 structured intelligence -->
+      ${p6Panel(p6)}
 
       <!-- Actions -->
       <div class="eval-actions">

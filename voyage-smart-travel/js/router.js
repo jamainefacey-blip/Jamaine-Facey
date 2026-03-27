@@ -275,109 +275,114 @@ window.VSTRouter = (function () {
           submitBtn.disabled    = true;
         }
 
-        /* Simulate brief evaluation processing */
-        setTimeout(function () {
+        /* ── Reset form to initial state ───────────────────────────────── */
+        function resetForm() {
+          resultPanel.innerHTML     = '';
+          resultPanel.style.display = 'none';
+          formPanel.style.display   = 'block';
+          if (submitBtn) {
+            submitBtn.textContent = 'Evaluate Trip Request';
+            submitBtn.disabled    = false;
+          }
+          if (stepEval)    stepEval.classList.remove('trip-step--active', 'trip-step--done');
+          if (stepConfirm) stepConfirm.classList.remove('trip-step--active', 'trip-step--done');
+          if (stepForm)    stepForm.classList.add('trip-step--active');
+          tripForm.reset();
+          tripTypeOpts.forEach(function (o) { o.classList.remove('trip-type-opt--active'); });
+          var rOpt = tripForm.querySelector('.trip-type-opt:first-child');
+          if (rOpt) rOpt.classList.add('trip-type-opt--active');
+          if (returnGroup) { returnGroup.style.opacity = ''; returnGroup.style.pointerEvents = ''; }
+          if (returnReq) returnReq.style.display = '';
+        }
 
-          /* Run evaluation */
-          var result = window.VSTAvaEngine.evaluate({
-            destination:       destination,
-            origin:            origin,
-            departureDate:     departureDate,
-            returnDate:        returnDate,
-            tripType:          tripType,
-            travellerCount:    travellerCount,
-            travellerType:     travellerType,
-            budgetBand:        budgetBand,
-            accessibilityNeeds: accessibilityNeeds,
-            purpose:           purpose,
-            notes:             notes,
-          });
-
-          /* Get Ava explanation */
-          var ava = window.VSTAvaEngine.avaExplain(result.evaluation);
-
-          /* Render result panel */
-          resultPanel.innerHTML     = window.renderEvalResult(result, ava);
-          formPanel.style.display   = 'none';
-          resultPanel.style.display = 'block';
-
-          /* Advance step indicator */
-          if (stepForm) stepForm.classList.remove('trip-step--active');
-          if (stepEval) stepEval.classList.add('trip-step--active', 'trip-step--done');
-
-          /* Wire save button */
+        /* ── Wire result-panel action buttons ───────────────────────────── */
+        function wireResultButtons(result) {
           var saveBtn = document.getElementById('trip-save-btn');
           if (saveBtn) {
             saveBtn.addEventListener('click', function () {
               var savedTrip = window.VSTTrips.create(result);
 
-              /* Advance to saved step */
               if (stepEval)    stepEval.classList.remove('trip-step--active');
               if (stepConfirm) stepConfirm.classList.add('trip-step--active', 'trip-step--done');
 
-              /* Show success confirmation panel */
               resultPanel.innerHTML = window.renderTripSuccess(savedTrip || result);
 
-              /* Wire success panel buttons */
               var goDash = document.getElementById('trip-goto-dashboard');
               if (goDash) {
                 goDash.addEventListener('click', function () { navigate('dashboard'); });
               }
-
               var reqAnother = document.getElementById('trip-request-another');
               if (reqAnother) {
-                reqAnother.addEventListener('click', function () {
-                  resultPanel.innerHTML     = '';
-                  resultPanel.style.display = 'none';
-                  formPanel.style.display   = 'block';
-                  if (submitBtn) {
-                    submitBtn.textContent = 'Evaluate Trip Request';
-                    submitBtn.disabled    = false;
-                  }
-                  if (stepEval)    stepEval.classList.remove('trip-step--active', 'trip-step--done');
-                  if (stepConfirm) stepConfirm.classList.remove('trip-step--active', 'trip-step--done');
-                  if (stepForm)    stepForm.classList.add('trip-step--active');
-                  tripForm.reset();
-                  tripTypeOpts.forEach(function (o) { o.classList.remove('trip-type-opt--active'); });
-                  var returnOpt = tripForm.querySelector('.trip-type-opt:first-child');
-                  if (returnOpt) returnOpt.classList.add('trip-type-opt--active');
-                  if (returnGroup) { returnGroup.style.opacity = ''; returnGroup.style.pointerEvents = ''; }
-                  if (returnReq) returnReq.style.display = '';
-                });
+                reqAnother.addEventListener('click', function () { resetForm(); });
               }
-
-              /* Auto-navigate to dashboard after 8 s if user doesn't click */
               setTimeout(function () {
-                if (document.getElementById('trip-goto-dashboard')) {
-                  navigate('dashboard');
-                }
+                if (document.getElementById('trip-goto-dashboard')) navigate('dashboard');
               }, 8000);
             });
           }
 
-          /* Wire new request button */
           var newBtn = document.getElementById('trip-new-btn');
           if (newBtn) {
-            newBtn.addEventListener('click', function () {
-              resultPanel.innerHTML     = '';
-              resultPanel.style.display = 'none';
-              formPanel.style.display   = 'block';
-              if (submitBtn) {
-                submitBtn.textContent = 'Evaluate Trip Request';
-                submitBtn.disabled    = false;
-              }
-              if (stepEval) stepEval.classList.remove('trip-step--active', 'trip-step--done');
-              if (stepForm) stepForm.classList.add('trip-step--active');
-              tripForm.reset();
-              tripTypeOpts.forEach(function (o) { o.classList.remove('trip-type-opt--active'); });
-              var returnOpt = tripForm.querySelector('.trip-type-opt:first-child');
-              if (returnOpt) returnOpt.classList.add('trip-type-opt--active');
-              if (returnGroup) { returnGroup.style.opacity = ''; returnGroup.style.pointerEvents = ''; }
-              if (returnReq) returnReq.style.display = '';
-            });
+            newBtn.addEventListener('click', function () { resetForm(); });
           }
+        }
 
-        }, 700); /* evaluation delay — gives a realistic feel */
+        /* ── Evaluation processing (700 ms delay for realistic feel) ────── */
+        setTimeout(function () {
+
+          /* Phase 5 sync evaluation — builds baseline result object */
+          var result = window.VSTAvaEngine.evaluate({
+            destination:        destination,
+            origin:             origin,
+            departureDate:      departureDate,
+            returnDate:         returnDate,
+            tripType:           tripType,
+            travellerCount:     travellerCount,
+            travellerType:      travellerType,
+            budgetBand:         budgetBand,
+            accessibilityNeeds: accessibilityNeeds,
+            purpose:            purpose,
+            notes:              notes,
+          });
+
+          /* Phase 6 intelligence — async; resolves instantly in fallback mode */
+          var p6Input = {
+            destination:        result.destination,
+            origin:             result.origin,
+            departureDate:      result.departureDate,
+            returnDate:         result.returnDate,
+            tripType:           result.tripType,
+            nights:             result.nights,
+            travellerCount:     result.travellerCount,
+            travellerType:      result.travellerType,
+            budgetBand:         result.budgetBand,
+            accessibilityNeeds: result.accessibilityNeeds,
+            purpose:            result.purpose,
+            estimatedCostUSD:   result.evaluation.estimatedCost,
+            notes:              result.notes,
+          };
+
+          var p6Promise = window.VSTAvaPhase6
+            ? window.VSTAvaPhase6.evaluate(p6Input)
+            : Promise.resolve(null);
+
+          p6Promise
+            .then(function (p6)  { result.phase6 = p6; })
+            .catch(function ()   { result.phase6 = null; })
+            .then(function () {
+              var ava = window.VSTAvaEngine.avaExplain(result.evaluation);
+
+              resultPanel.innerHTML     = window.renderEvalResult(result, ava);
+              formPanel.style.display   = 'none';
+              resultPanel.style.display = 'block';
+
+              if (stepForm) stepForm.classList.remove('trip-step--active');
+              if (stepEval) stepEval.classList.add('trip-step--active', 'trip-step--done');
+
+              wireResultButtons(result);
+            });
+
+        }, 700);
       });
     }
 
