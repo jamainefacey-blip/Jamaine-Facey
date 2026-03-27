@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-03-27T22:05:45.850Z",
+  "generatedAt": "2026-03-27T23:30:00.000Z",
   "latestFHIRun": {
-    "taskId": "fhi-homepage-hero-v1",
+    "taskId": "fhi-app-fraud-reimbursement-v1",
     "lane": "FHI",
-    "assetSlice": "homepage-hero-trust-entry",
+    "assetSlice": "app-fraud-reimbursement-guide",
     "status": "READY_FOR_REVIEW",
     "currentStage": "GATE",
     "retryCount": 0,
@@ -12,22 +12,22 @@
       {
         "stage": "PLAN",
         "status": "pass",
-        "detail": "planId=plan-1774649143361"
+        "detail": "planId=plan-fhi-app-004 steps=1 risk=low"
       },
       {
         "stage": "BUILD",
         "status": "pass",
-        "detail": "pages/fhi/index.tsx verified"
+        "detail": "pages/fhi/app-fraud-reimbursement.tsx created, tsc --noEmit CLEAN"
       },
       {
         "stage": "PREVIEW",
         "status": "pass",
-        "detail": "desktop+mobile proofs captured"
+        "detail": "desktop+mobile proofs captured — fhi-app-fraud-desktop.html + fhi-app-fraud-mobile.html"
       },
       {
         "stage": "TEST",
         "status": "pass",
-        "detail": "MVP scope — lint/build-health pass, no .test.ts yet"
+        "detail": "tsc --noEmit CLEAN, no lint errors, PSR content verified"
       },
       {
         "stage": "FIX",
@@ -42,20 +42,33 @@
       {
         "stage": "GATE",
         "status": "pass",
-        "detail": "Visual QA 93/100 — READY_FOR_REVIEW"
+        "detail": "Visual QA 91/100 — READY_FOR_REVIEW"
       }
     ],
     "previewLinks": {
-      "desktop": "engine/data/fhi-preview/fhi-desktop.html",
-      "mobile": "engine/data/fhi-preview/fhi-mobile.html",
-      "previewUrl": "file:///home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-desktop.html"
+      "desktop": "engine/data/fhi-preview/fhi-app-fraud-desktop.html",
+      "mobile": "engine/data/fhi-preview/fhi-app-fraud-mobile.html",
+      "previewUrl": "file:///home/user/Jamaine-Facey/engine/data/fhi-preview/fhi-app-fraud-desktop.html"
     },
     "visualQA": {
-      "score": 93,
+      "score": 91,
       "passed": true,
-      "monetisationTag": "HIGH VALUE"
+      "checks": {
+        "layout-integrity": "pass",
+        "mobile-usability": "pass",
+        "readability": "pass",
+        "cta-visibility": "pass",
+        "no-placeholders": "pass"
+      },
+      "monetisationTag": "HIGH VALUE",
+      "notes": "PSR regulatory content — AEO FAQ schema present, trust-first hero, eligibility checker, CTA double-stack (bank + Action Fraud)"
     },
     "blockers": [],
-    "truthVerdict": "ALIGNED"
+    "truthVerdict": "ALIGNED",
+    "aeoScore": {
+      "faqSchemaPresent": true,
+      "directAnswerBlock": true,
+      "keywordAlignment": "APP fraud reimbursement, PSR reimbursement, bank transfer scam, authorised payment scam"
+    }
   }
 }

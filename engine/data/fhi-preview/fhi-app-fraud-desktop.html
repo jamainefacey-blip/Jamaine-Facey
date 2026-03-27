@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FHI Preview — APP Fraud Reimbursement Desktop (1280px)</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Inter', system-ui, sans-serif; background: #0A0E1A; color: #F0F2F7; }
+/* Nav */
+.nav { background: rgba(10,14,26,.97); border-bottom: 1px solid #1C2540; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
+.logo-mark { background: #E85D3A; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 7px; border-radius: 5px; letter-spacing: .04em; }
+.logo-name { font-weight: 600; font-size: 14px; color: #F0F2F7; margin-left: 8px; }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { color: #8A9AC0; font-size: 13px; text-decoration: none; font-weight: 500; }
+/* Breadcrumb */
+.breadcrumb { padding: 10px 40px; background: #0D1120; border-bottom: 1px solid #1C2540; font-size: 12px; color: #5A6A8A; }
+.breadcrumb a { color: #8A9AC0; text-decoration: none; }
+/* Hero */
+.hero { padding: 56px 40px 48px; background: linear-gradient(180deg, #0D1120 0%, #0A0E1A 100%); text-align: center; }
+.hero-inner { max-width: 720px; margin: 0 auto; }
+.badge { display: inline-block; background: rgba(232,93,58,.12); color: #E85D3A; border: 1px solid rgba(232,93,58,.3); border-radius: 100px; font-size: 11px; font-weight: 700; padding: 4px 14px; margin-bottom: 20px; letter-spacing: .05em; text-transform: uppercase; }
+.headline { font-size: 44px; font-weight: 800; line-height: 1.15; margin-bottom: 18px; }
+.accent { color: #E85D3A; }
+.sub { font-size: 17px; color: #8A9AC0; line-height: 1.65; margin-bottom: 28px; }
+.sub strong { color: #F0F2F7; }
+.cta-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 14px; }
+.cta-primary { background: #E85D3A; color: #fff; padding: 15px 28px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none; }
+.cta-secondary { background: rgba(232,93,58,.1); color: #E85D3A; border: 1px solid rgba(232,93,58,.35); padding: 15px 24px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none; }
+.note { font-size: 12px; color: #5A6A8A; }
+/* Answer block */
+.answer-block { background: #0D1120; border-top: 1px solid #1C2540; border-bottom: 1px solid #1C2540; padding: 32px 40px; }
+.answer-inner { max-width: 760px; margin: 0 auto; }
+.answer-card { display: flex; gap: 16px; align-items: flex-start; background: #111827; border: 1px solid #2A3A5A; border-radius: 12px; padding: 20px 24px; }
+.answer-icon { font-size: 28px; flex-shrink: 0; }
+.answer-tag { font-size: 13px; font-weight: 700; color: #E85D3A; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.answer-text { font-size: 15px; color: #C8D0E8; line-height: 1.65; margin: 0; }
+.answer-text strong { color: #F0F2F7; }
+.answer-text em { color: #E85D3A; font-style: normal; font-weight: 700; }
+/* Steps */
+.steps-section { background: #0D1120; padding: 56px 40px; }
+.section-inner { max-width: 760px; margin: 0 auto; }
+.section-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.section-sub { color: #8A9AC0; font-size: 15px; margin-bottom: 28px; }
+.steps { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; align-items: flex-start; gap: 16px; background: #111827; border: 1px solid #1C2540; border-radius: 10px; padding: 18px 20px; }
+.step-num { background: #E85D3A; color: #fff; font-size: 13px; font-weight: 800; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+.step p { font-size: 13px; color: #8A9AC0; line-height: 1.55; margin: 0; }
+/* Eligibility */
+.eligibility-section { padding: 56px 40px; }
+.elig-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.elig-item { display: flex; align-items: flex-start; gap: 12px; background: #111827; border: 1px solid #1C2540; border-radius: 8px; padding: 14px 16px; font-size: 14px; color: #C8D0E8; }
+.elig-item--yes { border-left: 3px solid #3ECF8E; }
+.elig-item--no  { border-left: 3px solid #E85D3A; }
+.elig-icon { font-weight: 800; font-size: 15px; flex-shrink: 0; width: 20px; }
+.elig-item--yes .elig-icon { color: #3ECF8E; }
+.elig-item--no  .elig-icon { color: #E85D3A; }
+.elig-note { font-size: 13px; color: #8A9AC0; background: #0D1120; border: 1px solid #1C2540; border-radius: 8px; padding: 14px 16px; line-height: 1.6; }
+.elig-note strong { color: #F0F2F7; }
+/* Timeline */
+.timeline-section { background: #0D1120; border-top: 1px solid #1C2540; border-bottom: 1px solid #1C2540; padding: 56px 40px; }
+.timeline-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.timeline-card { background: #111827; border: 1px solid #1C2540; border-radius: 10px; padding: 20px; }
+.timeline-val { font-size: 28px; font-weight: 800; color: #E85D3A; margin-bottom: 4px; }
+.timeline-label { font-size: 13px; font-weight: 700; color: #C8D0E8; margin-bottom: 8px; }
+.timeline-detail { font-size: 12px; color: #5A6A8A; line-height: 1.55; }
+/* Limits */
+.limits-section { padding: 56px 40px; }
+.limits-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+.limit-card { background: #111827; border: 1px solid #1C2540; border-top: 3px solid #E85D3A; border-radius: 10px; padding: 18px 16px; }
+.limit-title { font-size: 14px; font-weight: 700; color: #F0F2F7; margin-bottom: 8px; }
+.limit-detail { font-size: 13px; color: #8A9AC0; line-height: 1.55; }
+/* Report */
+.report { background: #0D1120; border-top: 1px solid #1C2540; padding: 56px 40px; text-align: center; }
+.report-inner { max-width: 720px; margin: 0 auto; }
+.report-title { font-size: 30px; font-weight: 800; margin-bottom: 10px; }
+.report-sub { color: #8A9AC0; font-size: 15px; margin-bottom: 28px; }
+.report-note { font-size: 11px; color: #3A4A6A; margin-top: 16px; }
+/* Footer */
+footer { background: #060810; border-top: 1px solid #1C2540; padding: 20px 40px; display: flex; align-items: center; gap: 12px; }
+.footer-text { font-size: 12px; color: #5A6A8A; flex: 1; }
+.footer-legal { font-size: 11px; color: #3A4A6A; }
+/* Proof stamp */
+.proof-stamp { position: fixed; bottom: 16px; right: 16px; background: rgba(62,207,142,.9); color: #0A0E1A; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 100px; z-index: 999; }
+</style>
+</head>
+<body>
+
+<div class="proof-stamp">✓ FHI APP Fraud — Desktop 1280px</div>
+
+<nav class="nav">
+  <div style="display:flex;align-items:center">
+    <span class="logo-mark">FHI</span>
+    <span class="logo-name">Fraud Help Index</span>
+  </div>
+  <div class="nav-links">
+    <a href="#">What to do</a>
+    <a href="#">Fraud types</a>
+    <a href="#">Report</a>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="#">Fraud Help Index</a> › APP Fraud Reimbursement
+</div>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge">PSR Rules — October 2024</div>
+    <h1 class="headline">APP Fraud — <span class="accent">Can You Get Your Money Back?</span></h1>
+    <p class="sub">Yes. Under UK law, your bank is <strong>legally required</strong> to reimburse most APP fraud losses up to <strong>£85,000</strong>. Here's exactly what to do.</p>
+    <div class="cta-row">
+      <a href="#" class="cta-primary">Call your bank now</a>
+      <a href="#" class="cta-secondary">Report to Action Fraud</a>
+    </div>
+    <p class="note">Free guidance. No sign-up required.</p>
+  </div>
+</section>
+
+<section class="answer-block">
+  <div class="answer-inner">
+    <div class="answer-card">
+      <div class="answer-icon">⚖️</div>
+      <div>
+        <div class="answer-tag">The short answer</div>
+        <p class="answer-text">Under the Payment Systems Regulator (PSR) mandatory reimbursement rules — effective <strong>7 October 2024</strong> — UK banks must reimburse victims of Authorised Push Payment (APP) fraud up to <strong>£85,000</strong> per claim. Call your bank immediately and use the words <em>"APP fraud"</em>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="steps-section">
+  <div class="section-inner">
+    <h2 class="section-title">What to do right now</h2>
+    <p class="section-sub">Every minute counts. Act immediately to maximise your chance of recovery.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-num">1</div><div><strong>Call your bank now</strong><p>Call the number on the back of your card. Tell them you've been a victim of APP fraud. Ask for the Payment Services or Fraud team.</p></div></li>
+      <li class="step"><div class="step-num">2</div><div><strong>Say "APP fraud" — it triggers a legal protocol</strong><p>Under PSR rules, the words "Authorised Push Payment fraud" activate a mandatory investigation process. Banks are legally required to reimburse most losses up to £85,000.</p></div></li>
+      <li class="step"><div class="step-num">3</div><div><strong>Request the receiving bank is contacted</strong><p>Your bank can contact the receiving bank to freeze the funds. Time is critical — the sooner you call, the higher the chance of recovery.</p></div></li>
+      <li class="step"><div class="step-num">4</div><div><strong>Report to Action Fraud</strong><p>Report online at actionfraud.police.uk or call 0300 123 2040. You'll get a crime reference number — keep it.</p></div></li>
+      <li class="step"><div class="step-num">5</div><div><strong>If refused, escalate to the Financial Ombudsman</strong><p>If your bank refuses to reimburse or delays unreasonably, escalate to the Financial Ombudsman Service (FOS) for free. FOS decisions are binding on your bank.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="eligibility-section">
+  <div class="section-inner">
+    <h2 class="section-title">Am I eligible for reimbursement?</h2>
+    <p class="section-sub">PSR rules cover most APP fraud victims. Check the criteria below.</p>
+    <ul class="elig-list">
+      <li class="elig-item elig-item--yes"><span class="elig-icon">✓</span><span>You authorised the payment yourself (you transferred the money)</span></li>
+      <li class="elig-item elig-item--yes"><span class="elig-icon">✓</span><span>You were deceived into making the transfer — e.g. fake invoice, impersonation, romance scam</span></li>
+      <li class="elig-item elig-item--yes"><span class="elig-icon">✓</span><span>Payment was made from a UK bank account to another UK account</span></li>
+      <li class="elig-item elig-item--yes"><span class="elig-icon">✓</span><span>The fraud occurred on or after 7 October 2024</span></li>
+      <li class="elig-item elig-item--no"><span class="elig-icon">✗</span><span>You made the payment knowingly to commit a fraud yourself</span></li>
+      <li class="elig-item elig-item--no"><span class="elig-icon">✗</span><span>You were grossly negligent (ignored clear warnings from your bank)</span></li>
+      <li class="elig-item elig-item--no"><span class="elig-icon">✗</span><span>International transfers — PSR rules apply to UK domestic payments only</span></li>
+    </ul>
+    <p class="elig-note">Not sure? Contact the <strong>Financial Ombudsman Service</strong> — their assessment is free and they can advise before you make a formal complaint.</p>
+  </div>
+</section>
+
+<section class="timeline-section">
+  <div class="section-inner">
+    <h2 class="section-title">Key timelines</h2>
+    <div class="timeline-grid">
+      <div class="timeline-card"><div class="timeline-val">Same day</div><div class="timeline-label">Call your bank</div><div class="timeline-detail">Reporting the same day dramatically increases the chance of funds being frozen in the receiving account.</div></div>
+      <div class="timeline-card"><div class="timeline-val">13 months</div><div class="timeline-label">Report to your bank</div><div class="timeline-detail">The PSR mandatory window. Report within 13 months of the final payment to qualify for mandatory reimbursement.</div></div>
+      <div class="timeline-card"><div class="timeline-val">8 weeks</div><div class="timeline-label">Bank response time</div><div class="timeline-detail">Your bank has up to 8 weeks to resolve your complaint. After this, you can escalate to the Financial Ombudsman Service.</div></div>
+      <div class="timeline-card"><div class="timeline-val">Free</div><div class="timeline-label">FOS escalation</div><div class="timeline-detail">The Financial Ombudsman Service is free to use and can compel your bank to reimburse you. FOS decisions are legally binding.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="limits-section">
+  <div class="section-inner">
+    <h2 class="section-title">Limitations and exceptions</h2>
+    <p class="section-sub">The PSR scheme covers most victims — but there are exceptions to be aware of.</p>
+    <div class="limits-grid">
+      <div class="limit-card"><div class="limit-title">£85,000 reimbursement cap</div><p class="limit-detail">The maximum mandatory reimbursement is £85,000 per claim. Losses above this are not covered by the mandatory scheme.</p></div>
+      <div class="limit-card"><div class="limit-title">13-month reporting window</div><p class="limit-detail">You must report the fraud to your bank within 13 months of the final payment. After this window, mandatory reimbursement does not apply.</p></div>
+      <div class="limit-card"><div class="limit-title">Gross negligence exception</div><p class="limit-detail">If you ignored explicit, specific warnings from your bank about the payment, your bank may reduce or refuse reimbursement.</p></div>
+      <div class="limit-card"><div class="limit-title">Voluntary payments for illegal goods</div><p class="limit-detail">Payments made knowingly to purchase illegal goods or services are excluded, even if you were subsequently defrauded.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="report">
+  <div class="report-inner">
+    <h2 class="report-title">Ready to act?</h2>
+    <p class="report-sub">Don't wait. Every hour reduces the chance of fund recovery.</p>
+    <div class="cta-row">
+      <a href="#" class="cta-primary">Report to Action Fraud</a>
+      <a href="#" class="cta-secondary">Financial Ombudsman</a>
+    </div>
+    <p class="report-note">Regulatory basis: PSR Mandatory Reimbursement Policy — effective 7 October 2024. FCA regulated. Not legal advice.</p>
+  </div>
+</section>
+
+<footer>
+  <span class="logo-mark" style="font-size:12px">FHI</span>
+  <span class="footer-text">Fraud Help Index — free guidance for fraud victims.</span>
+  <span class="footer-legal">Not legal advice. Always report to Action Fraud.</span>
+</footer>
+
+</body>
+</html>
