@@ -1,0 +1,13 @@
+{
+  "runId": "865a7d0f-3620-4d77-8165-7c617cafa9cd",
+  "taskId": "pc-audit-02",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T15:07:56.036Z",
+  "completedAt": "2026-03-27T15:07:56.038Z",
+  "durationMs": 2,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "transform task result: {\"transformed\":true,\"input\":\"gate-latest.json\",\"keys\":12,\"type\":\"object\"}"
+}

@@ -1,0 +1,33 @@
+{
+  "minGateScore": 70,
+  "dimensionFloors": {
+    "BUILD_HEALTH": 80,
+    "PREVIEW_PROOF": 80,
+    "COMPLIANCE_SAFETY": 70,
+    "UX_VISUAL": 60,
+    "COPY_QUALITY": 60
+  },
+  "requiredByAssetType": {
+    "ui":     ["has_title", "has_h1", "has_viewport", "no_placeholders", "has_preview_proof"],
+    "api":    ["has_preview_proof", "build_pass"],
+    "report": ["has_title", "has_h1", "has_preview_proof", "no_placeholders"],
+    "data":   ["build_pass"],
+    "config": ["build_pass"]
+  },
+  "requiredByLane": {
+    "VST":     ["has_cta", "has_preview_proof", "no_placeholders", "build_pass"],
+    "FHI":     ["has_preview_proof", "no_placeholders", "build_pass", "compliance_clean"],
+    "AI_LAB":  ["build_pass"],
+    "ADMIN":   ["build_pass"],
+    "BACKYARD": []
+  },
+  "blockerPatterns": [
+    "lorem ipsum",
+    "[TBD]",
+    "[INSERT]",
+    "[TODO]",
+    "placeholder text",
+    "coming soon",
+    "under construction"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "auditUpgradeId": "audit-upgrade-1774624076046",
+  "upgradedAt": "2026-03-27T15:07:56.046Z",
+  "taskId": "pc-audit-02",
+  "lane": "AI_LAB",
+  "transformResult": {
+    "transformed": true,
+    "input": "gate-latest.json",
+    "keys": 12,
+    "type": "object"
+  },
+  "preGateAuditDemo": {
+    "taskId": "pc-mobile-01",
+    "lane": "AI_LAB",
+    "assetType": "ui",
+    "auditedAt": "2026-03-27T15:07:56.046Z",
+    "verdict": "READY_FOR_GATE",
+    "flags": [
+      {
+        "severity": "WARN",
+        "dimension": "SEO",
+        "message": "Missing meta description — recommended for non-internal assets"
+      },
+      {
+        "severity": "WARN",
+        "dimension": "MONETISATION",
+        "message": "No CTA or monetisation language detected — acceptable for internal tools"
+      }
+    ],
+    "readyForGate": true,
+    "summary": "Pre-gate audit passed — 2 warning(s). Asset is ready for gate evaluation."
+  },
+  "capabilities": {
+    "detectsMissingLayers": true,
+    "compareAgainstStandard": true,
+    "flagsBeforeGate": true,
+    "supportedLanes": [
+      "AI_LAB",
+      "VST",
+      "FHI",
+      "ADMIN",
+      "BACKYARD"
+    ],
+    "supportedAssetTypes": [
+      "ui",
+      "api",
+      "data",
+      "report",
+      "config"
+    ],
+    "verdicts": [
+      "READY_FOR_GATE",
+      "NEEDS_WORK",
+      "BLOCKED"
+    ],
+    "standardFile": "engine/data/audit-standard.json",
+    "auditModule": "engine/pre-gate-audit.ts"
+  }
+}

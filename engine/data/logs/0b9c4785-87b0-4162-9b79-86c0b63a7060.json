@@ -1,0 +1,13 @@
+{
+  "runId": "0b9c4785-87b0-4162-9b79-86c0b63a7060",
+  "taskId": "p8-repo",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T15:08:02.387Z",
+  "completedAt": "2026-03-27T15:08:02.387Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "repo task result: {\"branch\":\"claude/ai-lab-orchestrator-jI7p6\",\"lastCommitMessage\":\"queue-pack-3: register Pain Control evolution layer 2\",\"head\":\"ref: refs/heads/claude/ai-lab-orchestrator-jI7p6\"}"
+}
