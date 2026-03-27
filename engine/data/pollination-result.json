@@ -1,0 +1,63 @@
+{
+  "task": "pc-pollination-01",
+  "completedAt": "2026-03-27T17:52:06.392Z",
+  "pollinationId": "poll-1774633926379-e36k",
+  "sourceReleaseId": "rel-1774628666953-9fqi",
+  "sourceLane": "AI_LAB",
+  "sourceScore": 92,
+  "patternsExtracted": [
+    {
+      "patternId": "pat-gen-1774-build-health",
+      "type": "workflow",
+      "dimension": "BUILD_HEALTH",
+      "score": 100
+    },
+    {
+      "patternId": "pat-gen-1774-preview-proof",
+      "type": "workflow",
+      "dimension": "PREVIEW_PROOF",
+      "score": 100
+    },
+    {
+      "patternId": "pat-gen-1774-ux-visual",
+      "type": "UI",
+      "dimension": "UX_VISUAL",
+      "score": 100
+    },
+    {
+      "patternId": "pat-gen-1774-copy-quality",
+      "type": "logic",
+      "dimension": "COPY_QUALITY",
+      "score": 100
+    },
+    {
+      "patternId": "pat-gen-1774-accessibility",
+      "type": "accessibility",
+      "dimension": "ACCESSIBILITY",
+      "score": 80
+    },
+    {
+      "patternId": "pat-gen-1774-seo",
+      "type": "logic",
+      "dimension": "SEO",
+      "score": 80
+    },
+    {
+      "patternId": "pat-gen-1774-compliance-safety",
+      "type": "compliance",
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100
+    },
+    {
+      "patternId": "pat-gen-1774-rerun-risk",
+      "type": "workflow",
+      "dimension": "RERUN_RISK",
+      "score": 100
+    }
+  ],
+  "suggestionsCount": 25,
+  "tasksQueued": 25,
+  "skillLibraryPatterns": 8,
+  "testsRun": 10,
+  "testsPassed": 10
+}

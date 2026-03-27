@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "updatedAt": "2026-03-27T17:52:06.390Z",
+  "patterns": [
+    {
+      "patternId": "pat-gen-1774-build-health",
+      "type": "workflow",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "BUILD_HEALTH",
+      "dimensionScore": 100,
+      "title": "Clean build pipeline (score 100) — zero-failure task completion",
+      "description": "Task completed with zero failures and correct status signalling. Replicable across all lanes.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-preview-proof",
+      "type": "workflow",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "PREVIEW_PROOF",
+      "dimensionScore": 100,
+      "title": "Preview proof pattern (score 100) — verified render before gate",
+      "description": "Asset rendered and proof captured before gate submission. Strong validation signal.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-ux-visual",
+      "type": "UI",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "UX_VISUAL",
+      "dimensionScore": 100,
+      "title": "High UX visual score (100) — layout and visual hierarchy pattern",
+      "description": "Asset scored highly on visual structure: clean layout, no broken elements, consistent hierarchy.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-copy-quality",
+      "type": "logic",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "COPY_QUALITY",
+      "dimensionScore": 100,
+      "title": "Copy quality pattern (100) — clean, placeholder-free copy",
+      "description": "Copy was clean: no placeholders, no lorem ipsum, no incomplete text. Reusable copy standards.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-accessibility",
+      "type": "accessibility",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "ACCESSIBILITY",
+      "dimensionScore": 80,
+      "title": "Accessibility pattern (80) — lang, landmarks, alt text",
+      "description": "Accessibility checks passed: lang attribute, img alt text, landmark regions present.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-seo",
+      "type": "logic",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "SEO",
+      "dimensionScore": 80,
+      "title": "SEO structure pattern (80) — title, meta, h1 hierarchy",
+      "description": "SEO structure clean: title tag, meta description, h1, viewport meta all present.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-compliance-safety",
+      "type": "compliance",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "COMPLIANCE_SAFETY",
+      "dimensionScore": 100,
+      "title": "Compliance pattern (100) — legal/safety signals clean",
+      "description": "Compliance signals clean: no credential leaks, no PII exposure, disclaimer pattern correct.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    },
+    {
+      "patternId": "pat-gen-1774-rerun-risk",
+      "type": "workflow",
+      "sourceLane": "AI_LAB",
+      "sourceTaskId": "gen-1774628397639-3637",
+      "dimension": "RERUN_RISK",
+      "dimensionScore": 100,
+      "title": "Low rerun risk pattern (100) — idempotent, stable task flow",
+      "description": "Task execution was stable and idempotent — safe to re-run without side effects.",
+      "extractedAt": "2026-03-27T17:52:06.379Z"
+    }
+  ]
+}
