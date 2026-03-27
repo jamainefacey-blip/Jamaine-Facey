@@ -16,6 +16,7 @@ window.VSTRouter = (function () {
     'contact':       window.renderContact,
     'trip-request':  window.renderTripRequest,
     'dashboard':     window.renderDashboard,
+    'pain-control':  window.renderPainControl,
   };
 
   var DEFAULT_ROUTE = 'home';
@@ -390,6 +391,137 @@ window.VSTRouter = (function () {
     if (route === 'dashboard') {
       /* Nothing additional required — data is rendered server-side on load.
          Click delegation in handleMainClick covers all data-route links. */
+    }
+
+    /* ── Pain Control interactions ──────────────────────────────────────────── */
+    if (route === 'pain-control') {
+      var PE          = window.VSTPainEngine;
+      var detailSheet = document.getElementById('pc-detail-sheet');
+      var detailOverlay = document.getElementById('pc-detail-overlay');
+      var detailBody  = document.getElementById('pc-detail-body');
+      var detailTitle = document.getElementById('pc-detail-title');
+      var detailClose = document.getElementById('pc-detail-close');
+      var logPanel    = document.getElementById('pc-log-panel');
+      var logClose    = document.getElementById('pc-log-close');
+      var toast       = document.getElementById('pc-toast');
+      var runBtn      = document.getElementById('pc-run-once');
+      var refreshBtn  = document.getElementById('pc-refresh');
+      var queueBtn    = document.getElementById('pc-view-queue');
+      var logsBtn     = document.getElementById('pc-view-logs');
+      var taskList    = document.getElementById('pc-task-list');
+
+      var toastTimer = null;
+
+      function showToast(msg, type) {
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.className = 'pc-toast pc-toast--visible' + (type ? ' pc-toast--' + type : '');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toast.className = 'pc-toast';
+        }, 3000);
+      }
+
+      function openDetail(taskId) {
+        if (!detailSheet || !detailBody) return;
+        var html = window.buildPainTaskDetail(taskId);
+        detailBody.innerHTML = html;
+        var tasks = PE.getTasks();
+        for (var i = 0; i < tasks.length; i++) {
+          if (tasks[i].id === taskId && detailTitle) {
+            detailTitle.textContent = tasks[i].title;
+            break;
+          }
+        }
+        detailSheet.setAttribute('aria-hidden', 'false');
+        detailSheet.classList.add('pc-detail-sheet--open');
+        if (detailOverlay) { detailOverlay.setAttribute('aria-hidden', 'false'); detailOverlay.classList.add('pc-detail-overlay--visible'); }
+        document.body.classList.add('pc-noscroll');
+      }
+
+      function closeDetail() {
+        if (!detailSheet) return;
+        detailSheet.classList.remove('pc-detail-sheet--open');
+        detailSheet.setAttribute('aria-hidden', 'true');
+        if (detailOverlay) { detailOverlay.classList.remove('pc-detail-overlay--visible'); detailOverlay.setAttribute('aria-hidden', 'true'); }
+        document.body.classList.remove('pc-noscroll');
+      }
+
+      function openLogs() {
+        if (!logPanel) return;
+        logPanel.setAttribute('aria-hidden', 'false');
+        logPanel.classList.add('pc-log-panel--open');
+      }
+
+      function closeLogs() {
+        if (!logPanel) return;
+        logPanel.classList.remove('pc-log-panel--open');
+        logPanel.setAttribute('aria-hidden', 'true');
+      }
+
+      /* Task row taps */
+      if (taskList) {
+        taskList.addEventListener('click', function (e) {
+          var btn = e.target.closest('.pc-task-item');
+          if (!btn) return;
+          openDetail(btn.dataset.taskId);
+        });
+      }
+
+      /* Detail close */
+      if (detailClose) detailClose.addEventListener('click', closeDetail);
+      if (detailOverlay) detailOverlay.addEventListener('click', closeDetail);
+
+      /* Log close */
+      if (logClose) logClose.addEventListener('click', closeLogs);
+
+      /* Run once */
+      if (runBtn) {
+        runBtn.addEventListener('click', function () {
+          runBtn.disabled = true;
+          runBtn.textContent = '⏳ Running…';
+          PE.runOnce().then(function (newStatus) {
+            render('pain-control'); /* re-render page with updated state */
+            showToast('Engine run complete — status: ' + newStatus.lastRunStatus, 'success');
+          }).catch(function () {
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<span class="pc-action-icon">&#9654;</span> Run Engine Once';
+            showToast('Engine run failed', 'error');
+          });
+        });
+      }
+
+      /* Refresh */
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+          render('pain-control');
+          showToast('Status refreshed', 'info');
+        });
+      }
+
+      /* View queue */
+      if (queueBtn) {
+        queueBtn.addEventListener('click', function () {
+          var queue = PE.getQueue();
+          showToast(queue.length + ' task' + (queue.length !== 1 ? 's' : '') + ' in queue', 'info');
+          if (taskList) {
+            taskList.querySelectorAll('.pc-task-item').forEach(function (item) {
+              var tasks = PE.getTasks();
+              for (var i = 0; i < tasks.length; i++) {
+                if (tasks[i].id === item.dataset.taskId && tasks[i].status === 'queued') {
+                  item.classList.add('pc-task-item--highlight');
+                  setTimeout(function (el) { el.classList.remove('pc-task-item--highlight'); }, 1800, item);
+                }
+              }
+            });
+          }
+        });
+      }
+
+      /* View logs */
+      if (logsBtn) {
+        logsBtn.addEventListener('click', openLogs);
+      }
     }
 
     /* ── In-page data-route links ────────────────────────────────────────────── */
