@@ -1,0 +1,13 @@
+{
+  "runId": "c7df7d8e-5a90-41d7-a46a-50f2d4932a7f",
+  "taskId": "pc-progress-01",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:39:03.667Z",
+  "completedAt": "2026-03-27T12:39:03.667Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 13"
+}

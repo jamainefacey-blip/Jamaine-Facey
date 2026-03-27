@@ -69,3 +69,5 @@
 [2026-03-27T12:22:50.819Z] policy-update 7fe226ac: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true
 [2026-03-27T12:22:50.821Z] policy-update 5b78dd01: allowedTypes: [eval,data] → [eval,data,write], approvalTypes: [write,repo,transform] → [repo,transform], overnightMode: true → true
 [2026-03-27T12:22:51.392Z] policy-update e3ab1813: allowedTypes: [eval,data] → [eval,data,repo], approvalTypes: [write,repo,transform] → [write,transform], overnightMode: true → true
+[2026-03-27T12:37:55.813Z] policy-update f58460a8: allowedTypes: [eval,data] → [eval,data,write], approvalTypes: [write,repo,transform] → [repo,transform], overnightMode: true → true
+[2026-03-27T12:38:17.995Z] policy-update 4354f2f3: allowedTypes: [eval,data,write] → [eval,data,write], approvalTypes: [repo,transform] → [repo,transform], overnightMode: true → true | ERRORS: REJECTED: 'write' is not in approvalTypes — nothing to promote

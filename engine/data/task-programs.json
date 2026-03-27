@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T12:38:17.995Z",
+  "description": "Persistent task program definitions for the Pain Engine scheduler",
+  "programs": [
+    {
+      "id": "prog-daily-status",
+      "name": "Daily Status Read",
+      "type": "data",
+      "lane": "AI_LAB",
+      "schedule": "daily",
+      "payload": {
+        "file": "scheduler-state.json",
+        "task": "daily-status-check"
+      },
+      "enabled": true,
+      "notes": "Read scheduler state once per day for health monitoring"
+    },
+    {
+      "id": "prog-policy-audit",
+      "name": "Policy Audit",
+      "type": "data",
+      "lane": "AI_LAB",
+      "schedule": "weekly",
+      "payload": {
+        "file": "guardrail-policy.json",
+        "task": "weekly-policy-audit"
+      },
+      "enabled": true,
+      "notes": "Weekly read of live guardrail policy for audit trail"
+    },
+    {
+      "id": "prog-gate-review",
+      "name": "Gate Result Review",
+      "type": "data",
+      "lane": "AI_LAB",
+      "schedule": "on-demand",
+      "payload": {
+        "file": "gate-latest.json",
+        "task": "gate-result-review"
+      },
+      "enabled": true,
+      "notes": "On-demand read of latest Pain Gate result before founder review"
+    },
+    {
+      "id": "prog-repo-check",
+      "name": "Repo Branch Check",
+      "type": "repo",
+      "lane": "AI_LAB",
+      "schedule": "on-demand",
+      "payload": {
+        "branch": "claude/ai-lab-orchestrator-jI7p6"
+      },
+      "enabled": false,
+      "notes": "Read-only repo check — requires approval per policy"
+    }
+  ]
+}

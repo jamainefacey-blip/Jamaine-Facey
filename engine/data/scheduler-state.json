@@ -1,10 +1,85 @@
 {
   "status": "idle",
-  "intervalMs": 30000,
-  "lastRunAt": null,
-  "lastRunDurationMs": null,
+  "intervalMs": 200,
+  "lastRunAt": "2026-03-27T12:39:03.667Z",
+  "lastRunDurationMs": 0,
   "lastError": null,
-  "totalRuns": 0,
-  "tasks": [],
-  "overnightMode": true
+  "totalRuns": 3,
+  "tasks": [
+    {
+      "id": "pc-ava-ops-01",
+      "type": "data",
+      "payload": {
+        "file": "task-programs.json",
+        "task": "ava-briefing-layer",
+        "notes": "Ava briefing layer — reads task-programs to bootstrap Ava context"
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T12:39:03.063Z",
+      "updatedAt": "2026-03-27T12:39:03.066Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "task-programs.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-preview-01",
+      "type": "data",
+      "payload": {
+        "file": "gate-latest.json",
+        "task": "preview-registry",
+        "notes": "Preview registry — reads latest gate result as proof-of-preview source"
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T12:39:03.063Z",
+      "updatedAt": "2026-03-27T12:39:03.367Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "gate-latest.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-progress-01",
+      "type": "eval",
+      "payload": {
+        "expression": "9 + 4",
+        "task": "progress-and-eta-registry",
+        "notes": "Progress registry — evaluates total registered task count"
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T12:39:03.064Z",
+      "updatedAt": "2026-03-27T12:39:03.667Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": 13
+    },
+    {
+      "id": "pc-audit-01",
+      "type": "transform",
+      "payload": {
+        "input": "engine/data/scheduler-state.json",
+        "task": "self-audit-layer",
+        "notes": "Self-audit layer — transforms scheduler state into audit summary"
+      },
+      "status": "awaiting_approval",
+      "attempts": 0,
+      "createdAt": "2026-03-27T12:39:03.064Z",
+      "updatedAt": "2026-03-27T12:39:21.811Z",
+      "lane": "AI_LAB",
+      "risk": "medium",
+      "decision": "approval_required",
+      "blockReason": "Type 'transform' requires explicit approval"
+    }
+  ],
+  "overnightMode": false
 }
