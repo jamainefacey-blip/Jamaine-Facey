@@ -1,10 +1,105 @@
 {
   "status": "idle",
-  "intervalMs": 30000,
-  "lastRunAt": null,
-  "lastRunDurationMs": null,
+  "intervalMs": 200,
+  "lastRunAt": "2026-03-27T15:22:27.346Z",
+  "lastRunDurationMs": 0,
   "lastError": null,
-  "totalRuns": 0,
-  "tasks": [],
-  "overnightMode": true
+  "totalRuns": 4,
+  "tasks": [
+    {
+      "id": "pc-ui-audit-01",
+      "type": "data",
+      "payload": {
+        "file": "audit-upgrade-result.json",
+        "task": "ui-surface-pre-gate-audit",
+        "notes": "Surface pre-gate audit in UI: READY_FOR_GATE/NEEDS_WORK/BLOCKED verdict, per-flag severity (BLOCKER/REQUIRED/WARN), SEO/monetisation/UX detection results."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T15:22:26.441Z",
+      "updatedAt": "2026-03-27T15:22:26.444Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "audit-upgrade-result.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-ui-ava-01",
+      "type": "data",
+      "payload": {
+        "file": "audit-result.json",
+        "task": "ui-surface-ava-operator",
+        "notes": "Surface Ava operator mode in UI: morning brief panel, what-happened recap, priority task list, system status summary."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T15:22:26.441Z",
+      "updatedAt": "2026-03-27T15:22:26.747Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "audit-result.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-ui-preview-01",
+      "type": "data",
+      "payload": {
+        "file": "gate-latest.json",
+        "task": "ui-surface-preview-system",
+        "notes": "Surface preview system in UI: preview links per task, gate proof linkage, latest render reference."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T15:22:26.442Z",
+      "updatedAt": "2026-03-27T15:22:27.047Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "gate-latest.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-ui-progress-01",
+      "type": "eval",
+      "payload": {
+        "expression": "9 + 4 + 4 + 5",
+        "task": "ui-surface-progress-eta",
+        "notes": "Surface progress + ETA in UI: % completion per queue pack, per-task status indicators (queued/running/done), stage tracking (build/audit/gate/done)."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T15:22:26.442Z",
+      "updatedAt": "2026-03-27T15:22:27.346Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": 22
+    },
+    {
+      "id": "pc-ui-control-01",
+      "type": "transform",
+      "payload": {
+        "input": "engine/data/scheduler-state.json",
+        "task": "ui-operator-control-upgrade",
+        "notes": "Operator control upgrade: clearer approve buttons, clearer task state display, better mobile layout for approval interactions."
+      },
+      "status": "awaiting_approval",
+      "attempts": 0,
+      "createdAt": "2026-03-27T15:22:26.442Z",
+      "updatedAt": "2026-03-27T15:22:27.352Z",
+      "lane": "AI_LAB",
+      "risk": "medium",
+      "decision": "approval_required",
+      "blockReason": "Type 'transform' requires explicit approval"
+    }
+  ],
+  "overnightMode": false
 }

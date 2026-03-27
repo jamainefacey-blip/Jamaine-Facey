@@ -1,0 +1,13 @@
+{
+  "runId": "3ec9ae9c-f8a7-4369-aad5-68b53e410710",
+  "taskId": "pc-ui-preview-01",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T15:22:27.046Z",
+  "completedAt": "2026-03-27T15:22:27.047Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"file\":\"gate-latest.json\",\"recordCount\":1}"
+}
