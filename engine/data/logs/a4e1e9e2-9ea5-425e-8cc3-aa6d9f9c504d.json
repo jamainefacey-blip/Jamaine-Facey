@@ -1,0 +1,13 @@
+{
+  "runId": "a4e1e9e2-9ea5-425e-8cc3-aa6d9f9c504d",
+  "taskId": "pc-truth-01",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T18:18:13.426Z",
+  "completedAt": "2026-03-27T18:18:13.426Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 0.74"
+}

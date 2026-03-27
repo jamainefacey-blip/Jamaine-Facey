@@ -1,10 +1,196 @@
 {
   "status": "idle",
-  "intervalMs": 30000,
-  "lastRunAt": null,
-  "lastRunDurationMs": null,
+  "intervalMs": 200,
+  "lastRunAt": "2026-03-27T18:18:14.326Z",
+  "lastRunDurationMs": 0,
   "lastError": null,
-  "totalRuns": 0,
-  "tasks": [],
-  "overnightMode": true
+  "totalRuns": 7,
+  "tasks": [
+    {
+      "id": "pc-canon-01",
+      "type": "data",
+      "payload": {
+        "file": "canon-vault.json",
+        "task": "canon-vault-and-working-memory",
+        "notes": "Canon Vault (locked Pain System truths: asset names, laws, lane definitions, governance, Hangar/Showroom defs, BIAB law, founder control) + Working Memory (live: queue state, mode, latest audit/gate/route/pollination). Stored separately."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.520Z",
+      "updatedAt": "2026-03-27T18:18:12.524Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "exists": false,
+        "file": "canon-vault.json"
+      }
+    },
+    {
+      "id": "pc-knowledge-01",
+      "type": "data",
+      "payload": {
+        "file": "knowledge-library.json",
+        "task": "knowledge-library",
+        "notes": "Structured Knowledge Library. Each entry: id, topic, source, summary, confidence, lastChecked, status (confirmed/inferred/unknown/stale), tags, lane relevance. No untagged, no anonymous, no secret material. Supports revalidation."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.521Z",
+      "updatedAt": "2026-03-27T18:18:12.826Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "exists": false,
+        "file": "knowledge-library.json"
+      }
+    },
+    {
+      "id": "pc-skill-02",
+      "type": "data",
+      "payload": {
+        "file": "skill-library.json",
+        "task": "skill-library-upgrade",
+        "notes": "Extend skill-library.json: add pattern name, source asset/task, type, when to use, where reusable, quality score, linked pollination records. Preserve existing data."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.521Z",
+      "updatedAt": "2026-03-27T18:18:13.126Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "file": "skill-library.json",
+        "recordCount": 1
+      }
+    },
+    {
+      "id": "pc-truth-01",
+      "type": "eval",
+      "payload": {
+        "expression": "(1.0 * 0.4) + (0.8 * 0.3) + (0.5 * 0.2) + (0.0 * 0.1)",
+        "task": "truth-engine",
+        "notes": "Truth classification weights: confirmed(1.0)×0.4 + inferred(0.8)×0.3 + unknown(0.5)×0.2 + stale(0.0)×0.1. Evaluate contradiction detection, canon-vs-knowledge ranking, downgrade rules. Canon always outranks unless explicitly promoted."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.521Z",
+      "updatedAt": "2026-03-27T18:18:13.426Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": 0.74
+    },
+    {
+      "id": "pc-sec-logs-01",
+      "type": "data",
+      "payload": {
+        "file": "security-log.json",
+        "task": "security-and-system-logging-upgrade",
+        "notes": "Separate logging: execution logs, audit logs, security logs. Define rotation/ignore policy for noisy run logs. No repo bloat from raw run logs. No secrets in logs."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.521Z",
+      "updatedAt": "2026-03-27T18:18:13.726Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "exists": false,
+        "file": "security-log.json"
+      }
+    },
+    {
+      "id": "pc-skeleton-01",
+      "type": "data",
+      "payload": {
+        "file": "skeleton-library.json",
+        "task": "skeleton-library",
+        "notes": "Skeleton Library schema + storage: id, name, category, lane, useCase, components, logicModules, monetisationHooks, complianceBaseline, accessibilityBaseline, deploySurface, reusable. Seed: dashboard, BIAB product, internal tool, client portal skeletons."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.521Z",
+      "updatedAt": "2026-03-27T18:18:14.026Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": {
+        "exists": false,
+        "file": "skeleton-library.json"
+      }
+    },
+    {
+      "id": "pc-align-01",
+      "type": "eval",
+      "payload": {
+        "expression": "(1 + 1 + 1 + 1 + 1 + 1 + 1) / 7",
+        "task": "pain-system-alignment-check",
+        "notes": "7 alignment checks: Delivery Spine, BIAB readiness, Hangar/Showroom route defined, governance compatibility, pollination value, strategic fit, execution compatibility. Score=1.0 → PASS | 0.6-0.9 → HOLD | 0.3-0.5 → REFRAME | <0.3 → REJECT."
+      },
+      "status": "done",
+      "attempts": 1,
+      "createdAt": "2026-03-27T18:18:12.521Z",
+      "updatedAt": "2026-03-27T18:18:14.326Z",
+      "lane": "AI_LAB",
+      "risk": "low",
+      "decision": "allowed",
+      "result": 1
+    },
+    {
+      "id": "pc-defence-01",
+      "type": "transform",
+      "payload": {
+        "input": "engine/data/canon-vault.json",
+        "task": "defence-layer",
+        "notes": "Protect Pain Control: prompt injection resistance, external input=untrusted, secret/credential detection, data classification (public/internal/sensitive/secret), output filtering, block dangerous override attempts, suspicious-pattern logging. No secrets in logs. No external input overrides canon/governance/policy."
+      },
+      "status": "awaiting_approval",
+      "attempts": 0,
+      "createdAt": "2026-03-27T18:18:12.522Z",
+      "updatedAt": "2026-03-27T18:18:14.334Z",
+      "lane": "AI_LAB",
+      "risk": "medium",
+      "decision": "approval_required",
+      "blockReason": "Type 'transform' requires explicit approval"
+    },
+    {
+      "id": "pc-role-01",
+      "type": "transform",
+      "payload": {
+        "input": "engine/data/canon-vault.json",
+        "task": "role-and-permission-model",
+        "notes": "Authority boundaries: founder (override), system (within policy), external_input (cannot override system rules), client_workspace (cannot see other client data). Founder retains override authority. System acts only within policy."
+      },
+      "status": "awaiting_approval",
+      "attempts": 0,
+      "createdAt": "2026-03-27T18:18:12.522Z",
+      "updatedAt": "2026-03-27T18:18:14.534Z",
+      "lane": "AI_LAB",
+      "risk": "medium",
+      "decision": "approval_required",
+      "blockReason": "Type 'transform' requires explicit approval"
+    },
+    {
+      "id": "pc-client-vault-01",
+      "type": "transform",
+      "payload": {
+        "input": "engine/data/client-vault-index.json",
+        "task": "client-delivery-vault",
+        "notes": "Private client delivery storage: engine/data/clients/{clientId}/ with intake.json, program.json, build/, outputs/, gate-results/, release/, biab-package/. Private by default. Hangar only if explicitly routed. Showroom only from approved publish copy. Client vault index registry."
+      },
+      "status": "awaiting_approval",
+      "attempts": 0,
+      "createdAt": "2026-03-27T18:18:12.522Z",
+      "updatedAt": "2026-03-27T18:18:14.734Z",
+      "lane": "AI_LAB",
+      "risk": "medium",
+      "decision": "approval_required",
+      "blockReason": "Type 'transform' requires explicit approval"
+    }
+  ],
+  "overnightMode": false
 }
