@@ -1,0 +1,13 @@
+{
+  "runId": "9606d0eb-7e16-4098-8b77-20e1e4ccb59b",
+  "taskId": "pc-workflow-01",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T11:54:20.693Z",
+  "completedAt": "2026-03-27T11:54:20.693Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "claudeSummary": "APPROVAL: task pc-workflow-01 manually approved (awaiting_approval → queued)"
+}

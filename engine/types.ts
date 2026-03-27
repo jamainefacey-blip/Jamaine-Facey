@@ -53,7 +53,14 @@ export interface ExecutionResult {
 // ── Scheduler types ──────────────────────────────────────────────────────────
 
 /** Task types the scheduler understands */
-export type SchedulerTaskType = 'eval' | 'data' | 'notify' | 'deploy';
+export type SchedulerTaskType =
+  | 'eval'       // safe: evaluate numeric expression
+  | 'data'       // safe: read a file from engine/data/
+  | 'write'      // medium: write JSON to engine/data/ (approval required)
+  | 'repo'       // medium: read-only git info (approval required)
+  | 'transform'  // medium: data transform operation (approval required)
+  | 'notify'     // blocked: external notification (immutable)
+  | 'deploy';    // blocked: deployment operation (immutable)
 
 /** Safe types the scheduler will process in SAFE MODE */
 export const SAFE_TASK_TYPES: SchedulerTaskType[] = ['eval', 'data'];

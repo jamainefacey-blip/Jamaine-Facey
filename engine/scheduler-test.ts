@@ -216,6 +216,63 @@ async function runTests(): Promise<void> {
   // Restore policy to baseline before other tests
   resetGuardrailPolicy();
 
+  // ── pc-workflow-01: write executor tests ─────────────────────────────────
+  log('INFO', '\n[EXEC-WRITE] write executor — controlled write to engine/data/');
+  resetScheduler();
+  updateGuardrailPolicy({ promoteToAllowed: ['write'] });
+  setOvernightMode(false);
+
+  // W1: valid write creates file in engine/data/
+  addTask('write', { path: 'engine/data/test-write-output.json', content: { hello: 'world', n: 42 } }, 'w1-valid', 'AI_LAB');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().find(t => t.id === 'w1-valid')?.status === 'done', 'w1 done');
+  stopScheduler();
+  const w1 = listTasks().find(t => t.id === 'w1-valid')!;
+  assert(w1.status  === 'done',                      'W1: write task → done');
+  assert((w1.result as Record<string,unknown>)?.written === true, 'W1: result.written=true');
+  assert(((w1.result as Record<string,unknown>)?.bytes as number) > 0, 'W1: result.bytes>0');
+  assert(w1.decision === 'allowed',                  'W1: decision=allowed after promote');
+
+  // W2: path without prefix works ('test-write2.json' → engine/data/test-write2.json)
+  resetScheduler();
+  setOvernightMode(false); // resetScheduler restores default overnightMode=true
+  addTask('write', { path: 'test-write2.json', content: { tag: 'W2' } }, 'w2-noprefix', 'AI_LAB');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().find(t => t.id === 'w2-noprefix')?.status === 'done', 'w2 done');
+  stopScheduler();
+  assert(listTasks().find(t => t.id === 'w2-noprefix')?.status === 'done', 'W2: bare filename write → done');
+
+  // W3: path traversal blocked — fails after attempts exhausted
+  resetScheduler();
+  setOvernightMode(false);
+  addTask('write', { path: '../../package.json', content: {} }, 'w3-traversal', 'AI_LAB');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().find(t => t.id === 'w3-traversal')?.status === 'failed', 'w3 failed', 6000);
+  stopScheduler();
+  const w3 = listTasks().find(t => t.id === 'w3-traversal')!;
+  assert(w3.status === 'failed', 'W3: path traversal → failed');
+  assert(w3.lastError?.includes('traversal') || w3.lastError?.includes('Invalid'), 'W3: error mentions traversal/invalid');
+
+  resetGuardrailPolicy();
+
+  // ── pc-workflow-01: repo executor tests ──────────────────────────────────
+  log('INFO', '\n[EXEC-REPO] repo executor — read-only git info');
+  resetScheduler();
+  updateGuardrailPolicy({ promoteToAllowed: ['repo'] });
+  setOvernightMode(false);
+
+  addTask('repo', { operation: 'branch' }, 'r-branch', 'AI_LAB');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().find(t => t.id === 'r-branch')?.status === 'done', 'r-branch done');
+  stopScheduler();
+  const rb = listTasks().find(t => t.id === 'r-branch')!;
+  assert(rb.status === 'done',                                      'REPO: repo task → done');
+  assert(typeof (rb.result as Record<string,unknown>)?.branch === 'string', 'REPO: result.branch is string');
+  assert(((rb.result as Record<string,unknown>)?.branch as string).length > 0, 'REPO: branch name non-empty');
+  assert(rb.decision === 'allowed',                                 'REPO: decision=allowed after promote');
+
+  resetGuardrailPolicy();
+
   // ── A1: repo task → awaiting_approval → approve → queued → done ──────────
   log('INFO', '\n[A1] repo → awaiting_approval → approve → queued → processed');
   resetScheduler();

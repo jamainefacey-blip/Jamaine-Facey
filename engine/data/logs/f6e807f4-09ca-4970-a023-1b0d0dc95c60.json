@@ -1,0 +1,13 @@
+{
+  "runId": "f6e807f4-09ca-4970-a023-1b0d0dc95c60",
+  "taskId": "pc-routing-01",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T11:54:20.692Z",
+  "completedAt": "2026-03-27T11:54:20.692Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "claudeSummary": "APPROVAL: task pc-routing-01 manually approved (awaiting_approval → queued)"
+}

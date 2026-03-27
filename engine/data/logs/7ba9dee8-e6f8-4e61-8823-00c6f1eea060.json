@@ -1,0 +1,13 @@
+{
+  "runId": "7ba9dee8-e6f8-4e61-8823-00c6f1eea060",
+  "taskId": "pc-action-01",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T11:53:32.887Z",
+  "completedAt": "2026-03-27T11:53:32.888Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"file\":\"guardrail-policy.json\",\"recordCount\":1}"
+}

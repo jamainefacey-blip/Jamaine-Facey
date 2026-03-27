@@ -90,6 +90,51 @@ function runSafeTask(task: SchedulerTask): { result: unknown; error?: string } {
       return { result: { file: filename, recordCount: count } };
     }
 
+    case 'write': {
+      // Controlled write: JSON payload to engine/data/ only. Path traversal blocked.
+      const safeDir = path.join(ROOT, 'engine', 'data');
+      const rawPath = String(task.payload.path ?? '');
+      // Strip any engine/data/ prefix so both 'foo.json' and 'engine/data/foo.json' work
+      const stripped = rawPath.replace(/^(\.\/)?engine\/data\/?/, '');
+      const target   = path.resolve(safeDir, stripped);
+      if (!target.startsWith(safeDir + path.sep) && target !== safeDir) {
+        return { result: null, error: `Path traversal blocked: ${rawPath}` };
+      }
+      if (!stripped || stripped.includes('..')) {
+        return { result: null, error: `Invalid write path: ${rawPath}` };
+      }
+      const content = task.payload.content ?? task.payload.data ?? {
+        taskId:     task.id,
+        type:       task.type,
+        lane:       task.lane ?? 'BACKYARD',
+        writtenAt:  new Date().toISOString(),
+      };
+      const serialized = typeof content === 'string'
+        ? content
+        : JSON.stringify(content, null, 2) + '\n';
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, serialized, 'utf8');
+      const relFile = path.relative(safeDir, target);
+      return { result: { file: relFile, written: true, bytes: serialized.length } };
+    }
+
+    case 'repo': {
+      // Controlled repo: read-only git info from .git directory. No exec, no mutation.
+      const gitDir = path.join(ROOT, '.git');
+      if (!fs.existsSync(gitDir)) {
+        return { result: null, error: 'Not a git repository' };
+      }
+      const headRaw = fs.readFileSync(path.join(gitDir, 'HEAD'), 'utf8').trim();
+      const branch  = headRaw.startsWith('ref: refs/heads/')
+        ? headRaw.slice('ref: refs/heads/'.length)
+        : headRaw.slice(0, 8);
+      const msgFile = path.join(gitDir, 'COMMIT_EDITMSG');
+      const lastMsg = fs.existsSync(msgFile)
+        ? fs.readFileSync(msgFile, 'utf8').trim().split('\n')[0]
+        : '—';
+      return { result: { branch, lastCommitMessage: lastMsg, head: headRaw } };
+    }
+
     default:
       return { result: null, error: `Task type '${task.type}' not handled in safe executor` };
   }

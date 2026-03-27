@@ -1,0 +1,13 @@
+{
+  "runId": "a76d6c71-dd43-48c3-904e-56df8263447e",
+  "taskId": "p8-repo",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T11:53:23.399Z",
+  "completedAt": "2026-03-27T11:53:23.399Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "repo task result: {\"branch\":\"claude/ai-lab-orchestrator-jI7p6\",\"lastCommitMessage\":\"pc-routing-01: lane field routing — SchedulerTask lane, per-lane status counts\",\"head\":\"ref: refs/heads/claude/ai-lab-orchestrator-jI7p6\"}"
+}
