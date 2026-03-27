@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T00:00:00.000Z",
+  "description": "Pain Engine Skeleton Library — reusable build skeletons for faster, consistent asset construction.",
+  "schema": {
+    "id":                   "string — unique skeleton identifier (skel-XXX-NNN)",
+    "name":                 "string — human-readable name",
+    "category":             "string — dashboard | product | tool | portal | landing | report",
+    "lane":                 "string — primary lane (or 'multi')",
+    "useCase":              "string — when to use this skeleton",
+    "components":           "string[] — UI/functional components included",
+    "logicModules":         "string[] — logic layers included",
+    "monetisationHooks":    "string[] — CTA/pricing/conversion hooks included",
+    "complianceBaseline":   "string[] — compliance elements pre-baked",
+    "accessibilityBaseline":"string[] — a11y elements pre-baked",
+    "deploySurface":        "string — target deploy surface (web/api/embedded)",
+    "reusable":             "boolean",
+    "qualityScore":         "number — baseline gate score expected (0-100)",
+    "linkedPatterns":       "string[] — pattern IDs from skill library"
+  },
+  "skeletons": [
+    {
+      "id": "skel-dash-001",
+      "name": "Dashboard Skeleton",
+      "category": "dashboard",
+      "lane": "AI_LAB",
+      "useCase": "Internal operator dashboards — queue management, gate results, health monitoring, control panels",
+      "components": [
+        "header-nav",
+        "status-badge",
+        "data-table",
+        "action-button",
+        "filter-row",
+        "summary-cards",
+        "refresh-trigger"
+      ],
+      "logicModules": [
+        "api-fetch",
+        "state-refresh",
+        "error-boundary",
+        "loading-skeleton"
+      ],
+      "monetisationHooks": [],
+      "complianceBaseline": [
+        "no-pii-display",
+        "internal-only-marker"
+      ],
+      "accessibilityBaseline": [
+        "lang-attr",
+        "heading-hierarchy",
+        "button-labels",
+        "table-headers"
+      ],
+      "deploySurface": "web",
+      "reusable": true,
+      "qualityScore": 88,
+      "linkedPatterns": [
+        "pat-gen-1774-ux-visual",
+        "pat-gen-1774-accessibility",
+        "pat-gen-1774-build-health"
+      ]
+    },
+    {
+      "id": "skel-biab-001",
+      "name": "BIAB Product Skeleton",
+      "category": "product",
+      "lane": "VST",
+      "useCase": "Client-facing BIAB product pages — hero, features, pricing, CTA, trust signals",
+      "components": [
+        "hero-section",
+        "feature-grid",
+        "pricing-cards",
+        "primary-cta",
+        "secondary-cta",
+        "trust-bar",
+        "footer-legal"
+      ],
+      "logicModules": [
+        "cta-tracking",
+        "pricing-toggle",
+        "form-validation",
+        "conversion-flow"
+      ],
+      "monetisationHooks": [
+        "primary-cta-button",
+        "pricing-plan-cards",
+        "comparison-table",
+        "trial-start-flow"
+      ],
+      "complianceBaseline": [
+        "legal-disclaimer",
+        "privacy-link",
+        "cookie-notice-hook",
+        "terms-link"
+      ],
+      "accessibilityBaseline": [
+        "lang-attr",
+        "alt-text-images",
+        "button-labels",
+        "color-contrast-aa",
+        "focus-indicators"
+      ],
+      "deploySurface": "web",
+      "reusable": true,
+      "qualityScore": 82,
+      "linkedPatterns": [
+        "pat-gen-1774-compliance",
+        "pat-gen-1774-ux-visual",
+        "pat-gen-1774-copy-quality"
+      ]
+    },
+    {
+      "id": "skel-tool-001",
+      "name": "Internal Tool Skeleton",
+      "category": "tool",
+      "lane": "ADMIN",
+      "useCase": "Internal Pain System tools — policy editors, audit viewers, config managers",
+      "components": [
+        "form-builder",
+        "json-editor",
+        "status-display",
+        "action-confirm-dialog",
+        "audit-trail-view"
+      ],
+      "logicModules": [
+        "form-validation",
+        "api-write",
+        "confirmation-flow",
+        "change-log-writer"
+      ],
+      "monetisationHooks": [],
+      "complianceBaseline": [
+        "internal-only-marker",
+        "audit-trail-required",
+        "no-external-exposure"
+      ],
+      "accessibilityBaseline": [
+        "lang-attr",
+        "form-labels",
+        "error-messages",
+        "focus-management"
+      ],
+      "deploySurface": "web",
+      "reusable": true,
+      "qualityScore": 85,
+      "linkedPatterns": [
+        "pat-gen-1774-build-health",
+        "pat-gen-1774-rerun-risk"
+      ]
+    },
+    {
+      "id": "skel-portal-001",
+      "name": "Client Portal Skeleton",
+      "category": "portal",
+      "lane": "multi",
+      "useCase": "Private client workspaces — BIAB delivery portals, intake dashboards, build progress views",
+      "components": [
+        "client-header",
+        "progress-tracker",
+        "deliverable-list",
+        "status-timeline",
+        "download-section",
+        "next-steps-panel"
+      ],
+      "logicModules": [
+        "client-auth-hook",
+        "deliverable-state",
+        "progress-calculation",
+        "notification-hook"
+      ],
+      "monetisationHooks": [
+        "upsell-panel",
+        "renewal-prompt",
+        "referral-hook"
+      ],
+      "complianceBaseline": [
+        "client-data-isolation",
+        "no-cross-client-exposure",
+        "gdpr-data-hook",
+        "data-retention-policy"
+      ],
+      "accessibilityBaseline": [
+        "lang-attr",
+        "alt-text-images",
+        "focus-indicators",
+        "skip-nav-link"
+      ],
+      "deploySurface": "web",
+      "reusable": true,
+      "qualityScore": 80,
+      "linkedPatterns": [
+        "pat-gen-1774-compliance",
+        "pat-gen-1774-accessibility"
+      ]
+    }
+  ]
+}

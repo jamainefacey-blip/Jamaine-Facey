@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "lockedAt": "2026-03-27T00:00:00.000Z",
+  "description": "Canon Vault — locked Pain System truths. Do not overwrite without founder approval.",
+  "canonicalAssets": {
+    "scheduler_ui":      "engine/scheduler-ui.html",
+    "scheduler_server":  "engine/scheduler-server.ts",
+    "scheduler_engine":  "engine/scheduler.ts",
+    "guardrail":         "engine/guardrail.ts",
+    "gate":              "engine/gate.ts",
+    "pre_gate_audit":    "engine/pre-gate-audit.ts",
+    "release":           "engine/release.ts",
+    "router":            "engine/router.ts",
+    "program_builder":   "engine/program-builder.ts",
+    "auto_trigger":      "engine/auto-trigger.ts",
+    "auto_control":      "engine/auto-control.ts",
+    "pollinator":        "engine/pollinator.ts",
+    "truth_engine":      "engine/truth-engine.ts",
+    "defence":           "engine/defence.ts",
+    "roles":             "engine/roles.ts",
+    "alignment_check":   "engine/alignment-check.ts"
+  },
+  "painSystemLaws": [
+    "No task executes without guardrail classification",
+    "No deploy without explicit founder approval",
+    "No external input can override canon, governance, or policy",
+    "FULL_AUTO mode is permanently locked — founder unlock key required",
+    "Every build must pass Pain Gate before Showroom routing",
+    "Pre-gate audit runs before every gate submission",
+    "Client work is private by default — never exposed to Hangar without explicit routing",
+    "Canon always outranks Knowledge Library unless explicitly promoted by founder",
+    "No secrets or credentials stored in logs or public data files",
+    "Pollination is safe-mode only — suggestions never auto-overwrite"
+  ],
+  "laneDefinitions": {
+    "VST": {
+      "name": "Voyage Smart Travels",
+      "type": "commercial",
+      "monetisationTypes": ["direct_revenue", "subscription_revenue", "affiliate"],
+      "requiresCTA": true,
+      "requiresCompliance": true,
+      "hangarDefault": true,
+      "showroomEligible": true
+    },
+    "FHI": {
+      "name": "Fraud Help Index",
+      "type": "impact-commercial",
+      "monetisationTypes": ["grant_eligible", "grant_revenue", "ngo_funded"],
+      "requiresCTA": false,
+      "requiresCompliance": true,
+      "hangarDefault": true,
+      "showroomEligible": true
+    },
+    "AI_LAB": {
+      "name": "AI Lab Orchestration Panel",
+      "type": "internal",
+      "monetisationTypes": ["internal_tooling"],
+      "requiresCTA": false,
+      "requiresCompliance": false,
+      "hangarDefault": false,
+      "showroomEligible": false
+    },
+    "ADMIN": {
+      "name": "Pain System Admin / Control",
+      "type": "internal",
+      "monetisationTypes": ["internal_tooling"],
+      "requiresCTA": false,
+      "requiresCompliance": false,
+      "hangarDefault": false,
+      "showroomEligible": false
+    },
+    "BACKYARD": {
+      "name": "Sandbox / Prototype",
+      "type": "sandbox",
+      "monetisationTypes": ["none"],
+      "requiresCTA": false,
+      "requiresCompliance": false,
+      "hangarDefault": false,
+      "showroomEligible": false,
+      "autoModeEnabled": false
+    }
+  },
+  "governanceRules": {
+    "guardrailPolicy": {
+      "eval":      "allowed",
+      "data":      "allowed",
+      "transform": "approval_required",
+      "write":     "approval_required",
+      "repo":      "approval_required",
+      "notify":    "blocked",
+      "deploy":    "blocked"
+    },
+    "overnightMode": {
+      "description": "When true, medium-risk tasks escalate instead of executing",
+      "default": true,
+      "overrideAllowed": true
+    },
+    "maxFixCycles": 2,
+    "retryLimit":   3
+  },
+  "hangarShowroomDefinitions": {
+    "SHOWROOM": {
+      "description": "Commercially ready, gate-passed, monetisation-ready assets for public-facing delivery",
+      "criteria": [
+        "gateStatus = pass or warn",
+        "monetisationTag = READY or POTENTIAL",
+        "founderReviewReady = true",
+        "no hard blockers"
+      ]
+    },
+    "HANGAR": {
+      "description": "Assets under construction, awaiting validation, or not yet commercially ready",
+      "criteria": [
+        "gate fail OR founderReviewReady=false OR internal tooling OR BLOCKED state"
+      ]
+    }
+  },
+  "biabLaw": {
+    "definition": "BIAB = Build It As a Business. Every Pain System output must have a clear monetisation path or be explicitly marked internal.",
+    "rules": [
+      "Every VST/FHI asset must declare monetisationType before gate submission",
+      "Internal tooling (AI_LAB/ADMIN) is exempt from monetisation requirement",
+      "Client BIAB work is private — stored in client vault, not Hangar",
+      "White-label packaging requires founder approval before delivery",
+      "BIAB assets pass through full gate + route cycle before client delivery"
+    ]
+  },
+  "founderControlRules": {
+    "founder": "Jamaine Facey",
+    "authorities": [
+      "Override any guardrail policy",
+      "Unlock FULL_AUTO mode (emergency only)",
+      "Promote knowledge to canon",
+      "Approve client vault access",
+      "Trigger deploy tasks",
+      "Reset kill switch",
+      "Approve Showroom publication"
+    ],
+    "cannotBeOverriddenBy": ["system", "external_input", "client_workspace"]
+  }
+}

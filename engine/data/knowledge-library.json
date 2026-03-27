@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "createdAt": "2026-03-27T00:00:00.000Z",
+  "description": "Pain Engine Knowledge Library — structured external and internal learnings. All entries tagged, sourced, and revalidatable.",
+  "schema": {
+    "id":           "string — unique knowledge entry identifier (kl-XXX-NNN)",
+    "topic":        "string — subject area",
+    "source":       "string — origin of knowledge (internal/signal/research/observation)",
+    "summary":      "string — concise statement of the knowledge",
+    "confidence":   "number — 0.0 to 1.0",
+    "lastChecked":  "ISO date string",
+    "status":       "confirmed | inferred | unknown | stale",
+    "tags":         "string[] — required, no untagged entries",
+    "laneRelevance": "string[] — which lanes this applies to"
+  },
+  "entries": [
+    {
+      "id": "kl-gate-001",
+      "topic": "Gate scoring — MONETISATION dimension",
+      "source": "internal/observation",
+      "summary": "MONETISATION weight=10 alone cannot drag overall gate score below pass threshold (70) when 8 other dimensions score well. VST assets with no CTA will fail MONETISATION dimension but may still pass overall gate.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["gate", "monetisation", "scoring", "VST"],
+      "laneRelevance": ["VST", "AI_LAB"]
+    },
+    {
+      "id": "kl-gate-002",
+      "topic": "CTA regex precision",
+      "source": "internal/observation",
+      "summary": "Broad plan-matching regex (/\\bplan(s)?\\b/i) over-matches non-commercial text ('Plan your journey'). Requires pricing context for accurate CTA detection.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["gate", "monetisation", "regex", "CTA"],
+      "laneRelevance": ["VST", "FHI", "AI_LAB"]
+    },
+    {
+      "id": "kl-scheduler-001",
+      "topic": "Transform executor behaviour outside engine/data/",
+      "source": "internal/observation",
+      "summary": "Transform executor returns {transformed:true, input:..., note:'outside engine/data — metadata only'} when target file is outside engine/data/. Actual build work must be done by close script.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["scheduler", "transform", "executor"],
+      "laneRelevance": ["AI_LAB"]
+    },
+    {
+      "id": "kl-scheduler-002",
+      "topic": "Approve-then-run pattern for promoted types",
+      "source": "internal/observation",
+      "summary": "When a task type is promoted to allowed, the task goes straight to queued (not awaiting_approval). Calling approveTask() on a queued task throws an error. Do not call approveTask() after promoting.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["scheduler", "approval", "guardrail"],
+      "laneRelevance": ["AI_LAB"]
+    },
+    {
+      "id": "kl-scheduler-003",
+      "topic": "Eval executor expression allowlist",
+      "source": "internal/observation",
+      "summary": "Eval executor only accepts numeric/arithmetic expressions (digits, +, -, *, /, (), ., %, Math.*). Function calls like score() or filter() are rejected as unsafe.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["scheduler", "eval", "security"],
+      "laneRelevance": ["AI_LAB"]
+    },
+    {
+      "id": "kl-auto-001",
+      "topic": "Auto trigger idle detection",
+      "source": "internal/observation",
+      "summary": "Auto trigger considers scheduler idle when tasks with status=queued or status=running = 0. resetScheduler() must be called before runAutoTrigger() to ensure clean idle state during testing.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["auto-mode", "scheduler", "trigger"],
+      "laneRelevance": ["AI_LAB"]
+    },
+    {
+      "id": "kl-routing-001",
+      "topic": "Internal tooling → HANGAR routing",
+      "source": "internal/observation",
+      "summary": "Assets with monetisationType=internal_tooling always route to HANGAR regardless of gate score. SHOWROOM requires monetisationTag=READY or POTENTIAL, which internal tooling never achieves.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["routing", "hangar", "showroom", "monetisation"],
+      "laneRelevance": ["AI_LAB", "ADMIN"]
+    },
+    {
+      "id": "kl-pollination-001",
+      "topic": "Pollination extraction threshold",
+      "source": "internal/observation",
+      "summary": "Patterns are extracted from gate dimensions scoring >= 80. Lower-scoring dimensions do not pollinate to avoid propagating mediocre patterns. MONETISATION dimension not included in pollination map (commercial decisions must be explicit).",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["pollination", "patterns", "gate"],
+      "laneRelevance": ["AI_LAB", "VST", "FHI"]
+    },
+    {
+      "id": "kl-biab-001",
+      "topic": "BIAB law — every asset needs a monetisation path",
+      "source": "internal/canon",
+      "summary": "Every Pain System output must declare monetisationType before gate. Internal tooling is the only valid exemption. Assets without monetisationType and non-internal classification should be flagged at pre-build gate.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["BIAB", "monetisation", "gate", "canon"],
+      "laneRelevance": ["VST", "FHI"]
+    },
+    {
+      "id": "kl-defence-001",
+      "topic": "External input trust level",
+      "source": "internal/canon",
+      "summary": "External inputs are always treated as untrusted. They can inform working memory but cannot override canon, guardrail policy, or governance rules. Contradiction with canon must be flagged and held for founder review.",
+      "confidence": 1.0,
+      "lastChecked": "2026-03-27T00:00:00.000Z",
+      "status": "confirmed",
+      "tags": ["defence", "security", "canon", "external-input"],
+      "laneRelevance": ["AI_LAB", "VST", "FHI", "ADMIN"]
+    }
+  ]
+}

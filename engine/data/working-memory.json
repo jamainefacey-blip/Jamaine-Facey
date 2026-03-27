@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "description": "Working Memory — live Pain Engine operating state. Updated on each run cycle.",
+  "updatedAt": "2026-03-27T18:18:14.000Z",
+  "currentMode": {
+    "autoMode": "CONTROLLED",
+    "killSwitch": false,
+    "backlogLock": false,
+    "overnightMode": false,
+    "fullAutoLocked": true,
+    "enabledLanes": ["VST", "FHI", "AI_LAB", "ADMIN"]
+  },
+  "currentQueue": {
+    "status": "idle",
+    "tasksTotal": 10,
+    "tasksDone": 7,
+    "tasksAwaiting": 3,
+    "tasksFailed": 0,
+    "awaitingApproval": ["pc-defence-01", "pc-role-01", "pc-client-vault-01"],
+    "lastRunAt": null,
+    "schedulerActive": false
+  },
+  "latestAudit": {
+    "taskId": "pc-audit-02",
+    "verdict": "READY_FOR_GATE",
+    "flags": 2,
+    "blockers": 0,
+    "completedAt": "2026-03-27T14:00:00.000Z",
+    "resultFile": "engine/data/audit-upgrade-result.json"
+  },
+  "latestGate": {
+    "taskId": "gate-test-build-fail",
+    "score": 64,
+    "status": "fail",
+    "founderReviewReady": false,
+    "evaluatedAt": "2026-03-27T16:20:07.000Z",
+    "resultFile": "engine/data/gate-latest.json",
+    "note": "Latest pointer is a test artifact — last production eval was pc-mobile-01 (score=92, pass)"
+  },
+  "latestProductionGate": {
+    "taskId": "pc-mobile-01",
+    "score": 92,
+    "status": "pass",
+    "founderReviewReady": true,
+    "resultFile": "engine/data/gate-results/94d7cc0d-711c-4cea-a3ce-5d51aeb1a3e0.json"
+  },
+  "latestRoute": {
+    "routeId": "route-1774633614836-gtbr",
+    "destination": "HANGAR",
+    "monetisationTag": "INTERNAL",
+    "lane": "AI_LAB",
+    "routedAt": "2026-03-27T17:46:54.000Z",
+    "resultFile": "engine/data/route-latest.json"
+  },
+  "latestPollination": {
+    "pollinationId": "poll-1774633926379-e36k",
+    "sourceLane": "AI_LAB",
+    "sourceScore": 92,
+    "patternsExtracted": 8,
+    "suggestionsGenerated": 25,
+    "tasksQueued": 25,
+    "skillLibraryUpdated": true,
+    "pollinatedAt": "2026-03-27T17:52:06.000Z",
+    "resultFile": "engine/data/pollination-latest.json"
+  },
+  "latestRelease": {
+    "releaseId": "rel-1774628666953-9fqi",
+    "state": "COMPLETE",
+    "lane": "AI_LAB",
+    "gateScore": 95,
+    "founderReviewReady": true,
+    "resultFile": "engine/data/release-result.json"
+  },
+  "backlogSummary": {
+    "totalItems": 6,
+    "readyToBuild": 1,
+    "building": 1,
+    "blueprint": 4,
+    "showroom": 0,
+    "hangar": 0,
+    "killed": 0,
+    "topItemId": "bl-vst-002",
+    "topItemPriority": 9.4
+  },
+  "skillLibrary": {
+    "patternCount": 8,
+    "lastUpdated": "2026-03-27T17:52:06.000Z"
+  }
+}

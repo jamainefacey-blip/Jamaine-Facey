@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "updatedAt": "2026-03-27T17:52:06.390Z",
   "patterns": [
     {
@@ -9,9 +9,22 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "BUILD_HEALTH",
       "dimensionScore": 100,
-      "title": "Clean build pipeline (score 100) — zero-failure task completion",
+      "title": "Clean build pipeline (score 100) \u2014 zero-failure task completion",
       "description": "Task completed with zero failures and correct status signalling. Replicable across all lanes.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "Clean build pipeline (score 100) \u2014 zero-failure task completion",
+      "whenToUse": "When building assets that require strong build health signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB",
+        "ADMIN",
+        "BACKYARD"
+      ],
+      "qualityScore": 100,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-preview-proof",
@@ -20,9 +33,22 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "PREVIEW_PROOF",
       "dimensionScore": 100,
-      "title": "Preview proof pattern (score 100) — verified render before gate",
+      "title": "Preview proof pattern (score 100) \u2014 verified render before gate",
       "description": "Asset rendered and proof captured before gate submission. Strong validation signal.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "Preview proof pattern (score 100) \u2014 verified render before gate",
+      "whenToUse": "When building assets that require strong preview proof signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB",
+        "ADMIN",
+        "BACKYARD"
+      ],
+      "qualityScore": 100,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-ux-visual",
@@ -31,9 +57,20 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "UX_VISUAL",
       "dimensionScore": 100,
-      "title": "High UX visual score (100) — layout and visual hierarchy pattern",
+      "title": "High UX visual score (100) \u2014 layout and visual hierarchy pattern",
       "description": "Asset scored highly on visual structure: clean layout, no broken elements, consistent hierarchy.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "High UX visual score (100) \u2014 layout and visual hierarchy pattern",
+      "whenToUse": "When building assets that require strong ux visual signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB"
+      ],
+      "qualityScore": 100,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-copy-quality",
@@ -42,9 +79,21 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "COPY_QUALITY",
       "dimensionScore": 100,
-      "title": "Copy quality pattern (100) — clean, placeholder-free copy",
+      "title": "Copy quality pattern (100) \u2014 clean, placeholder-free copy",
       "description": "Copy was clean: no placeholders, no lorem ipsum, no incomplete text. Reusable copy standards.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "Copy quality pattern (100) \u2014 clean, placeholder-free copy",
+      "whenToUse": "When building assets that require strong copy quality signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB",
+        "ADMIN"
+      ],
+      "qualityScore": 100,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-accessibility",
@@ -53,9 +102,20 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "ACCESSIBILITY",
       "dimensionScore": 80,
-      "title": "Accessibility pattern (80) — lang, landmarks, alt text",
+      "title": "Accessibility pattern (80) \u2014 lang, landmarks, alt text",
       "description": "Accessibility checks passed: lang attribute, img alt text, landmark regions present.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "Accessibility pattern (80) \u2014 lang, landmarks, alt text",
+      "whenToUse": "When building assets that require strong accessibility signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB"
+      ],
+      "qualityScore": 80,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-seo",
@@ -64,9 +124,21 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "SEO",
       "dimensionScore": 80,
-      "title": "SEO structure pattern (80) — title, meta, h1 hierarchy",
+      "title": "SEO structure pattern (80) \u2014 title, meta, h1 hierarchy",
       "description": "SEO structure clean: title tag, meta description, h1, viewport meta all present.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "SEO structure pattern (80) \u2014 title, meta, h1 hierarchy",
+      "whenToUse": "When building assets that require strong seo signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB",
+        "ADMIN"
+      ],
+      "qualityScore": 80,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-compliance-safety",
@@ -75,9 +147,21 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "COMPLIANCE_SAFETY",
       "dimensionScore": 100,
-      "title": "Compliance pattern (100) — legal/safety signals clean",
+      "title": "Compliance pattern (100) \u2014 legal/safety signals clean",
       "description": "Compliance signals clean: no credential leaks, no PII exposure, disclaimer pattern correct.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "Compliance pattern (100) \u2014 legal/safety signals clean",
+      "whenToUse": "When building assets that require strong compliance safety signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB",
+        "ADMIN"
+      ],
+      "qualityScore": 100,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     },
     {
       "patternId": "pat-gen-1774-rerun-risk",
@@ -86,9 +170,24 @@
       "sourceTaskId": "gen-1774628397639-3637",
       "dimension": "RERUN_RISK",
       "dimensionScore": 100,
-      "title": "Low rerun risk pattern (100) — idempotent, stable task flow",
-      "description": "Task execution was stable and idempotent — safe to re-run without side effects.",
-      "extractedAt": "2026-03-27T17:52:06.379Z"
+      "title": "Low rerun risk pattern (100) \u2014 idempotent, stable task flow",
+      "description": "Task execution was stable and idempotent \u2014 safe to re-run without side effects.",
+      "extractedAt": "2026-03-27T17:52:06.379Z",
+      "name": "Low rerun risk pattern (100) \u2014 idempotent, stable task flow",
+      "whenToUse": "When building assets that require strong rerun risk signals",
+      "whereReusable": [
+        "VST",
+        "FHI",
+        "AI_LAB",
+        "ADMIN",
+        "BACKYARD"
+      ],
+      "qualityScore": 100,
+      "linkedPollinationRecords": [
+        "poll-1774633926379-e36k"
+      ]
     }
-  ]
+  ],
+  "upgradedAt": "2026-03-27T18:20:00.000Z",
+  "upgradeNote": "pc-skill-02: added name, whenToUse, whereReusable, qualityScore, linkedPollinationRecords"
 }
