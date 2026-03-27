@@ -1,0 +1,13 @@
+{
+  "runId": "94360003-1658-4bb4-9c81-244045abe049",
+  "taskId": "lane-explicit",
+  "lane": "AI_LAB",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:22:50.490Z",
+  "completedAt": "2026-03-27T12:22:50.491Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 1"
+}

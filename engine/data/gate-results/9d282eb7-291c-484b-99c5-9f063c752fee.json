@@ -1,0 +1,87 @@
+{
+  "id": "9d282eb7-291c-484b-99c5-9f063c752fee",
+  "taskId": "gate-test-no-cta",
+  "lane": "VST",
+  "assetType": "ui",
+  "evaluatedAt": "2026-03-27T12:22:24.146Z",
+  "overallStatus": "pass",
+  "founderReviewReady": true,
+  "score": 93,
+  "hardBlockers": [],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Task completed successfully"
+      ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Proof provided: http://localhost:3000/vst"
+      ]
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 80,
+      "status": "pass",
+      "findings": [
+        "Content very short for a UI asset — may be stub/incomplete"
+      ]
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "CTA / monetisation language found (1 signals)"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 75,
+      "status": "pass",
+      "findings": [
+        "Very thin copy (12 words) — content may be incomplete"
+      ]
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Accessibility structure check passed"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Missing <meta name=\"viewport\"> — mobile SEO signal absent"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Low rerun risk"
+      ]
+    }
+  },
+  "requiredFixes": [],
+  "warnings": []
+}

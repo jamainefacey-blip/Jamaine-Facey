@@ -1,0 +1,90 @@
+{
+  "id": "24541095-166e-43b0-b5d6-8e5d5db387ce",
+  "taskId": "gate-test-healthy",
+  "lane": "BACKYARD",
+  "assetType": "data",
+  "evaluatedAt": "2026-03-27T12:21:40.009Z",
+  "overallStatus": "pass",
+  "founderReviewReady": true,
+  "score": 91,
+  "hardBlockers": [],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Task completed successfully"
+      ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Proof provided: engine/data/scheduler-state.json — verified present"
+      ]
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'data' — UX/visual check not applicable"
+      ]
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'data' — monetisation path check not applicable"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 60,
+      "status": "warn",
+      "findings": [
+        "No content provided — cannot evaluate copy quality"
+      ]
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 70,
+      "status": "warn",
+      "findings": [
+        "No content — accessibility check skipped"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'data' — SEO check not applicable"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Low rerun risk"
+      ]
+    }
+  },
+  "requiredFixes": [],
+  "warnings": [
+    "[COPY_QUALITY] No content provided — cannot evaluate copy quality",
+    "[ACCESSIBILITY] No content — accessibility check skipped"
+  ]
+}

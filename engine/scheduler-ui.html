@@ -151,6 +151,39 @@
   @media(max-width:480px){ .approval-alert.visible{ font-size:14px; padding:12px 14px; } }
   /* Subtitle truncation on mobile */
   @media(max-width:480px){ .subtitle .api-url{ display:none; } }
+
+  /* Pain Gate panel */
+  .gate-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px; }
+  .gate-panel__header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .gate-panel__title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); }
+  .gate-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:100px; font-size:12px; font-weight:700; }
+  .gate-badge--pass { background:rgba(62,207,142,.15);  color:var(--green); }
+  .gate-badge--warn { background:rgba(224,169,82,.15);  color:var(--yellow); }
+  .gate-badge--fail { background:rgba(224,82,82,.15);   color:var(--red); }
+  .gate-badge--none { background:rgba(122,143,166,.12); color:var(--muted); }
+  .gate-ready { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:100px; font-size:11px; font-weight:700; }
+  .gate-ready--yes { background:rgba(62,207,142,.1); color:var(--green); }
+  .gate-ready--no  { background:rgba(224,82,82,.1);  color:var(--red); }
+  .gate-score { font-size:22px; font-weight:800; color:var(--text); margin-left:auto; }
+  .gate-score span { font-size:13px; font-weight:500; color:var(--muted); }
+  .gate-dims { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px; margin-bottom:12px; }
+  .gate-dim { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px; }
+  .gate-dim__name { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:3px; }
+  .gate-dim__score { font-size:16px; font-weight:700; }
+  .gate-dim--pass .gate-dim__score { color:var(--green); }
+  .gate-dim--warn .gate-dim__score { color:var(--yellow); }
+  .gate-dim--fail .gate-dim__score { color:var(--red); }
+  .gate-blockers { background:rgba(224,82,82,.06); border:1px solid rgba(224,82,82,.25); border-radius:6px; padding:8px 12px; margin-bottom:10px; font-size:11px; color:var(--red); }
+  .gate-fixes { font-size:11px; color:var(--muted); margin-top:8px; }
+  .gate-fixes li { margin-bottom:4px; color:var(--red); }
+  .gate-warns li { margin-bottom:4px; color:var(--yellow); }
+  .gate-evaluate-row { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-top:12px; border-top:1px solid var(--border); padding-top:12px; }
+  .gate-evaluate-row select, .gate-evaluate-row input { background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:6px 9px; font-size:12px; }
+  .gate-evaluate-row select { min-width:110px; }
+  .gate-evaluate-row input { flex:1; min-width:140px; }
+  .gate-meta { font-size:10px; color:var(--muted); margin-top:4px; }
+  @media(max-width:600px){ .gate-dims{ grid-template-columns:1fr 1fr; } .gate-score{ margin-left:0; } }
+  @media(max-width:480px){ .gate-evaluate-row{ flex-direction:column; } .gate-evaluate-row select,.gate-evaluate-row input{ width:100%; } }
 </style>
 </head>
 <body>
@@ -246,6 +279,54 @@
     <button class="btn--start" onclick="apiAddTask()">Enqueue</button>
   </div>
   <div class="payload-hint" id="payload-hint">Hint: { "expression": "2 + 2" }</div>
+</div>
+
+<!-- Pain Gate panel -->
+<div class="gate-panel" id="gate-panel">
+  <div class="gate-panel__header">
+    <span class="gate-panel__title">Pain Gate</span>
+    <span id="gate-status-badge" class="gate-badge gate-badge--none">no result</span>
+    <span id="gate-founder-badge" class="gate-ready gate-ready--no" style="display:none">Founder Review Ready</span>
+    <span id="gate-not-ready-badge" class="gate-ready gate-ready--no" style="display:none">Not Ready</span>
+    <span id="gate-score" class="gate-score" style="display:none">—</span>
+  </div>
+  <div id="gate-blockers" class="gate-blockers" style="display:none"></div>
+  <div id="gate-dims" class="gate-dims"></div>
+  <div id="gate-fixes" class="gate-fixes" style="display:none">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin-bottom:4px">Required Fixes</div>
+    <ul id="gate-fixes-list"></ul>
+  </div>
+  <div id="gate-warns-section" class="gate-fixes" style="display:none">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);margin-bottom:4px">Warnings</div>
+    <ul id="gate-warns-list" class="gate-warns"></ul>
+  </div>
+  <div id="gate-meta" class="gate-meta"></div>
+  <!-- Gate evaluate form -->
+  <div class="gate-evaluate-row">
+    <select id="gate-build-status">
+      <option value="pass">Build: pass</option>
+      <option value="fail">Build: fail</option>
+      <option value="unknown">Build: unknown</option>
+    </select>
+    <select id="gate-asset-type">
+      <option value="ui">Type: ui</option>
+      <option value="api">Type: api</option>
+      <option value="data">Type: data</option>
+      <option value="report">Type: report</option>
+      <option value="config">Type: config</option>
+      <option value="unknown">Type: unknown</option>
+    </select>
+    <select id="gate-lane">
+      <option value="AI_LAB">Lane: AI_LAB</option>
+      <option value="VST">Lane: VST</option>
+      <option value="FHI">Lane: FHI</option>
+      <option value="ADMIN">Lane: ADMIN</option>
+      <option value="BACKYARD">Lane: BACKYARD</option>
+    </select>
+    <input type="text" id="gate-task-id" placeholder="Task ID" value="" />
+    <input type="text" id="gate-proof" placeholder="Preview proof URL / desc (optional)" />
+    <button class="btn--start" onclick="apiGateEvaluate()">Evaluate</button>
+  </div>
 </div>
 
 <!-- Task queue table -->
@@ -461,6 +542,109 @@ function renderQueue(tasks) {
   }).join('');
 }
 
+// ── Pain Gate ─────────────────────────────────────────────────────────────────
+function renderGate(g) {
+  if (!g) return;
+
+  // Badge
+  const sb = document.getElementById('gate-status-badge');
+  sb.className = `gate-badge gate-badge--${g.overallStatus}`;
+  sb.textContent = g.overallStatus.toUpperCase();
+
+  // Score
+  const scoreEl = document.getElementById('gate-score');
+  scoreEl.style.display = '';
+  scoreEl.innerHTML = `${g.score}<span>/100</span>`;
+
+  // Founder ready
+  const fr  = document.getElementById('gate-founder-badge');
+  const fnr = document.getElementById('gate-not-ready-badge');
+  if (g.founderReviewReady) {
+    fr.style.display = ''; fnr.style.display = 'none';
+    fr.className = 'gate-ready gate-ready--yes';
+    fr.textContent = '✓ Founder Review Ready';
+  } else {
+    fr.style.display = 'none'; fnr.style.display = '';
+    fnr.className = 'gate-ready gate-ready--no';
+    fnr.textContent = '✕ Not Founder Ready';
+  }
+
+  // Hard blockers
+  const blockEl = document.getElementById('gate-blockers');
+  if (g.hardBlockers && g.hardBlockers.length) {
+    blockEl.style.display = '';
+    blockEl.innerHTML = `<strong>HARD BLOCKERS:</strong> ${g.hardBlockers.join(' · ')}`;
+  } else {
+    blockEl.style.display = 'none';
+  }
+
+  // Dimensions
+  const dimsEl = document.getElementById('gate-dims');
+  if (g.dimensions) {
+    dimsEl.innerHTML = Object.values(g.dimensions).map(d =>
+      `<div class="gate-dim gate-dim--${d.status}">
+        <div class="gate-dim__name">${d.dimension.replace(/_/g,' ')}</div>
+        <div class="gate-dim__score">${d.score}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${d.status}${d.hardBlocker ? ' ⚑' : ''}</div>
+      </div>`
+    ).join('');
+  }
+
+  // Required fixes
+  const fixSec  = document.getElementById('gate-fixes');
+  const fixList = document.getElementById('gate-fixes-list');
+  if (g.requiredFixes && g.requiredFixes.length) {
+    fixSec.style.display = '';
+    fixList.innerHTML = g.requiredFixes.map(f => `<li>${escHtml(f)}</li>`).join('');
+  } else {
+    fixSec.style.display = 'none';
+  }
+
+  // Warnings
+  const warnSec  = document.getElementById('gate-warns-section');
+  const warnList = document.getElementById('gate-warns-list');
+  if (g.warnings && g.warnings.length) {
+    warnSec.style.display = '';
+    warnList.innerHTML = g.warnings.map(w => `<li>${escHtml(w)}</li>`).join('');
+  } else {
+    warnSec.style.display = 'none';
+  }
+
+  // Meta
+  document.getElementById('gate-meta').textContent =
+    `task: ${g.taskId} · lane: ${g.lane} · ${g.evaluatedAt ? new Date(g.evaluatedAt).toLocaleTimeString() : ''}`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function apiGateEvaluate() {
+  const taskId      = document.getElementById('gate-task-id').value.trim() || 'manual-eval';
+  const buildStatus = document.getElementById('gate-build-status').value;
+  const assetType   = document.getElementById('gate-asset-type').value;
+  const lane        = document.getElementById('gate-lane').value;
+  const proof       = document.getElementById('gate-proof').value.trim();
+  try {
+    const body = { taskId, buildStatus, assetType, lane };
+    if (proof) body.previewProof = proof;
+    const result = await apiFetch('/gate/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    renderGate(result);
+    setError(null);
+  } catch(e) { setError(`Gate eval failed: ${e.message}`); }
+}
+
+async function refreshGate() {
+  try {
+    const g = await apiFetch('/gate/latest');
+    renderGate(g);
+  } catch { /* no gate result yet — silent */ }
+}
+
 // ── Main refresh ──────────────────────────────────────────────────────────────
 async function refresh() {
   try {
@@ -475,6 +659,7 @@ async function refresh() {
     cache('last_state', { status, tasks: queue.tasks, policy });
     setError(null);
     document.getElementById('refresh-ts').textContent = 'refreshed ' + new Date().toLocaleTimeString();
+    refreshGate(); // non-blocking — gate results are optional
   } catch(e) {
     setError(`API unreachable: ${e.message}. Run: npm run scheduler`);
     const cached = cache('last_state');

@@ -1,0 +1,99 @@
+{
+  "id": "4ed04e7e-92e7-43a5-8f0f-850df0241e61",
+  "taskId": "gate-test-no-proof",
+  "lane": "AI_LAB",
+  "assetType": "ui",
+  "evaluatedAt": "2026-03-27T12:22:24.143Z",
+  "overallStatus": "fail",
+  "founderReviewReady": false,
+  "score": 59,
+  "hardBlockers": [
+    "NO_PREVIEW_PROOF"
+  ],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Task completed successfully"
+      ]
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 0,
+      "status": "fail",
+      "findings": [
+        "No preview proof attached — screenshot, URL, or render evidence required"
+      ],
+      "hardBlocker": "NO_PREVIEW_PROOF"
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 60,
+      "status": "warn",
+      "findings": [
+        "No content provided — cannot evaluate UX quality"
+      ]
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 50,
+      "status": "warn",
+      "findings": [
+        "No content — cannot verify monetisation path present"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 60,
+      "status": "warn",
+      "findings": [
+        "No content provided — cannot evaluate copy quality"
+      ]
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 70,
+      "status": "warn",
+      "findings": [
+        "No content — accessibility check skipped"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 50,
+      "status": "warn",
+      "findings": [
+        "No content — cannot evaluate SEO readiness"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 80,
+      "status": "pass",
+      "findings": [
+        "1 fail(s) + 5 warn(s) — moderate rerun risk"
+      ]
+    }
+  },
+  "requiredFixes": [
+    "HARD BLOCKERS: NO_PREVIEW_PROOF — must resolve before founder review",
+    "[PREVIEW_PROOF] No preview proof attached — screenshot, URL, or render evidence required"
+  ],
+  "warnings": [
+    "[UX_VISUAL] No content provided — cannot evaluate UX quality",
+    "[MONETISATION] No content — cannot verify monetisation path present",
+    "[COPY_QUALITY] No content provided — cannot evaluate copy quality",
+    "[ACCESSIBILITY] No content — accessibility check skipped",
+    "[SEO] No content — cannot evaluate SEO readiness"
+  ]
+}

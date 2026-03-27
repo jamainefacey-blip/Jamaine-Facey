@@ -1,0 +1,99 @@
+{
+  "id": "c7b6d53c-541e-4d20-bf2d-d44c3e21578f",
+  "taskId": "gate-test-build-fail",
+  "lane": "AI_LAB",
+  "assetType": "api",
+  "evaluatedAt": "2026-03-27T12:22:53.425Z",
+  "overallStatus": "fail",
+  "founderReviewReady": false,
+  "score": 64,
+  "hardBlockers": [
+    "BUILD_FAILED"
+  ],
+  "dimensions": {
+    "BUILD_HEALTH": {
+      "dimension": "BUILD_HEALTH",
+      "score": 0,
+      "status": "fail",
+      "findings": [
+        "Task reported buildStatus=fail"
+      ],
+      "hardBlocker": "BUILD_FAILED"
+    },
+    "PREVIEW_PROOF": {
+      "dimension": "PREVIEW_PROOF",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "Proof provided: none — build failed"
+      ]
+    },
+    "UX_VISUAL": {
+      "dimension": "UX_VISUAL",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'api' — UX/visual check not applicable"
+      ]
+    },
+    "MONETISATION": {
+      "dimension": "MONETISATION",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'api' — monetisation path check not applicable"
+      ]
+    },
+    "COPY_QUALITY": {
+      "dimension": "COPY_QUALITY",
+      "score": 60,
+      "status": "warn",
+      "findings": [
+        "No content provided — cannot evaluate copy quality"
+      ]
+    },
+    "ACCESSIBILITY": {
+      "dimension": "ACCESSIBILITY",
+      "score": 70,
+      "status": "warn",
+      "findings": [
+        "No content — accessibility check skipped"
+      ]
+    },
+    "SEO": {
+      "dimension": "SEO",
+      "score": 90,
+      "status": "pass",
+      "findings": [
+        "Asset type 'api' — SEO check not applicable"
+      ]
+    },
+    "COMPLIANCE_SAFETY": {
+      "dimension": "COMPLIANCE_SAFETY",
+      "score": 100,
+      "status": "pass",
+      "findings": [
+        "No compliance or safety issues detected"
+      ]
+    },
+    "RERUN_RISK": {
+      "dimension": "RERUN_RISK",
+      "score": 30,
+      "status": "fail",
+      "findings": [
+        "Build health is low — high rerun risk",
+        "1 fail(s) + 2 warn(s) — moderate rerun risk"
+      ]
+    }
+  },
+  "requiredFixes": [
+    "HARD BLOCKERS: BUILD_FAILED — must resolve before founder review",
+    "[BUILD_HEALTH] Task reported buildStatus=fail",
+    "[RERUN_RISK] Build health is low — high rerun risk",
+    "[RERUN_RISK] 1 fail(s) + 2 warn(s) — moderate rerun risk"
+  ],
+  "warnings": [
+    "[COPY_QUALITY] No content provided — cannot evaluate copy quality",
+    "[ACCESSIBILITY] No content — accessibility check skipped"
+  ]
+}

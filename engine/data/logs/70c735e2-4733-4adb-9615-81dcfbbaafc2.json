@@ -1,0 +1,13 @@
+{
+  "runId": "70c735e2-4733-4adb-9615-81dcfbbaafc2",
+  "taskId": "g-eval",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:22:51.724Z",
+  "completedAt": "2026-03-27T12:22:51.724Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 42"
+}

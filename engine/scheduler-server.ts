@@ -14,6 +14,10 @@
 //   POST /queue/add           → enqueue a new task (body: { type, payload, id? })
 //   POST /queue/approve/:id   → approve an awaiting_approval task → queued
 //   POST /queue/reset         → reset all state (testing only)
+//   POST /gate/evaluate       → evaluate a task/asset through Pain Gate (body: GateInput)
+//   GET  /gate/latest         → latest gate result
+//   GET  /gate/results        → list recent gate results (up to 20)
+//   GET  /gate/config         → current gate config (weights / thresholds)
 
 import http from 'http';
 import { SCHEDULER_CONFIG } from './config';
@@ -29,6 +33,8 @@ import {
   approveTask,
 } from './scheduler';
 import { updateGuardrailPolicy, resetGuardrailPolicy } from './guardrail';
+import { evaluate, loadLatestGateResult, listGateResults, loadGateConfig } from './gate';
+import type { GateInput } from './gate';
 import { log } from './logger';
 import type { SchedulerTask, TaskLane } from './types';
 
@@ -188,6 +194,36 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && url === '/queue/reset') {
       resetScheduler();
       return json(res, 200, { ok: true });
+    }
+
+    // ── POST /gate/evaluate ───────────────────────────────────────────────────
+    // Evaluate a completed task or asset through Pain Gate.
+    // Body: GateInput — taskId, lane, buildStatus required.
+    if (method === 'POST' && url === '/gate/evaluate') {
+      const body = await readBody(req) as Partial<GateInput>;
+      if (!body.taskId) return json(res, 400, { error: 'Missing taskId' });
+      if (!body.lane)   return json(res, 400, { error: 'Missing lane' });
+      if (!body.buildStatus) return json(res, 400, { error: 'Missing buildStatus (pass|fail|unknown)' });
+      const result = evaluate(body as GateInput);
+      log('INFO', `Gate eval: task=${result.taskId} status=${result.overallStatus} score=${result.score} founderReady=${result.founderReviewReady}`);
+      return json(res, 200, result);
+    }
+
+    // ── GET /gate/latest ──────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/gate/latest') {
+      const result = loadLatestGateResult();
+      if (!result) return json(res, 404, { error: 'No gate results yet' });
+      return json(res, 200, result);
+    }
+
+    // ── GET /gate/results ─────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/gate/results') {
+      return json(res, 200, { results: listGateResults(20) });
+    }
+
+    // ── GET /gate/config ──────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/gate/config') {
+      return json(res, 200, loadGateConfig());
     }
 
     return json(res, 404, { error: 'Not found' });

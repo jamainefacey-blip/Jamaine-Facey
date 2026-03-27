@@ -1,5 +1,5 @@
 // engine/scheduler-test.ts — full test suite
-// PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01
+// PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01 + PC-GATE-01
 
 import {
   startScheduler,
@@ -20,6 +20,7 @@ import {
   resetGuardrailPolicy,
   loadLivePolicy,
 } from './guardrail';
+import { evaluate } from './gate';
 import { log } from './logger';
 import type { SchedulerTask } from './types';
 
@@ -440,8 +441,96 @@ async function runTests(): Promise<void> {
   stopScheduler();
   assert(listTasks().find(t => t.id === 'r4')?.attempts === 1, 'R4: attempts=1');
 
+  // ── Pain Gate tests ──────────────────────────────────────────────────────────
+  log('INFO', '\n[GATE-1] Healthy completed low-risk item → pass');
+  {
+    const result = evaluate({
+      taskId: 'gate-test-healthy',
+      lane: 'BACKYARD',
+      assetType: 'data',
+      buildStatus: 'pass',
+      previewProof: 'engine/data/scheduler-state.json — verified present',
+    });
+    assert(result.overallStatus === 'pass', 'GATE-1: healthy item → pass');
+    assert(result.founderReviewReady === true, 'GATE-1: founderReviewReady=true on pass');
+    assert(result.hardBlockers.length === 0, 'GATE-1: no hard blockers');
+    assert(result.score >= 70, `GATE-1: score ≥ 70 (got ${result.score})`);
+  }
+
+  log('INFO', '\n[GATE-2] Missing preview proof → fail (NO_PREVIEW_PROOF)');
+  {
+    const result = evaluate({
+      taskId: 'gate-test-no-proof',
+      lane: 'AI_LAB',
+      assetType: 'ui',
+      buildStatus: 'pass',
+      // previewProof intentionally omitted
+    });
+    assert(result.overallStatus === 'fail', 'GATE-2: no proof → fail');
+    assert(result.founderReviewReady === false, 'GATE-2: founderReviewReady=false');
+    assert(result.hardBlockers.includes('NO_PREVIEW_PROOF'), 'GATE-2: NO_PREVIEW_PROOF blocker');
+  }
+
+  log('INFO', '\n[GATE-3] Placeholder-heavy content → fail (PLACEHOLDER_DETECTED)');
+  {
+    const result = evaluate({
+      taskId: 'gate-test-placeholder',
+      lane: 'VST',
+      assetType: 'ui',
+      buildStatus: 'pass',
+      previewProof: 'http://localhost:3000/preview',
+      content: 'Lorem ipsum dolor sit amet. [TODO] [INSERT CONTENT HERE] [TBD] Lorem ipsum text placeholder here.',
+    });
+    assert(result.overallStatus === 'fail', 'GATE-3: placeholder content → fail');
+    assert(result.founderReviewReady === false, 'GATE-3: founderReviewReady=false');
+    assert(
+      result.hardBlockers.includes('PLACEHOLDER_DETECTED'),
+      'GATE-3: PLACEHOLDER_DETECTED blocker',
+    );
+  }
+
+  log('INFO', '\n[GATE-4] Monetisation missing on VST ui — MONETISATION dimension flagged');
+  {
+    const result = evaluate({
+      taskId: 'gate-test-no-cta',
+      lane: 'VST',
+      assetType: 'ui',
+      buildStatus: 'pass',
+      previewProof: 'http://localhost:3000/vst',
+      content: '<html lang="en"><head><title>VST Page</title><meta name="description" content="test"></head><body><main><h1>Voyage Smart Travels</h1><p>Plan your journey with our tool.</p></main></body></html>',
+    });
+    // MONETISATION dimension must flag low score for VST (no CTA)
+    // Weighted score may still pass (other strong dimensions), but MONETISATION must be low
+    assert(
+      result.dimensions['MONETISATION']?.score <= 30,
+      `GATE-4: VST no CTA → MONETISATION score ≤ 30 (got ${result.dimensions['MONETISATION']?.score})`,
+    );
+    assert(
+      result.dimensions['MONETISATION']?.status === 'fail',
+      `GATE-4: MONETISATION dimension status=fail for VST with no CTA`,
+    );
+    // requiredFixes or warnings must mention MONETISATION
+    const monetisationMentioned = [...result.requiredFixes, ...result.warnings]
+      .some(s => s.includes('MONETISATION'));
+    assert(monetisationMentioned, 'GATE-4: MONETISATION surfaced in fixes or warnings');
+  }
+
+  log('INFO', '\n[GATE-5] Build-failed item → fail (BUILD_FAILED)');
+  {
+    const result = evaluate({
+      taskId: 'gate-test-build-fail',
+      lane: 'AI_LAB',
+      assetType: 'api',
+      buildStatus: 'fail',
+      previewProof: 'none — build failed',
+    });
+    assert(result.overallStatus === 'fail', 'GATE-5: build fail → fail');
+    assert(result.founderReviewReady === false, 'GATE-5: founderReviewReady=false');
+    assert(result.hardBlockers.includes('BUILD_FAILED'), 'GATE-5: BUILD_FAILED blocker');
+  }
+
   log('INFO', '\n══════════════════════════════════════════════════════');
-  log('INFO', 'ALL TESTS PASSED — PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01');
+  log('INFO', 'ALL TESTS PASSED — PC-POLICY-01 + PC-APPROVAL-01 + PC-GUARD-01 + PC-SCHED-01 + PC-GATE-01');
   log('INFO', '══════════════════════════════════════════════════════');
   resetScheduler();
   resetGuardrailPolicy();

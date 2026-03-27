@@ -1,0 +1,26 @@
+{
+  "passThreshold": 70,
+  "warnThreshold": 40,
+  "weights": {
+    "BUILD_HEALTH": 25,
+    "PREVIEW_PROOF": 20,
+    "UX_VISUAL": 15,
+    "MONETISATION": 10,
+    "COPY_QUALITY": 10,
+    "ACCESSIBILITY": 8,
+    "SEO": 6,
+    "COMPLIANCE_SAFETY": 4,
+    "RERUN_RISK": 2
+  },
+  "dimensionsEnabled": {
+    "BUILD_HEALTH": true,
+    "PREVIEW_PROOF": true,
+    "UX_VISUAL": true,
+    "MONETISATION": true,
+    "COPY_QUALITY": true,
+    "ACCESSIBILITY": true,
+    "SEO": true,
+    "COMPLIANCE_SAFETY": true,
+    "RERUN_RISK": true
+  }
+}
