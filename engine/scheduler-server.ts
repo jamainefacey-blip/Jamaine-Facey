@@ -18,8 +18,11 @@
 //   GET  /gate/latest         → latest gate result
 //   GET  /gate/results        → list recent gate results (up to 20)
 //   GET  /gate/config         → current gate config (weights / thresholds)
+//   GET  /execution/latest    → latest execution result (status, stage, visual QA, preview proofs, tests)
 
 import http from 'http';
+import fs from 'fs';
+import path from 'path';
 import { SCHEDULER_CONFIG } from './config';
 import {
   startScheduler,
@@ -224,6 +227,73 @@ const server = http.createServer(async (req, res) => {
     // ── GET /gate/config ──────────────────────────────────────────────────────
     if (method === 'GET' && url === '/gate/config') {
       return json(res, 200, loadGateConfig());
+    }
+
+    // ── GET /execution/latest ─────────────────────────────────────────────────
+    // Returns latest execution result merged with panel result.
+    // Surfaces: status, currentStage, visualQA score, previewProof refs, test summary, blockers.
+    // Read-only — no mutation.
+    if (method === 'GET' && url === '/execution/latest') {
+      const dataDir = path.join(path.dirname(new URL(import.meta.url).pathname), 'data');
+      const panelPath = path.join(dataDir, 'execution-panel-result.json');
+      const resultPath = path.join(dataDir, 'execution-result.json');
+
+      const readJsonFile = (filePath: string): unknown | null => {
+        try {
+          return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        } catch {
+          return null;
+        }
+      };
+
+      const panel = readJsonFile(panelPath) as Record<string, unknown> | null;
+      const result = readJsonFile(resultPath) as Record<string, unknown> | null;
+
+      if (!panel && !result) {
+        return json(res, 404, { error: 'No execution results found' });
+      }
+
+      // Merge: panel has the richest FHI run data; result has the raw exec loop data
+      const latestFHIRun = panel
+        ? (panel.latestFHIRun as Record<string, unknown> | undefined) ?? null
+        : null;
+
+      const response: Record<string, unknown> = {
+        retrievedAt: new Date().toISOString(),
+        status: latestFHIRun
+          ? latestFHIRun.status
+          : (result?.status ?? 'UNKNOWN'),
+        currentStage: latestFHIRun
+          ? latestFHIRun.currentStage
+          : (result?.currentStage ?? null),
+        retryCount: latestFHIRun
+          ? latestFHIRun.retryCount
+          : (result?.retryCount ?? null),
+        maxRetries: latestFHIRun
+          ? latestFHIRun.maxRetries
+          : (result?.maxRetries ?? null),
+        stages: latestFHIRun
+          ? latestFHIRun.stages
+          : (result?.stages ?? []),
+        previewProof: latestFHIRun
+          ? latestFHIRun.previewLinks ?? null
+          : null,
+        visualQA: latestFHIRun
+          ? latestFHIRun.visualQA ?? null
+          : null,
+        blockers: latestFHIRun
+          ? latestFHIRun.blockers ?? []
+          : [],
+        truthVerdict: latestFHIRun
+          ? latestFHIRun.truthVerdict ?? null
+          : null,
+        source: latestFHIRun ? 'execution-panel-result.json' : 'execution-result.json',
+        generatedAt: panel
+          ? (panel.generatedAt as string | undefined) ?? null
+          : null,
+      };
+
+      return json(res, 200, response);
     }
 
     return json(res, 404, { error: 'Not found' });
