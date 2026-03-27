@@ -1,0 +1,13 @@
+{
+  "runId": "c4950542-0e62-4598-ae51-0572beccbe6a",
+  "taskId": "pc-ui-01",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:02:09.669Z",
+  "completedAt": "2026-03-27T12:02:09.670Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"file\":\"scheduler-state.json\",\"recordCount\":1}"
+}

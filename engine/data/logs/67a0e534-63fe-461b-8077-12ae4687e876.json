@@ -1,0 +1,13 @@
+{
+  "runId": "67a0e534-63fe-461b-8077-12ae4687e876",
+  "taskId": "pc-hygiene-01",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:02:10.873Z",
+  "completedAt": "2026-03-27T12:02:10.874Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"file\":\"policy-changes.log\",\"recordCount\":1}"
+}

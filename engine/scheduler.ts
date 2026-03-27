@@ -118,6 +118,29 @@ function runSafeTask(task: SchedulerTask): { result: unknown; error?: string } {
       return { result: { file: relFile, written: true, bytes: serialized.length } };
     }
 
+    case 'transform': {
+      // Controlled transform: summarise a JSON file from engine/data/.
+      // If input is outside data dir (e.g. an HTML file), return metadata only.
+      const safeDir  = path.join(ROOT, 'engine', 'data');
+      const rawInput = String(task.payload.input ?? task.payload.file ?? '');
+      const stripped = rawInput.replace(/^(\.\/)?engine\/data\/?/, '');
+      const target   = path.resolve(safeDir, stripped);
+      if (!target.startsWith(safeDir + path.sep) && target !== safeDir) {
+        // Input outside data dir — return metadata summary, no mutation
+        return { result: { transformed: true, input: rawInput, note: 'outside engine/data — metadata only', task: task.payload.task ?? task.id } };
+      }
+      if (!fs.existsSync(target)) {
+        return { result: { transformed: true, input: stripped, exists: false } };
+      }
+      const content = fs.readFileSync(target, 'utf8').trim();
+      let parsed: unknown;
+      try { parsed = JSON.parse(content); } catch {
+        return { result: { transformed: true, input: stripped, type: 'text', lines: content.split('\n').length } };
+      }
+      const keys = typeof parsed === 'object' && parsed !== null ? Object.keys(parsed as object).length : 0;
+      return { result: { transformed: true, input: stripped, keys, type: Array.isArray(parsed) ? 'array' : typeof parsed } };
+    }
+
     case 'repo': {
       // Controlled repo: read-only git info from .git directory. No exec, no mutation.
       const gitDir = path.join(ROOT, '.git');

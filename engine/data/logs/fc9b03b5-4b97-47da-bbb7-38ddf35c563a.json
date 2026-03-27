@@ -1,0 +1,13 @@
+{
+  "runId": "fc9b03b5-4b97-47da-bbb7-38ddf35c563a",
+  "taskId": "pc-report-01",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:02:10.573Z",
+  "completedAt": "2026-03-27T12:02:10.574Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 5"
+}

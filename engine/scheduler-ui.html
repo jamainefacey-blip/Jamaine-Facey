@@ -15,6 +15,7 @@
   body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; padding:24px; }
   h1 { font-size:18px; font-weight:700; color:var(--gold); margin-bottom:4px; }
   .subtitle { color:var(--muted); font-size:12px; margin-bottom:20px; }
+  @media(max-width:480px){ body{padding:12px;} h1{font-size:16px;} }
 
   /* Grid cards */
   .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
@@ -23,6 +24,7 @@
   .card__label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:6px; }
   .card__value { font-size:20px; font-weight:700; }
   .card--highlight { border-color: var(--gold); }
+  @media(max-width:480px){ .card__value{font-size:17px;} }
 
   /* Guardrail panel */
   .guardrail-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
@@ -34,6 +36,10 @@
   .policy-count--allowed  { color:var(--green); }
   .policy-count--approval { color:var(--yellow); }
   .policy-count--blocked  { color:var(--red); }
+  @media(max-width:600px){
+    .guardrail-panel { flex-direction:column; align-items:flex-start; gap:10px; padding:12px; }
+    .policy-counts { margin-left:0; gap:14px; }
+  }
 
   /* Badges */
   .badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:100px; font-size:12px; font-weight:600; }
@@ -57,6 +63,16 @@
   .btn--promote  { background:rgba(62,207,142,.12); color:var(--green);  border:1px solid rgba(62,207,142,.3); font-size:11px; padding:3px 9px; }
   .btn--demote   { background:rgba(224,169,82,.12); color:var(--yellow); border:1px solid rgba(224,169,82,.3); font-size:11px; padding:3px 9px; }
   .btn--policy-reset { background:transparent; color:var(--muted); border:1px solid var(--border); font-size:12px; }
+  /* Mobile — bigger touch targets, controls wrap 2-up */
+  @media(max-width:600px){
+    button { min-height:44px; }
+    .btn--approve { min-height:40px; padding:8px 14px; font-size:13px; }
+    .btn--promote, .btn--demote { min-height:38px; padding:7px 12px; font-size:12px; }
+  }
+  @media(max-width:480px){
+    .controls { gap:8px; }
+    .controls > button { flex:1 1 calc(50% - 4px); min-width:0; text-align:center; justify-content:center; }
+  }
 
   /* Policy edit panel */
   .policy-edit { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:20px; display:none; }
@@ -72,10 +88,24 @@
   /* Table */
   .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:10px; }
   .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
+  @media(max-width:900px) and (min-width:601px){ .table-wrap{ overflow-x:auto; } }
   table { width:100%; border-collapse:collapse; font-size:12px; }
   th { text-align:left; padding:6px 10px; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; }
   td { padding:7px 10px; border-bottom:1px solid rgba(30,45,66,.5); vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
+  /* Mobile table → card-per-row layout */
+  @media(max-width:600px){
+    .table-wrap { background:transparent; border:none; border-radius:0; overflow:visible; }
+    table thead { display:none; }
+    table tbody tr { display:block; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; overflow:hidden; }
+    table tbody tr:last-child { margin-bottom:0; }
+    table td { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid rgba(30,45,66,.3); font-size:13px; }
+    table td:last-child { border-bottom:none; }
+    table td::before { content:attr(data-label); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); flex-shrink:0; margin-right:12px; }
+    table td.empty { display:table-cell; text-align:center; }
+    table td.empty::before { display:none; }
+    .truncate { max-width:160px; }
+  }
 
   /* Pills */
   .pill { display:inline-block; padding:2px 8px; border-radius:100px; font-size:10px; font-weight:700; white-space:nowrap; }
@@ -103,19 +133,33 @@
   select { min-width:130px; }
   input[type=text] { flex:1; min-width:180px; }
   .payload-hint { font-size:11px; color:var(--muted); font-family:monospace; }
+  @media(max-width:480px){
+    .form-row { flex-direction:column; }
+    select, input[type=text] { width:100%; min-width:0; }
+    select, input[type=text] { min-height:44px; font-size:16px; /* prevent iOS zoom */ }
+    .policy-edit__row { gap:8px; }
+    .btn--promote, .btn--demote { flex:1 1 auto; text-align:center; }
+  }
 
   /* Error */
   .error-banner { background:rgba(224,82,82,.08); border:1px solid rgba(224,82,82,.3); border-radius:var(--radius); padding:9px 14px; color:var(--red); font-size:12px; margin-bottom:14px; display:none; }
   .error-banner.visible { display:block; }
   .refresh-ts { font-size:11px; color:var(--muted); margin-left:auto; }
+  /* Approval alert — prominent on mobile for overnight use */
+  .approval-alert { background:rgba(224,169,82,.08); border:1px solid rgba(224,169,82,.35); border-radius:var(--radius); padding:10px 14px; margin-bottom:14px; display:none; font-size:13px; font-weight:600; color:var(--yellow); }
+  .approval-alert.visible { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  @media(max-width:480px){ .approval-alert.visible{ font-size:14px; padding:12px 14px; } }
+  /* Subtitle truncation on mobile */
+  @media(max-width:480px){ .subtitle .api-url{ display:none; } }
 </style>
 </head>
 <body>
 
 <h1>Pain Engine — Scheduler Control</h1>
-<p class="subtitle">Guardrail policy active &nbsp;·&nbsp; API: <span id="api-url">http://localhost:4446</span> &nbsp;·&nbsp; <span id="refresh-ts">—</span></p>
+<p class="subtitle">Guardrail policy active &nbsp;·&nbsp; API: <span id="api-url" class="api-url">http://localhost:4446</span> &nbsp;·&nbsp; <span id="refresh-ts">—</span></p>
 
 <div id="error-banner" class="error-banner"></div>
+<div id="approval-alert" class="approval-alert"></div>
 
 <!-- Guardrail status panel -->
 <div class="guardrail-panel">
@@ -205,7 +249,7 @@
 </div>
 
 <!-- Task queue table -->
-<div class="section-title">Task Queue</div>
+<div class="section-title" id="queue-table">Task Queue</div>
 <div class="table-wrap">
   <table>
     <thead>
@@ -375,6 +419,16 @@ function renderStatus(s) {
 
   document.getElementById('btn-start').disabled = s.isTimerActive;
   document.getElementById('btn-stop').disabled  = !s.isTimerActive;
+
+  // Approval alert — surfaces awaiting tasks prominently for overnight phone use
+  const alertEl = document.getElementById('approval-alert');
+  const n = s.awaitingApprovalCount ?? 0;
+  if (n > 0) {
+    alertEl.innerHTML = `<span>⏳ ${n} task${n>1?'s':''} awaiting approval</span><a href="#queue-table" style="color:var(--yellow);text-decoration:underline;font-size:12px">Review ↓</a>`;
+    alertEl.classList.add('visible');
+  } else {
+    alertEl.classList.remove('visible');
+  }
 }
 
 function renderQueue(tasks) {
@@ -394,15 +448,15 @@ function renderQueue(tasks) {
       ? `<button class="btn--approve" onclick="apiApprove('${t.id}')">Approve</button>`
       : '—';
     return `<tr>
-      <td class="mono">${t.id}</td>
-      <td>${t.type}</td>
-      <td>${pill('risk-'+riskLabel, riskLabel)}</td>
-      <td>${pill(decCls, decLabel)}</td>
-      <td>${pill(t.status, t.status)}</td>
-      <td>${t.attempts}</td>
-      <td class="mono truncate" title="${detail}">${detail}</td>
-      <td class="mono">${fmtTime(t.updatedAt)}</td>
-      <td>${action}</td>
+      <td data-label="ID"       class="mono">${t.id}</td>
+      <td data-label="Type"     >${t.type}${t.lane && t.lane !== 'BACKYARD' ? ` <span style="font-size:10px;color:var(--muted)">${t.lane}</span>` : ''}</td>
+      <td data-label="Risk"     >${pill('risk-'+riskLabel, riskLabel)}</td>
+      <td data-label="Decision" >${pill(decCls, decLabel)}</td>
+      <td data-label="Status"   >${pill(t.status, t.status)}</td>
+      <td data-label="Attempts" >${t.attempts}</td>
+      <td data-label="Result"   class="mono truncate" title="${detail}">${detail}</td>
+      <td data-label="Updated"  class="mono">${fmtTime(t.updatedAt)}</td>
+      <td data-label="Action"   >${action}</td>
     </tr>`;
   }).join('');
 }

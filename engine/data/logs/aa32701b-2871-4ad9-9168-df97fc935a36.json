@@ -1,0 +1,13 @@
+{
+  "runId": "aa32701b-2871-4ad9-9168-df97fc935a36",
+  "taskId": "pc-tpl-01",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T12:02:10.272Z",
+  "completedAt": "2026-03-27T12:02:10.273Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "eval task result: 14"
+}
