@@ -1,0 +1,14 @@
+{
+  "runId": "f73d2c3c-a45e-44de-9164-a0f98dd0bf75",
+  "taskId": "r2-fail",
+  "lane": "BACKYARD",
+  "status": "pending",
+  "startedAt": "2026-03-27T09:52:17.409Z",
+  "completedAt": "2026-03-27T09:52:17.410Z",
+  "durationMs": 1,
+  "filesChanged": [],
+  "validationPassed": false,
+  "deployed": false,
+  "error": "Unsafe expression rejected: require(\"os\").platform()",
+  "claudeSummary": "FAIL: Unsafe expression rejected: require(\"os\").platform()"
+}

@@ -1,0 +1,13 @@
+{
+  "runId": "a7faf71b-cd3a-41dd-99b6-e508c2a3bb22",
+  "taskId": "g2-data",
+  "lane": "BACKYARD",
+  "status": "complete",
+  "startedAt": "2026-03-27T09:52:15.890Z",
+  "completedAt": "2026-03-27T09:52:15.890Z",
+  "durationMs": 0,
+  "filesChanged": [],
+  "validationPassed": true,
+  "deployed": false,
+  "claudeSummary": "data task result: {\"file\":\"status.json\",\"recordCount\":1}"
+}

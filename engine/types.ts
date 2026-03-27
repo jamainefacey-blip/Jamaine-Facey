@@ -63,12 +63,18 @@ export interface SchedulerTask {
   id: string;
   type: SchedulerTaskType;
   payload: Record<string, unknown>;
-  status: 'queued' | 'running' | 'done' | 'failed';
+  status: 'queued' | 'running' | 'done' | 'failed' | 'awaiting_approval';
   attempts: number;
   createdAt: string;
   updatedAt: string;
   lastError?: string;
   result?: unknown;
+  /** Risk level assigned by guardrail classifier */
+  risk?: 'low' | 'medium' | 'high';
+  /** Execution decision from guardrail policy */
+  decision?: 'allowed' | 'approval_required' | 'blocked';
+  /** Human-readable reason for block or approval requirement */
+  blockReason?: string;
 }
 
 /** Persisted scheduler state */
@@ -80,6 +86,8 @@ export interface SchedulerState {
   lastError: string | null;
   totalRuns: number;
   tasks: SchedulerTask[];
+  /** Whether overnight mode is currently active */
+  overnightMode: boolean;
 }
 
 export interface RunLog {

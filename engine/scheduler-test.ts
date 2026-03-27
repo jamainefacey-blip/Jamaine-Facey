@@ -1,13 +1,17 @@
-// engine/scheduler-test.ts — automated validation of scheduler loop
+// engine/scheduler-test.ts — automated validation of scheduler + guardrail loop
 //
-// Test cases:
-// 1. 3 tasks processed one-per-cycle (queued → done)
-// 2. Failure task retries up to maxAttempts then marks FAILED
-// 3. Blocked type rejected immediately (no processing)
-// 4. Stop halts processing
-// 5. No overlapping runs
+// Test cases (PC-GUARD-01):
+//  G1. eval task            → risk=low,    decision=allowed,           runs, status=done
+//  G2. data task            → risk=low,    decision=allowed,           runs, status=done
+//  G3. repo task            → risk=medium, decision=approval_required, does not run
+//  G4. deploy task          → risk=high,   decision=blocked,           does not run
+//  G5. unknown type         → risk=high,   decision=blocked,           does not run
 //
-// Uses SHORT interval (200ms) for fast test cycle.
+// Regression (PC-SCHED-01):
+//  R1. 3 tasks processed one-per-cycle
+//  R2. Failure retries 3× then FAILED
+//  R3. Stop halts processing
+//  R4. No overlapping runs
 
 import {
   startScheduler,
@@ -17,156 +21,200 @@ import {
   listTasks,
   resetScheduler,
 } from './scheduler';
+import { decide, classifyRisk, GUARDRAIL_POLICY } from './guardrail';
 import { log } from './logger';
+import type { SchedulerTask } from './types';
 
 function sleep(ms: number): Promise<void> {
   return new Promise(r => setTimeout(r, ms));
 }
 
 function assert(cond: boolean, msg: string): void {
-  if (!cond) {
-    log('ERROR', `ASSERT FAIL: ${msg}`);
-    process.exit(1);
-  }
+  if (!cond) { log('ERROR', `ASSERT FAIL: ${msg}`); process.exit(1); }
   log('INFO', `  ✓ ${msg}`);
 }
 
 async function waitFor(
-  predicate: () => boolean,
+  pred: () => boolean,
   label: string,
-  timeoutMs = 5000,
-  intervalMs = 100
+  timeoutMs = 4000,
+  tickMs = 80,
 ): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (predicate()) return;
-    await sleep(intervalMs);
+    if (pred()) return;
+    await sleep(tickMs);
   }
-  log('ERROR', `TIMEOUT waiting for: ${label}`);
+  log('ERROR', `TIMEOUT: ${label}`);
   process.exit(1);
 }
+
+const INTERVAL = 250; // ms — short for test speed
 
 async function runTests(): Promise<void> {
-  const INTERVAL = 300; // ms — short for testing
+  log('INFO', '══════════════════════════════════════════════════');
+  log('INFO', 'GUARDRAIL TEST SUITE — PC-GUARD-01 + PC-SCHED-01');
+  log('INFO', '══════════════════════════════════════════════════');
 
-  log('INFO', '══════════════════════════════════════════════');
-  log('INFO', 'SCHEDULER TEST SUITE — PC-SCHED-01');
-  log('INFO', '══════════════════════════════════════════════');
+  // ── Guardrail unit tests (no scheduler needed) ───────────────────────────
+  log('INFO', '\n[UNIT] Guardrail classify + decide');
 
-  // ── Setup ────────────────────────────────────────────────────────────────
-  log('INFO', '\n[SETUP] Resetting scheduler state');
+  const mkTask = (type: string): SchedulerTask => ({
+    id: `u-${type}`, type: type as SchedulerTask['type'], payload: {},
+    status: 'queued', attempts: 0,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  });
+
+  assert(classifyRisk(mkTask('eval'))    === 'low',    'eval → risk=low');
+  assert(classifyRisk(mkTask('data'))    === 'low',    'data → risk=low');
+  assert(classifyRisk(mkTask('write'))   === 'medium', 'write → risk=medium');
+  assert(classifyRisk(mkTask('repo'))    === 'medium', 'repo → risk=medium');
+  assert(classifyRisk(mkTask('deploy'))  === 'high',   'deploy → risk=high');
+  assert(classifyRisk(mkTask('notify'))  === 'high',   'notify → risk=high');
+  assert(classifyRisk(mkTask('unknown')) === 'high',   'unknown → risk=high (fallback)');
+
+  assert(decide(mkTask('eval')).decision    === 'allowed',           'eval → allowed');
+  assert(decide(mkTask('data')).decision    === 'allowed',           'data → allowed');
+  assert(decide(mkTask('write')).decision   === 'approval_required', 'write → approval_required');
+  assert(decide(mkTask('repo')).decision    === 'approval_required', 'repo → approval_required');
+  assert(decide(mkTask('deploy')).decision  === 'blocked',           'deploy → blocked');
+  assert(decide(mkTask('notify')).decision  === 'blocked',           'notify → blocked');
+  assert(decide(mkTask('unknown')).decision === 'blocked',           'unknown → blocked (safety rule)');
+
+  // Overnight mode escalates medium → approval_required (already true — confirm)
+  const overnight = { ...GUARDRAIL_POLICY, overnightMode: true };
+  assert(decide(mkTask('write'), overnight).decision === 'approval_required', 'write+overnight → approval_required');
+  // Without overnight mode, 'write' is still approval_required (it's in approvalTypes)
+  const noOvernight = { ...GUARDRAIL_POLICY, overnightMode: false };
+  assert(decide(mkTask('write'), noOvernight).decision === 'approval_required', 'write+no-overnight → approval_required (in approvalTypes)');
+  // eval without overnight still allowed
+  assert(decide(mkTask('eval'), noOvernight).decision === 'allowed', 'eval+no-overnight → allowed');
+
+  // ── G1: eval task → allowed, runs, done ──────────────────────────────────
+  log('INFO', '\n[G1] eval task → allowed, runs, status=done');
   resetScheduler();
-  assert(getSchedulerStatus().status === 'idle', 'status is idle after reset');
-  assert(listTasks().length === 0, 'queue is empty after reset');
-
-  // ── TEST 1: 3 tasks, one per cycle ───────────────────────────────────────
-  log('INFO', '\n[TEST 1] 3 safe tasks processed one-per-interval');
-
-  addTask('eval', { expression: '10 + 5' }, 'task-t1-a');
-  addTask('data', { file: 'status.json' }, 'task-t1-b');
-  addTask('eval', { expression: '2 * 21' }, 'task-t1-c');
-
-  assert(listTasks().length === 3, '3 tasks enqueued');
-  assert(listTasks().every(t => t.status === 'queued'), 'all initially queued');
-
-  startScheduler(INTERVAL);
-  assert(getSchedulerStatus().isTimerActive, 'timer active after start');
-
-  // Wait for all 3 to complete (3 cycles × INTERVAL + buffer)
-  await waitFor(
-    () => listTasks().filter(t => t.status === 'done').length === 3,
-    'all 3 tasks done',
-    5000
-  );
-
-  const done3 = listTasks().filter(t => t.status === 'done');
-  assert(done3.length === 3, 'all 3 tasks reached status=done');
-  assert(done3.find(t => t.id === 'task-t1-a')?.result === 15, 'task-t1-a eval result = 15');
-  assert(
-    (done3.find(t => t.id === 'task-t1-b')?.result as { recordCount?: number })?.recordCount != null,
-    'task-t1-b data result has recordCount'
-  );
-  assert(done3.find(t => t.id === 'task-t1-c')?.result === 42, 'task-t1-c eval result = 42');
-  assert(getSchedulerStatus().totalRuns >= 3, 'totalRuns >= 3');
-
-  stopScheduler();
-  assert(!getSchedulerStatus().isTimerActive, 'timer inactive after stop');
-
-  // ── TEST 2: Failure + retry up to maxAttempts ────────────────────────────
-  log('INFO', '\n[TEST 2] Failure task retries 3× then marks FAILED');
-
-  resetScheduler();
-
-  // Bad expression — will fail eval safety check
-  addTask('eval', { expression: 'require("fs").readFileSync("/etc/passwd","utf8")' }, 'task-t2-fail');
-  assert(listTasks()[0].status === 'queued', 'fail task queued');
-
+  addTask('eval', { expression: '7 * 6' }, 'g1-eval');
   startScheduler(INTERVAL);
 
-  // Wait until task is FAILED (3 attempts exhausted)
-  await waitFor(
-    () => listTasks().find(t => t.id === 'task-t2-fail')?.status === 'failed',
-    'task-t2-fail status=failed',
-    5000
-  );
+  await waitFor(() => {
+    const t = listTasks().find(t => t.id === 'g1-eval');
+    return t?.status === 'done';
+  }, 'g1-eval done');
 
-  const failTask = listTasks().find(t => t.id === 'task-t2-fail');
-  assert(failTask?.status === 'failed', 'task status=failed');
-  assert(failTask?.attempts === 3, `attempts=3 (got ${failTask?.attempts})`);
-  assert(!!failTask?.lastError, 'lastError populated');
-
+  const g1 = listTasks().find(t => t.id === 'g1-eval')!;
+  assert(g1.risk === 'low',      `G1: risk=low (got ${g1.risk})`);
+  assert(g1.decision === 'allowed', `G1: decision=allowed (got ${g1.decision})`);
+  assert(g1.status === 'done',   `G1: status=done (got ${g1.status})`);
+  assert(g1.result === 42,       `G1: result=42 (got ${String(g1.result)})`);
   stopScheduler();
 
-  // ── TEST 3: Blocked type (deploy/notify) rejected without processing ──────
-  log('INFO', '\n[TEST 3] Unsafe type blocked immediately');
-
+  // ── G2: data task → allowed, runs, done ──────────────────────────────────
+  log('INFO', '\n[G2] data task → allowed, runs, status=done');
   resetScheduler();
-  // Manually add a deploy task (addTask accepts it, scheduler blocks at pick-up)
-  addTask('deploy', { branch: 'main' }, 'task-t3-deploy');
-
+  addTask('data', { file: 'status.json' }, 'g2-data');
   startScheduler(INTERVAL);
-  await sleep(INTERVAL * 2 + 200);
 
-  const blockedTask = listTasks().find(t => t.id === 'task-t3-deploy');
-  assert(blockedTask?.status === 'failed', `deploy task blocked and marked failed (got ${blockedTask?.status})`);
-  assert(blockedTask?.attempts === 0, 'blocked task had 0 execution attempts');
+  await waitFor(() => listTasks().find(t => t.id === 'g2-data')?.status === 'done', 'g2-data done');
 
+  const g2 = listTasks().find(t => t.id === 'g2-data')!;
+  assert(g2.risk === 'low',      `G2: risk=low (got ${g2.risk})`);
+  assert(g2.decision === 'allowed', `G2: decision=allowed (got ${g2.decision})`);
+  assert(g2.status === 'done',   `G2: status=done`);
   stopScheduler();
 
-  // ── TEST 4: Stop halts immediately ───────────────────────────────────────
-  log('INFO', '\n[TEST 4] Stop halts scheduler');
-
+  // ── G3: repo task → approval_required, does NOT run ──────────────────────
+  log('INFO', '\n[G3] repo task → approval_required, not executed');
   resetScheduler();
-  addTask('eval', { expression: '99 + 1' }, 'task-t4');
+  addTask('repo', { branch: 'main' }, 'g3-repo');
   startScheduler(INTERVAL);
-  assert(getSchedulerStatus().isTimerActive, 'running before stop');
-  stopScheduler();
-  assert(!getSchedulerStatus().isTimerActive, 'stopped after stopScheduler()');
-  assert(getSchedulerStatus().status === 'idle', 'status=idle after stop');
 
-  // ── TEST 5: No overlapping runs ───────────────────────────────────────────
-  log('INFO', '\n[TEST 5] Overlap guard — isRunning flag prevents double execution');
-  // This is structural: _isRunning is checked at top of processQueue().
-  // Verified by design — we assert the flag resets correctly after each run.
+  // Wait 3 cycles — task must NOT become done/running
+  await sleep(INTERVAL * 3 + 200);
+
+  const g3 = listTasks().find(t => t.id === 'g3-repo')!;
+  assert(g3.risk === 'medium',               `G3: risk=medium (got ${g3.risk})`);
+  assert(g3.decision === 'approval_required',`G3: decision=approval_required (got ${g3.decision})`);
+  assert(g3.status === 'awaiting_approval',  `G3: status=awaiting_approval (got ${g3.status})`);
+  assert(g3.attempts === 0,                  `G3: attempts=0 (task never executed, got ${g3.attempts})`);
+  stopScheduler();
+
+  // ── G4: deploy task → blocked, does NOT run ──────────────────────────────
+  log('INFO', '\n[G4] deploy task → blocked immediately');
   resetScheduler();
-  addTask('eval', { expression: '1 + 1' }, 'task-t5');
+  addTask('deploy', { branch: 'main' }, 'g4-deploy');
   startScheduler(INTERVAL);
-  await waitFor(() => listTasks().find(t => t.id === 'task-t5')?.status === 'done', 'task-t5 done');
-  stopScheduler();
-  const s5 = getSchedulerStatus();
-  assert(!s5.isTimerActive, 'timer not active after stop');
-  // Only 1 run logged for this task
-  const t5 = listTasks().find(t => t.id === 'task-t5');
-  assert(t5?.attempts === 1, `task processed exactly once (attempts=${t5?.attempts})`);
 
-  // ── Final state ───────────────────────────────────────────────────────────
-  log('INFO', '\n══════════════════════════════════════════════');
-  log('INFO', 'ALL TESTS PASSED');
-  log('INFO', '══════════════════════════════════════════════');
-  resetScheduler(); // clean up
+  await waitFor(() => listTasks().find(t => t.id === 'g4-deploy')?.status === 'failed', 'g4-deploy failed');
+
+  const g4 = listTasks().find(t => t.id === 'g4-deploy')!;
+  assert(g4.risk === 'high',      `G4: risk=high (got ${g4.risk})`);
+  assert(g4.decision === 'blocked', `G4: decision=blocked (got ${g4.decision})`);
+  assert(g4.status === 'failed',  `G4: status=failed (got ${g4.status})`);
+  assert(g4.attempts === 0,       `G4: attempts=0 (not executed, got ${g4.attempts})`);
+  assert(!!g4.blockReason,        'G4: blockReason populated');
+  stopScheduler();
+
+  // ── G5: unknown type → blocked, does NOT run ─────────────────────────────
+  log('INFO', '\n[G5] unknown type → blocked immediately');
+  resetScheduler();
+  addTask('mystery_action' as SchedulerTask['type'], {}, 'g5-unknown');
+  startScheduler(INTERVAL);
+
+  await waitFor(() => listTasks().find(t => t.id === 'g5-unknown')?.status === 'failed', 'g5-unknown failed');
+
+  const g5 = listTasks().find(t => t.id === 'g5-unknown')!;
+  assert(g5.risk === 'high',       `G5: risk=high (got ${g5.risk})`);
+  assert(g5.decision === 'blocked', `G5: decision=blocked (got ${g5.decision})`);
+  assert(g5.status === 'failed',   `G5: status=failed`);
+  assert(g5.attempts === 0,        `G5: attempts=0 (not executed)`);
+  assert(g5.blockReason?.includes('Unknown type') ?? false, 'G5: blockReason mentions Unknown type');
+  stopScheduler();
+
+  // ── R1: 3 tasks, one per cycle (regression) ───────────────────────────────
+  log('INFO', '\n[R1] 3 safe tasks processed one-per-interval (regression)');
+  resetScheduler();
+  addTask('eval', { expression: '1+1' }, 'r1-a');
+  addTask('eval', { expression: '2+2' }, 'r1-b');
+  addTask('eval', { expression: '3+3' }, 'r1-c');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().filter(t => t.status === 'done').length === 3, 'all 3 done');
+  assert(listTasks().every(t => t.status === 'done'), 'R1: all 3 done');
+  assert(getSchedulerStatus().totalRuns >= 3, 'R1: totalRuns >= 3');
+  stopScheduler();
+
+  // ── R2: retry 3× then FAILED (regression) ────────────────────────────────
+  log('INFO', '\n[R2] Failure retries 3× → FAILED (regression)');
+  resetScheduler();
+  addTask('eval', { expression: 'require("os").platform()' }, 'r2-fail');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().find(t => t.id === 'r2-fail')?.status === 'failed', 'r2-fail failed', 5000);
+  const r2 = listTasks().find(t => t.id === 'r2-fail')!;
+  assert(r2.status === 'failed',  'R2: status=failed');
+  assert(r2.attempts === 3,       `R2: attempts=3 (got ${r2.attempts})`);
+  stopScheduler();
+
+  // ── R3: stop halts (regression) ───────────────────────────────────────────
+  log('INFO', '\n[R3] Stop halts scheduler (regression)');
+  resetScheduler();
+  startScheduler(INTERVAL);
+  assert(getSchedulerStatus().isTimerActive, 'R3: running before stop');
+  stopScheduler();
+  assert(!getSchedulerStatus().isTimerActive, 'R3: stopped');
+  assert(getSchedulerStatus().status === 'idle', 'R3: status=idle');
+
+  // ── R4: no overlap (regression) ───────────────────────────────────────────
+  log('INFO', '\n[R4] No overlap — task processed exactly once');
+  resetScheduler();
+  addTask('eval', { expression: '5*5' }, 'r4-single');
+  startScheduler(INTERVAL);
+  await waitFor(() => listTasks().find(t => t.id === 'r4-single')?.status === 'done', 'r4-single done');
+  stopScheduler();
+  assert(listTasks().find(t => t.id === 'r4-single')?.attempts === 1, 'R4: attempts=1 (no overlap)');
+
+  log('INFO', '\n══════════════════════════════════════════════════');
+  log('INFO', 'ALL TESTS PASSED — PC-GUARD-01 + PC-SCHED-01');
+  log('INFO', '══════════════════════════════════════════════════');
+  resetScheduler();
 }
 
-runTests().catch(err => {
-  console.error('[scheduler-test] fatal:', err);
-  process.exit(1);
-});
+runTests().catch(err => { console.error('[scheduler-test] fatal:', err); process.exit(1); });

@@ -7,84 +7,131 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0B0F19;
-    --surface: #121826;
-    --border: #1E2D42;
-    --gold: #C6A85A;
-    --text: #F5F7FA;
-    --muted: #7A8FA6;
-    --green: #3ECF8E;
-    --red: #E05252;
-    --yellow: #E0A952;
-    --radius: 8px;
-    --font: 'Inter', system-ui, sans-serif;
+    --bg: #0B0F19; --surface: #121826; --border: #1E2D42;
+    --gold: #C6A85A; --text: #F5F7FA; --muted: #7A8FA6;
+    --green: #3ECF8E; --red: #E05252; --yellow: #E0A952; --blue: #5A9EC6;
+    --radius: 8px; --font: 'Inter', system-ui, sans-serif;
   }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; padding: 24px; }
-  h1 { font-size: 18px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .card__label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 8px; }
-  .card__value { font-size: 22px; font-weight: 700; }
-  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; }
-  .badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-  .badge--idle { color: var(--muted); background: rgba(122,143,166,.12); }
-  .badge--running { color: var(--green); background: rgba(62,207,142,.12); animation: pulse 1.4s ease-in-out infinite; }
-  .badge--error { color: var(--red); background: rgba(224,82,82,.12); }
+  body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; padding:24px; }
+  h1 { font-size:18px; font-weight:700; color:var(--gold); margin-bottom:4px; }
+  .subtitle { color:var(--muted); font-size:12px; margin-bottom:20px; }
+
+  /* Grid cards */
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+  @media(max-width:700px){ .grid{ grid-template-columns:1fr 1fr; } }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+  .card__label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:6px; }
+  .card__value { font-size:20px; font-weight:700; }
+  .card--highlight { border-color: var(--gold); }
+
+  /* Guardrail panel */
+  .guardrail-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .guardrail-panel__title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-right:4px; }
+  .policy-tag { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:100px; font-size:11px; font-weight:600; background:rgba(122,143,166,.1); color:var(--muted); }
+  .policy-tag--active { background:rgba(62,207,142,.1); color:var(--green); }
+  .policy-counts { display:flex; gap:10px; margin-left:auto; }
+  .policy-count { font-size:11px; font-weight:600; }
+  .policy-count--allowed  { color:var(--green); }
+  .policy-count--approval { color:var(--yellow); }
+  .policy-count--blocked  { color:var(--red); }
+
+  /* Badges */
+  .badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:100px; font-size:12px; font-weight:600; }
+  .badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .badge--idle    { color:var(--muted); background:rgba(122,143,166,.12); }
+  .badge--running { color:var(--green); background:rgba(62,207,142,.12); animation:pulse 1.4s ease-in-out infinite; }
+  .badge--error   { color:var(--red);   background:rgba(224,82,82,.12); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-  .controls { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
-  button { padding: 9px 18px; border-radius: var(--radius); border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; }
-  button:active { transform: scale(.97); }
-  button:disabled { opacity: .4; cursor: not-allowed; }
-  .btn--start { background: var(--gold); color: #0B0F19; }
-  .btn--stop { background: transparent; color: var(--red); border: 1px solid var(--red); }
-  .btn--add { background: transparent; color: var(--text); border: 1px solid var(--border); }
-  .btn--reset { background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 12px; }
-  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { text-align: left; padding: 6px 10px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
-  td { padding: 8px 10px; border-bottom: 1px solid rgba(30,45,66,.5); vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
-  .status-queued  { background: rgba(122,143,166,.15); color: var(--muted); }
-  .status-running { background: rgba(62,207,142,.15); color: var(--green); }
-  .status-done    { background: rgba(198,168,90,.15); color: var(--gold); }
-  .status-failed  { background: rgba(224,82,82,.15); color: var(--red); }
-  .mono { font-family: 'Fira Code', 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
-  .add-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; display: none; }
-  .add-form.open { display: block; }
-  .form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-  select, input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 7px 10px; font-size: 13px; }
-  select { min-width: 120px; }
-  input { flex: 1; min-width: 200px; }
-  .error-banner { background: rgba(224,82,82,.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 10px 14px; color: var(--red); font-size: 12px; margin-bottom: 16px; display: none; }
-  .error-banner.visible { display: block; }
-  .last-run { color: var(--muted); font-size: 12px; }
-  .empty { color: var(--muted); text-align: center; padding: 24px; font-size: 13px; }
-  .refresh-indicator { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* Controls */
+  .controls { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+  button { padding:8px 16px; border-radius:var(--radius); border:none; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; }
+  button:active { transform:scale(.97); }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .btn--start    { background:var(--gold); color:#0B0F19; }
+  .btn--stop     { background:transparent; color:var(--red); border:1px solid var(--red); }
+  .btn--add      { background:transparent; color:var(--text); border:1px solid var(--border); }
+  .btn--reset    { background:transparent; color:var(--muted); border:1px solid var(--border); font-size:12px; }
+  .btn--overnight{ background:transparent; color:var(--yellow); border:1px solid var(--yellow); font-size:12px; }
+
+  /* Table */
+  .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:10px; }
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { text-align:left; padding:6px 10px; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td { padding:7px 10px; border-bottom:1px solid rgba(30,45,66,.5); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+
+  /* Pills */
+  .pill { display:inline-block; padding:2px 8px; border-radius:100px; font-size:10px; font-weight:700; white-space:nowrap; }
+  .pill--queued            { background:rgba(122,143,166,.15); color:var(--muted); }
+  .pill--running           { background:rgba(62,207,142,.15);  color:var(--green); }
+  .pill--done              { background:rgba(198,168,90,.15);   color:var(--gold); }
+  .pill--failed            { background:rgba(224,82,82,.15);    color:var(--red); }
+  .pill--awaiting_approval { background:rgba(224,169,82,.15);   color:var(--yellow); }
+  .pill--risk-low    { background:rgba(62,207,142,.1);  color:var(--green);  font-size:10px; }
+  .pill--risk-medium { background:rgba(224,169,82,.1);  color:var(--yellow); font-size:10px; }
+  .pill--risk-high   { background:rgba(224,82,82,.1);   color:var(--red);    font-size:10px; }
+  .pill--allowed            { background:rgba(62,207,142,.1);  color:var(--green); }
+  .pill--approval_required  { background:rgba(224,169,82,.1);  color:var(--yellow); }
+  .pill--blocked            { background:rgba(224,82,82,.1);   color:var(--red); }
+
+  .mono { font-family:'Fira Code','JetBrains Mono',monospace; font-size:10px; color:var(--muted); }
+  .truncate { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .empty { color:var(--muted); text-align:center; padding:24px; }
+
+  /* Add form */
+  .add-form { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:20px; display:none; }
+  .add-form.open { display:block; }
+  .form-row { display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap; align-items:center; }
+  select, input[type=text] { background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 10px; font-size:13px; }
+  select { min-width:130px; }
+  input[type=text] { flex:1; min-width:180px; }
+  .payload-hint { font-size:11px; color:var(--muted); font-family:monospace; }
+
+  /* Error */
+  .error-banner { background:rgba(224,82,82,.08); border:1px solid rgba(224,82,82,.3); border-radius:var(--radius); padding:9px 14px; color:var(--red); font-size:12px; margin-bottom:14px; display:none; }
+  .error-banner.visible { display:block; }
+  .refresh-ts { font-size:11px; color:var(--muted); margin-left:auto; }
 </style>
 </head>
 <body>
 
 <h1>Pain Engine — Scheduler Control</h1>
-<p class="subtitle">SAFE MODE &nbsp;·&nbsp; types: eval, data &nbsp;·&nbsp; API: <span id="api-url">http://localhost:4446</span></p>
+<p class="subtitle">Guardrail policy active &nbsp;·&nbsp; API: <span id="api-url">http://localhost:4446</span> &nbsp;·&nbsp; <span id="refresh-ts">—</span></p>
 
 <div id="error-banner" class="error-banner"></div>
 
-<!-- Status row -->
+<!-- Guardrail status panel -->
+<div class="guardrail-panel">
+  <span class="guardrail-panel__title">Guardrail</span>
+  <span id="policy-active" class="policy-tag policy-tag--active">Policy active</span>
+  <span id="overnight-badge" class="policy-tag">Overnight: —</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:8px;">
+    <span class="policy-tag" style="color:var(--green)">allow: eval, data</span>
+    <span class="policy-tag" style="color:var(--yellow)">approval: write, repo, transform</span>
+    <span class="policy-tag" style="color:var(--red)">block: deploy, notify + unknown</span>
+  </div>
+  <div class="policy-counts">
+    <span class="policy-count policy-count--allowed">✓ <span id="cnt-allowed">0</span> allowed</span>
+    <span class="policy-count policy-count--approval">⏳ <span id="cnt-approval">0</span> awaiting</span>
+    <span class="policy-count policy-count--blocked">✕ <span id="cnt-blocked">0</span> blocked</span>
+  </div>
+</div>
+
+<!-- Stats -->
 <div class="grid">
-  <div class="card">
-    <div class="card__label">Engine Status</div>
+  <div class="card card--highlight">
+    <div class="card__label">Engine</div>
     <div id="status-badge" class="badge badge--idle">idle</div>
   </div>
   <div class="card">
-    <div class="card__label">Last Run</div>
-    <div class="card__value last-run" id="last-run">—</div>
+    <div class="card__label">Queued</div>
+    <div class="card__value" id="queued-count">0</div>
   </div>
   <div class="card">
-    <div class="card__label">Queue Count</div>
-    <div class="card__value" id="queue-count">0</div>
+    <div class="card__label">Last Run</div>
+    <div class="card__value" style="font-size:13px;color:var(--muted)" id="last-run">—</div>
   </div>
   <div class="card">
     <div class="card__label">Total Runs</div>
@@ -94,205 +141,196 @@
 
 <!-- Controls -->
 <div class="controls">
-  <button class="btn--start" id="btn-start" onclick="startScheduler()">Start Scheduler</button>
-  <button class="btn--stop" id="btn-stop" onclick="stopScheduler()" disabled>Stop Scheduler</button>
-  <button class="btn--add" onclick="toggleAddForm()">+ Add Task</button>
-  <button class="btn--reset" onclick="resetAll()">Reset State</button>
-  <span class="refresh-indicator" id="refresh-indicator">auto-refresh every 5s</span>
+  <button class="btn--start"    id="btn-start"    onclick="apiStart()">Start</button>
+  <button class="btn--stop"     id="btn-stop"     onclick="apiStop()" disabled>Stop</button>
+  <button class="btn--overnight"id="btn-overnight"onclick="toggleOvernight()">Toggle Overnight</button>
+  <button class="btn--add"                        onclick="toggleAddForm()">+ Add Task</button>
+  <button class="btn--reset"                      onclick="apiReset()">Reset State</button>
 </div>
 
 <!-- Add task form -->
 <div class="add-form" id="add-form">
-  <div class="section-title">Add Task</div>
+  <div class="section-title">Add Task to Queue</div>
   <div class="form-row">
-    <select id="task-type" onchange="updatePayloadHint()">
-      <option value="eval">eval</option>
-      <option value="data">data</option>
-      <option value="notify" disabled>notify (blocked)</option>
-      <option value="deploy" disabled>deploy (blocked)</option>
+    <select id="task-type" onchange="updateHint()">
+      <option value="eval">eval (allowed)</option>
+      <option value="data">data (allowed)</option>
+      <option value="write">write (approval required)</option>
+      <option value="repo">repo (approval required)</option>
+      <option value="transform">transform (approval required)</option>
+      <option value="deploy">deploy (BLOCKED)</option>
+      <option value="notify">notify (BLOCKED)</option>
+      <option value="unknown_xyz">unknown_xyz (BLOCKED)</option>
     </select>
-    <input type="text" id="task-payload" placeholder='{"expression": "2 + 2"}' />
-    <button class="btn--start" onclick="addTask()">Enqueue</button>
+    <input type="text" id="task-payload" placeholder='{"expression":"2+2"}' />
+    <button class="btn--start" onclick="apiAddTask()">Enqueue</button>
   </div>
-  <div class="mono" id="payload-hint">Payload hint: { "expression": "2 + 2" }</div>
+  <div class="payload-hint" id="payload-hint">Hint: { "expression": "2 + 2" }</div>
 </div>
 
-<!-- Queue table -->
+<!-- Task queue table -->
 <div class="section-title">Task Queue</div>
-<div class="card" style="padding:0; overflow:hidden;">
+<div class="table-wrap">
   <table>
     <thead>
       <tr>
         <th>ID</th>
         <th>Type</th>
+        <th>Risk</th>
+        <th>Decision</th>
         <th>Status</th>
         <th>Attempts</th>
-        <th>Result / Error</th>
+        <th>Result / Block Reason</th>
         <th>Updated</th>
       </tr>
     </thead>
     <tbody id="queue-body">
-      <tr><td colspan="6" class="empty">No tasks in queue</td></tr>
+      <tr><td colspan="8" class="empty">No tasks</td></tr>
     </tbody>
   </table>
 </div>
 
 <script>
-  const API = 'http://localhost:4446';
+const API = 'http://localhost:4446';
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function setError(msg) {
+  const el = document.getElementById('error-banner');
+  if (msg) { el.textContent = msg; el.classList.add('visible'); }
+  else el.classList.remove('visible');
+}
 
-  function setError(msg) {
-    const el = document.getElementById('error-banner');
-    if (msg) { el.textContent = msg; el.classList.add('visible'); }
-    else { el.classList.remove('visible'); }
-  }
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleTimeString();
+}
 
-  function fmtTime(iso) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleTimeString() + ' ' + d.toLocaleDateString();
-  }
+function fmtMs(ms) {
+  if (ms == null) return '';
+  return ms < 1000 ? ` (${ms}ms)` : ` (${(ms/1000).toFixed(1)}s)`;
+}
 
-  function fmtMs(ms) {
-    if (ms == null) return '—';
-    return ms < 1000 ? `${ms}ms` : `${(ms/1000).toFixed(1)}s`;
-  }
+function pill(cls, text) {
+  return `<span class="pill pill--${cls}">${text}</span>`;
+}
 
-  // ── State (localStorage cache) ─────────────────────────────────────────────
+// ── localStorage cache ───────────────────────────────────────────────────────
+function cache(key, val) { try { if(val!==undefined) localStorage.setItem(key,JSON.stringify(val)); else return JSON.parse(localStorage.getItem(key)||'null'); } catch{} }
 
-  function cacheState(state) {
-    try { localStorage.setItem('scheduler_state', JSON.stringify(state)); } catch {}
-  }
+// ── API ───────────────────────────────────────────────────────────────────────
+async function apiFetch(path, opts={}) {
+  const r = await fetch(API + path, opts);
+  if (!r.ok) { const b = await r.json().catch(()=>({})); throw new Error(b.error||`${r.status}`); }
+  return r.json();
+}
 
-  function loadCachedState() {
-    try { return JSON.parse(localStorage.getItem('scheduler_state') || 'null'); } catch { return null; }
-  }
+async function apiStart()    { await apiFetch('/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}); await refresh(); }
+async function apiStop()     { await apiFetch('/stop',{method:'POST'}); await refresh(); }
+async function apiReset()    { if(!confirm('Reset all state?')) return; await apiFetch('/queue/reset',{method:'POST'}); await refresh(); }
 
-  // ── API calls ──────────────────────────────────────────────────────────────
+async function toggleOvernight() {
+  const cur = cache('overnight') ?? true;
+  await apiFetch('/guardrail/overnight',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!cur})});
+  cache('overnight', !cur);
+  await refresh();
+}
 
-  async function fetchStatus() {
-    const res = await fetch(`${API}/status`);
-    if (!res.ok) throw new Error(`/status ${res.status}`);
-    return res.json();
-  }
-
-  async function fetchQueue() {
-    const res = await fetch(`${API}/queue`);
-    if (!res.ok) throw new Error(`/queue ${res.status}`);
-    return res.json();
-  }
-
-  async function startScheduler() {
-    await fetch(`${API}/start`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
-    await refresh();
-  }
-
-  async function stopScheduler() {
-    await fetch(`${API}/stop`, { method: 'POST' });
-    await refresh();
-  }
-
-  async function addTask() {
-    const type = document.getElementById('task-type').value;
-    const rawPayload = document.getElementById('task-payload').value.trim();
-    let payload = {};
-    if (rawPayload) {
-      try { payload = JSON.parse(rawPayload); }
-      catch { setError('Invalid JSON in payload field'); return; }
-    }
-    const res = await fetch(`${API}/queue/add`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, payload }),
-    });
-    const body = await res.json();
-    if (!res.ok) { setError(body.error || 'Add failed'); return; }
+async function apiAddTask() {
+  const rawType = document.getElementById('task-type').value;
+  // Strip annotation suffix for actual type
+  const type = rawType.split(' ')[0];
+  const raw = document.getElementById('task-payload').value.trim();
+  let payload = {};
+  if (raw) { try { payload = JSON.parse(raw); } catch { setError('Invalid JSON payload'); return; } }
+  try {
+    await apiFetch('/queue/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,payload})});
     setError(null);
     document.getElementById('task-payload').value = '';
     await refresh();
+  } catch(e) { setError(e.message); }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderStatus(s) {
+  const badge = document.getElementById('status-badge');
+  badge.className = `badge badge--${s.isTimerActive ? 'running' : s.status}`;
+  badge.textContent = s.isTimerActive ? 'running' : s.status;
+
+  document.getElementById('queued-count').textContent  = s.queuedCount ?? 0;
+  document.getElementById('total-runs').textContent    = s.totalRuns ?? 0;
+  document.getElementById('last-run').textContent      = s.lastRunAt ? fmtTime(s.lastRunAt) + fmtMs(s.lastRunDurationMs) : '—';
+  document.getElementById('cnt-allowed').textContent   = s.allowedCount ?? 0;
+  document.getElementById('cnt-approval').textContent  = s.awaitingApprovalCount ?? 0;
+  document.getElementById('cnt-blocked').textContent   = s.blockedCount ?? 0;
+
+  const on = s.overnightMode;
+  cache('overnight', on);
+  document.getElementById('overnight-badge').textContent  = `Overnight: ${on ? 'ON' : 'OFF'}`;
+  document.getElementById('overnight-badge').style.color  = on ? 'var(--yellow)' : 'var(--muted)';
+  document.getElementById('btn-overnight').textContent    = `Overnight: ${on ? 'ON' : 'OFF'}`;
+
+  document.getElementById('btn-start').disabled = s.isTimerActive;
+  document.getElementById('btn-stop').disabled  = !s.isTimerActive;
+}
+
+function renderQueue(tasks) {
+  const tbody = document.getElementById('queue-body');
+  if (!tasks || tasks.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">No tasks in queue</td></tr>';
+    return;
   }
+  tbody.innerHTML = tasks.map(t => {
+    const riskCls    = t.risk     ? `risk-${t.risk}` : 'risk-low';
+    const riskLabel  = t.risk     ?? '—';
+    const decCls     = t.decision ?? 'blocked';
+    const decLabel   = t.decision ?? '—';
+    const statusCls  = t.status.replace(/_/g,'-');  // awaiting_approval → awaiting-approval for CSS fallback
+    const detail     = t.result != null
+      ? JSON.stringify(t.result)
+      : (t.blockReason ? `⚠ ${t.blockReason}` : (t.lastError ? `⚠ ${t.lastError}` : '—'));
+    return `<tr>
+      <td class="mono">${t.id}</td>
+      <td>${t.type}</td>
+      <td>${pill('risk-'+riskLabel, riskLabel)}</td>
+      <td>${pill(decCls, decLabel)}</td>
+      <td>${pill(t.status, t.status)}</td>
+      <td>${t.attempts}</td>
+      <td class="mono truncate" title="${detail}">${detail}</td>
+      <td class="mono">${fmtTime(t.updatedAt)}</td>
+    </tr>`;
+  }).join('');
+}
 
-  async function resetAll() {
-    if (!confirm('Reset all scheduler state and tasks?')) return;
-    await fetch(`${API}/queue/reset`, { method: 'POST' });
-    await refresh();
+// ── Main refresh ──────────────────────────────────────────────────────────────
+async function refresh() {
+  try {
+    const [status, queue] = await Promise.all([
+      apiFetch('/status'),
+      apiFetch('/queue'),
+    ]);
+    renderStatus(status);
+    renderQueue(queue.tasks);
+    cache('last_state', { status, tasks: queue.tasks });
+    setError(null);
+    document.getElementById('refresh-ts').textContent = 'refreshed ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    setError(`API unreachable: ${e.message}. Run: npm run scheduler`);
+    const cached = cache('last_state');
+    if (cached) { renderStatus(cached.status); renderQueue(cached.tasks); }
   }
+}
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+function toggleAddForm() { document.getElementById('add-form').classList.toggle('open'); }
 
-  function renderStatus(status) {
-    const badge = document.getElementById('status-badge');
-    badge.className = `badge badge--${status.status}`;
-    badge.textContent = status.isTimerActive ? 'running' : status.status;
+function updateHint() {
+  const t = document.getElementById('task-type').value.split(' ')[0];
+  const hints = { eval:'{"expression":"2+2"}', data:'{"file":"status.json"}', write:'{"path":"engine/data/out.json","content":"{}"}', repo:'{"branch":"main"}', transform:'{"input":"data.json"}' };
+  document.getElementById('payload-hint').textContent = 'Hint: ' + (hints[t] || '{}');
+}
 
-    document.getElementById('last-run').textContent =
-      status.lastRunAt ? `${fmtTime(status.lastRunAt)} (${fmtMs(status.lastRunDurationMs)})` : '—';
-    document.getElementById('queue-count').textContent = status.queuedCount ?? status.queueCount ?? 0;
-    document.getElementById('total-runs').textContent = status.totalRuns ?? 0;
-
-    const isRunning = status.isTimerActive;
-    document.getElementById('btn-start').disabled = isRunning;
-    document.getElementById('btn-stop').disabled = !isRunning;
-  }
-
-  function renderQueue(tasks) {
-    const tbody = document.getElementById('queue-body');
-    if (!tasks || tasks.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">No tasks in queue</td></tr>';
-      return;
-    }
-    tbody.innerHTML = tasks.map(t => {
-      const result = t.result != null ? JSON.stringify(t.result) : (t.lastError ? `⚠ ${t.lastError}` : '—');
-      return `<tr>
-        <td class="mono">${t.id}</td>
-        <td>${t.type}</td>
-        <td><span class="status-pill status-${t.status}">${t.status}</span></td>
-        <td>${t.attempts}</td>
-        <td class="mono" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${result}">${result}</td>
-        <td class="mono">${fmtTime(t.updatedAt)}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  // ── Main refresh ───────────────────────────────────────────────────────────
-
-  async function refresh() {
-    try {
-      const [status, queueData] = await Promise.all([fetchStatus(), fetchQueue()]);
-      renderStatus(status);
-      renderQueue(queueData.tasks);
-      cacheState({ status, tasks: queueData.tasks, fetchedAt: new Date().toISOString() });
-      setError(null);
-      document.getElementById('refresh-indicator').textContent = `refreshed ${new Date().toLocaleTimeString()}`;
-    } catch (e) {
-      setError(`API unreachable: ${e.message}. Start with: npx tsx engine/scheduler-server.ts`);
-      // Render cached state if available
-      const cached = loadCachedState();
-      if (cached) {
-        renderStatus(cached.status);
-        renderQueue(cached.tasks);
-      }
-    }
-  }
-
-  function toggleAddForm() {
-    const f = document.getElementById('add-form');
-    f.classList.toggle('open');
-  }
-
-  function updatePayloadHint() {
-    const type = document.getElementById('task-type').value;
-    const hints = {
-      eval: '{ "expression": "2 + 2" }',
-      data: '{ "file": "status.json" }',
-    };
-    document.getElementById('payload-hint').textContent = `Payload hint: ${hints[type] || '{}'}`;
-  }
-
-  // ── Init ───────────────────────────────────────────────────────────────────
-  refresh();
-  setInterval(refresh, 5_000);
+refresh();
+setInterval(refresh, 5000);
 </script>
 </body>
 </html>

@@ -2,13 +2,15 @@
 // Port: 4446
 //
 // Endpoints:
-//   GET  /status         → scheduler status + queue count + last run
-//   POST /start          → start scheduler (body: { intervalMs?: number })
-//   POST /stop           → stop scheduler
-//   GET  /queue          → list all tasks
-//   POST /queue/add      → enqueue a new task (body: { type, payload, id? })
-//   POST /queue/reset    → reset all state (testing only)
-//   GET  /health         → always 200
+//   GET  /health              → always 200
+//   GET  /status              → scheduler status + queue counts + last run
+//   POST /start               → start scheduler (body: { intervalMs?: number })
+//   POST /stop                → stop scheduler
+//   GET  /guardrail           → current guardrail policy + overnight mode
+//   POST /guardrail/overnight → toggle overnight mode (body: { enabled: boolean })
+//   GET  /queue               → list all tasks
+//   POST /queue/add           → enqueue a new task (body: { type, payload, id? })
+//   POST /queue/reset         → reset all state (testing only)
 
 import http from 'http';
 import { SCHEDULER_CONFIG } from './config';
@@ -19,6 +21,8 @@ import {
   addTask,
   listTasks,
   resetScheduler,
+  setOvernightMode,
+  getGuardrailPolicy,
 } from './scheduler';
 import { log } from './logger';
 import type { SchedulerTask } from './types';
@@ -78,11 +82,15 @@ const server = http.createServer(async (req, res) => {
         lastRunDurationMs: state.lastRunDurationMs,
         lastError: state.lastError,
         totalRuns: state.totalRuns,
+        overnightMode: state.overnightMode,
         queueCount: state.tasks.length,
         queuedCount: state.tasks.filter(t => t.status === 'queued').length,
         runningCount: state.tasks.filter(t => t.status === 'running').length,
         doneCount: state.tasks.filter(t => t.status === 'done').length,
         failedCount: state.tasks.filter(t => t.status === 'failed').length,
+        awaitingApprovalCount: state.tasks.filter(t => t.status === 'awaiting_approval').length,
+        allowedCount: state.tasks.filter(t => t.decision === 'allowed').length,
+        blockedCount: state.tasks.filter(t => t.decision === 'blocked').length,
       });
     }
 
@@ -99,6 +107,19 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true, status: getSchedulerStatus() });
     }
 
+    // ── GET /guardrail ────────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/guardrail') {
+      return json(res, 200, getGuardrailPolicy());
+    }
+
+    // ── POST /guardrail/overnight ─────────────────────────────────────────────
+    if (method === 'POST' && url === '/guardrail/overnight') {
+      const body = await readBody(req) as { enabled?: boolean };
+      if (typeof body.enabled !== 'boolean') return json(res, 400, { error: 'enabled must be boolean' });
+      setOvernightMode(body.enabled);
+      return json(res, 200, { ok: true, overnightMode: body.enabled });
+    }
+
     // ── GET /queue ───────────────────────────────────────────────────────────
     if (method === 'GET' && url === '/queue') {
       return json(res, 200, { tasks: listTasks() });
@@ -108,10 +129,7 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && url === '/queue/add') {
       const body = await readBody(req) as { type?: string; payload?: Record<string, unknown>; id?: string };
       if (!body.type) return json(res, 400, { error: 'Missing type' });
-      const allowed: SchedulerTask['type'][] = ['eval', 'data', 'notify', 'deploy'];
-      if (!allowed.includes(body.type as SchedulerTask['type'])) {
-        return json(res, 400, { error: `Unknown type: ${body.type}` });
-      }
+      // Accept any string type — guardrail will decide at pick-up
       const task = addTask(body.type as SchedulerTask['type'], body.payload ?? {}, body.id);
       return json(res, 201, { ok: true, task });
     }

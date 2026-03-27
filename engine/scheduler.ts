@@ -1,8 +1,8 @@
 // engine/scheduler.ts — autonomous task scheduler (SAFE MODE, Phase 1)
 //
 // Processes ONE queued task per interval cycle.
-// Only executes SAFE task types: 'eval' | 'data'.
-// Blocked types (deploy, notify, external) are rejected at pick-up.
+// Guardrail layer classifies each task (low/medium/high) and decides
+//   allowed | approval_required | blocked before any execution occurs.
 // No overlapping runs — isRunning gate enforced.
 // State persisted to engine/data/scheduler-state.json.
 
@@ -11,8 +11,8 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { SCHEDULER_CONFIG, ROOT } from './config';
 import { log, writeRunLog } from './logger';
+import { decide, GUARDRAIL_POLICY } from './guardrail';
 import type { SchedulerTask, SchedulerState, RunLog } from './types';
-import { SAFE_TASK_TYPES } from './types';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -25,6 +25,7 @@ function defaultState(): SchedulerState {
     lastError: null,
     totalRuns: 0,
     tasks: [],
+    overnightMode: GUARDRAIL_POLICY.overnightMode,
   };
 }
 
@@ -119,15 +120,37 @@ export function processQueue(): boolean {
     return false;
   }
 
-  // Safety gate: block non-safe types
-  if (!(SAFE_TASK_TYPES as readonly string[]).includes(task.type)) {
-    log('WARN', `Scheduler: BLOCKED task ${task.id} — type '${task.type}' not in safe list`);
-    task.status = 'failed';
-    task.lastError = `SAFE_MODE: task type '${task.type}' is blocked`;
-    task.updatedAt = now;
+  // ── Guardrail layer ────────────────────────────────────────────────────────
+  // Classify risk and decide execution before any processing occurs.
+  const policy = { ...GUARDRAIL_POLICY, overnightMode: state.overnightMode };
+  const guard = decide(task, policy);
+
+  // Stamp guardrail result onto the task (persisted for UI)
+  task.risk     = guard.risk;
+  task.decision = guard.decision;
+
+  if (guard.decision === 'blocked') {
+    log('WARN', `Guardrail: BLOCKED task ${task.id} (${guard.risk}) — ${guard.reason}`);
+    task.status      = 'failed';
+    task.blockReason = guard.reason;
+    task.updatedAt   = now;
+    state.lastRunAt  = now;
+    state.totalRuns += 1;
     saveState(state);
     return false;
   }
+
+  if (guard.decision === 'approval_required') {
+    log('INFO', `Guardrail: task ${task.id} (${guard.risk}) requires approval — ${guard.reason}`);
+    task.status      = 'awaiting_approval';
+    task.blockReason = guard.reason;
+    task.updatedAt   = now;
+    saveState(state);
+    return false;
+  }
+
+  // decision === 'allowed' — proceed
+  log('INFO', `Guardrail: ALLOWED task ${task.id} (risk=${guard.risk})`);
 
   _isRunning = true;
   const cycleStart = Date.now();
@@ -270,4 +293,18 @@ export function resetScheduler(): void {
   stopScheduler();
   saveState(defaultState());
   log('INFO', 'Scheduler: state reset');
+}
+
+/** Toggle overnight mode on/off. Affects risk escalation policy for medium tasks. */
+export function setOvernightMode(enabled: boolean): void {
+  const state = loadState();
+  state.overnightMode = enabled;
+  saveState(state);
+  log('INFO', `Scheduler: overnightMode=${enabled}`);
+}
+
+/** Return current guardrail policy (merged with live overnight mode flag). */
+export function getGuardrailPolicy() {
+  const state = loadState();
+  return { ...GUARDRAIL_POLICY, overnightMode: state.overnightMode };
 }
