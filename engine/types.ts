@@ -50,6 +50,38 @@ export interface ExecutionResult {
   durationMs: number;
 }
 
+// ── Scheduler types ──────────────────────────────────────────────────────────
+
+/** Task types the scheduler understands */
+export type SchedulerTaskType = 'eval' | 'data' | 'notify' | 'deploy';
+
+/** Safe types the scheduler will process in SAFE MODE */
+export const SAFE_TASK_TYPES: SchedulerTaskType[] = ['eval', 'data'];
+
+/** Scheduler-specific task (extends engine task with type + payload + updatedAt) */
+export interface SchedulerTask {
+  id: string;
+  type: SchedulerTaskType;
+  payload: Record<string, unknown>;
+  status: 'queued' | 'running' | 'done' | 'failed';
+  attempts: number;
+  createdAt: string;
+  updatedAt: string;
+  lastError?: string;
+  result?: unknown;
+}
+
+/** Persisted scheduler state */
+export interface SchedulerState {
+  status: 'idle' | 'running' | 'error';
+  intervalMs: number;
+  lastRunAt: string | null;
+  lastRunDurationMs: number | null;
+  lastError: string | null;
+  totalRuns: number;
+  tasks: SchedulerTask[];
+}
+
 export interface RunLog {
   runId: string;
   taskId: string;

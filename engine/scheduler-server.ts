@@ -1,0 +1,141 @@
+// engine/scheduler-server.ts — HTTP control API for the scheduler
+// Port: 4446
+//
+// Endpoints:
+//   GET  /status         → scheduler status + queue count + last run
+//   POST /start          → start scheduler (body: { intervalMs?: number })
+//   POST /stop           → stop scheduler
+//   GET  /queue          → list all tasks
+//   POST /queue/add      → enqueue a new task (body: { type, payload, id? })
+//   POST /queue/reset    → reset all state (testing only)
+//   GET  /health         → always 200
+
+import http from 'http';
+import { SCHEDULER_CONFIG } from './config';
+import {
+  startScheduler,
+  stopScheduler,
+  getSchedulerStatus,
+  addTask,
+  listTasks,
+  resetScheduler,
+} from './scheduler';
+import { log } from './logger';
+import type { SchedulerTask } from './types';
+
+const PORT = SCHEDULER_CONFIG.apiPort;
+
+function json(res: http.ServerResponse, status: number, body: unknown): void {
+  const payload = JSON.stringify(body, null, 2);
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  });
+  res.end(payload);
+}
+
+function readBody(req: http.IncomingMessage): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+    req.on('data', chunk => { raw += chunk; });
+    req.on('end', () => {
+      try { resolve(raw ? JSON.parse(raw) : {}); }
+      catch { reject(new Error('Invalid JSON')); }
+    });
+    req.on('error', reject);
+  });
+}
+
+const server = http.createServer(async (req, res) => {
+  const method = req.method ?? 'GET';
+  const url = req.url ?? '/';
+
+  // CORS preflight
+  if (method === 'OPTIONS') {
+    res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' });
+    res.end();
+    return;
+  }
+
+  log('INFO', `Scheduler API: ${method} ${url}`);
+
+  try {
+    // ── GET /health ──────────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/health') {
+      return json(res, 200, { ok: true });
+    }
+
+    // ── GET /status ──────────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/status') {
+      const state = getSchedulerStatus();
+      return json(res, 200, {
+        status: state.status,
+        isTimerActive: state.isTimerActive,
+        intervalMs: state.intervalMs,
+        lastRunAt: state.lastRunAt,
+        lastRunDurationMs: state.lastRunDurationMs,
+        lastError: state.lastError,
+        totalRuns: state.totalRuns,
+        queueCount: state.tasks.length,
+        queuedCount: state.tasks.filter(t => t.status === 'queued').length,
+        runningCount: state.tasks.filter(t => t.status === 'running').length,
+        doneCount: state.tasks.filter(t => t.status === 'done').length,
+        failedCount: state.tasks.filter(t => t.status === 'failed').length,
+      });
+    }
+
+    // ── POST /start ──────────────────────────────────────────────────────────
+    if (method === 'POST' && url === '/start') {
+      const body = await readBody(req) as { intervalMs?: number };
+      startScheduler(body.intervalMs);
+      return json(res, 200, { ok: true, status: getSchedulerStatus() });
+    }
+
+    // ── POST /stop ───────────────────────────────────────────────────────────
+    if (method === 'POST' && url === '/stop') {
+      stopScheduler();
+      return json(res, 200, { ok: true, status: getSchedulerStatus() });
+    }
+
+    // ── GET /queue ───────────────────────────────────────────────────────────
+    if (method === 'GET' && url === '/queue') {
+      return json(res, 200, { tasks: listTasks() });
+    }
+
+    // ── POST /queue/add ──────────────────────────────────────────────────────
+    if (method === 'POST' && url === '/queue/add') {
+      const body = await readBody(req) as { type?: string; payload?: Record<string, unknown>; id?: string };
+      if (!body.type) return json(res, 400, { error: 'Missing type' });
+      const allowed: SchedulerTask['type'][] = ['eval', 'data', 'notify', 'deploy'];
+      if (!allowed.includes(body.type as SchedulerTask['type'])) {
+        return json(res, 400, { error: `Unknown type: ${body.type}` });
+      }
+      const task = addTask(body.type as SchedulerTask['type'], body.payload ?? {}, body.id);
+      return json(res, 201, { ok: true, task });
+    }
+
+    // ── POST /queue/reset ────────────────────────────────────────────────────
+    if (method === 'POST' && url === '/queue/reset') {
+      resetScheduler();
+      return json(res, 200, { ok: true });
+    }
+
+    return json(res, 404, { error: 'Not found' });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    log('ERROR', `Scheduler API error: ${msg}`);
+    return json(res, 500, { error: msg });
+  }
+});
+
+server.listen(PORT, () => {
+  log('INFO', `Scheduler API listening on http://localhost:${PORT}`);
+  log('INFO', `Scheduler UI available at http://localhost:${PORT}/  (use scheduler-ui.html directly)`);
+});
+
+server.on('error', (err) => {
+  log('ERROR', `Scheduler API server error: ${err.message}`);
+  process.exit(1);
+});

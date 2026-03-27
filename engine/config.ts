@@ -29,3 +29,20 @@ export const ENGINE_CONFIG = {
   /** Vercel project name (set VERCEL_TOKEN + VERCEL_PROJECT_ID in env) */
   vercelProjectId: process.env.VERCEL_PROJECT_ID ?? '',
 } as const;
+
+export const SCHEDULER_CONFIG = {
+  /** Default scheduler interval in ms (30 seconds) */
+  intervalMs: 30_000,
+
+  /** Max attempts before a scheduler task is marked FAILED */
+  maxAttempts: 3,
+
+  /** Port for the scheduler HTTP API */
+  apiPort: 4446,
+
+  /** Persisted scheduler state file */
+  stateFile: path.join(ROOT, 'engine', 'data', 'scheduler-state.json'),
+
+  /** Safe task types the scheduler will execute (all others are blocked) */
+  safeTypes: ['eval', 'data'] as const,
+} as const;

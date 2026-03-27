@@ -20,7 +20,9 @@
     "check:vst": "curl -I http://localhost:3000 || true",
     "check:ai-lab": "curl -I http://localhost:4444 || true",
     "engine:run": "npx tsx engine/runner.ts",
-    "engine:once": "npx tsx engine/runner.ts --once"
+    "engine:once": "npx tsx engine/runner.ts --once",
+    "scheduler": "npx tsx engine/scheduler-server.ts",
+    "scheduler:test": "npx tsx engine/scheduler-test.ts"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

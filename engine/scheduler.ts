@@ -1,0 +1,273 @@
+// engine/scheduler.ts — autonomous task scheduler (SAFE MODE, Phase 1)
+//
+// Processes ONE queued task per interval cycle.
+// Only executes SAFE task types: 'eval' | 'data'.
+// Blocked types (deploy, notify, external) are rejected at pick-up.
+// No overlapping runs — isRunning gate enforced.
+// State persisted to engine/data/scheduler-state.json.
+
+import fs from 'fs';
+import path from 'path';
+import { randomUUID } from 'crypto';
+import { SCHEDULER_CONFIG, ROOT } from './config';
+import { log, writeRunLog } from './logger';
+import type { SchedulerTask, SchedulerState, RunLog } from './types';
+import { SAFE_TASK_TYPES } from './types';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+function defaultState(): SchedulerState {
+  return {
+    status: 'idle',
+    intervalMs: SCHEDULER_CONFIG.intervalMs,
+    lastRunAt: null,
+    lastRunDurationMs: null,
+    lastError: null,
+    totalRuns: 0,
+    tasks: [],
+  };
+}
+
+function loadState(): SchedulerState {
+  try {
+    if (fs.existsSync(SCHEDULER_CONFIG.stateFile)) {
+      return JSON.parse(fs.readFileSync(SCHEDULER_CONFIG.stateFile, 'utf8')) as SchedulerState;
+    }
+  } catch {
+    // corrupt state — reset
+  }
+  return defaultState();
+}
+
+function saveState(state: SchedulerState): void {
+  fs.mkdirSync(path.dirname(SCHEDULER_CONFIG.stateFile), { recursive: true });
+  fs.writeFileSync(SCHEDULER_CONFIG.stateFile, JSON.stringify(state, null, 2) + '\n', 'utf8');
+}
+
+// ── Safe executor ─────────────────────────────────────────────────────────────
+// Executes 'eval' and 'data' tasks locally with zero external side effects.
+
+function runSafeTask(task: SchedulerTask): { result: unknown; error?: string } {
+  switch (task.type) {
+    case 'eval': {
+      // Safe eval: only numeric/string expressions from payload.expression
+      const expr = String(task.payload.expression ?? '');
+      // Allowlist: digits, operators, spaces, parens, dots, Math.*
+      if (!/^[\d\s+\-*/().%,]+$/.test(expr) && !/^Math\.\w+/.test(expr)) {
+        return { result: null, error: `Unsafe expression rejected: ${expr}` };
+      }
+      try {
+        // eslint-disable-next-line no-new-func
+        const value = new Function(`return (${expr})`)() as unknown;
+        return { result: value };
+      } catch (e) {
+        return { result: null, error: `Eval error: ${String(e)}` };
+      }
+    }
+
+    case 'data': {
+      // Safe data: read a file from engine/data/ and return record count
+      const filename = String(task.payload.file ?? '');
+      // Security: only allow reads from engine/data/ directory
+      const safeDir = path.join(ROOT, 'engine', 'data');
+      const target = path.resolve(safeDir, filename);
+      if (!target.startsWith(safeDir)) {
+        return { result: null, error: `Path traversal blocked: ${filename}` };
+      }
+      if (!filename || !fs.existsSync(target)) {
+        return { result: { exists: false, file: filename } };
+      }
+      const content = fs.readFileSync(target, 'utf8').trim();
+      const lines = content ? content.split('\n').filter(Boolean) : [];
+      let records: unknown;
+      try {
+        records = JSON.parse(content);
+      } catch {
+        records = lines.length;
+      }
+      const count = Array.isArray(records) ? records.length : 1;
+      return { result: { file: filename, recordCount: count } };
+    }
+
+    default:
+      return { result: null, error: `Task type '${task.type}' not handled in safe executor` };
+  }
+}
+
+// ── Core scheduler ────────────────────────────────────────────────────────────
+
+let _timer: ReturnType<typeof setInterval> | null = null;
+let _isRunning = false;
+
+/** Process the next queued safe task. Returns true if a task was processed. */
+export function processQueue(): boolean {
+  if (_isRunning) {
+    log('INFO', 'Scheduler: cycle skipped — already running');
+    return false;
+  }
+
+  const state = loadState();
+  const now = new Date().toISOString();
+
+  // Find oldest queued task
+  const task = state.tasks.find(t => t.status === 'queued');
+  if (!task) {
+    log('INFO', 'Scheduler: no queued tasks');
+    state.lastRunAt = now;
+    state.totalRuns += 1;
+    saveState(state);
+    return false;
+  }
+
+  // Safety gate: block non-safe types
+  if (!(SAFE_TASK_TYPES as readonly string[]).includes(task.type)) {
+    log('WARN', `Scheduler: BLOCKED task ${task.id} — type '${task.type}' not in safe list`);
+    task.status = 'failed';
+    task.lastError = `SAFE_MODE: task type '${task.type}' is blocked`;
+    task.updatedAt = now;
+    saveState(state);
+    return false;
+  }
+
+  _isRunning = true;
+  const cycleStart = Date.now();
+  const runId = randomUUID();
+
+  log('INFO', `Scheduler: starting task ${task.id} (type=${task.type}, attempt=${task.attempts + 1}/${SCHEDULER_CONFIG.maxAttempts})`);
+
+  // Mark running
+  task.status = 'running';
+  task.attempts += 1;
+  task.updatedAt = now;
+  saveState(state);
+
+  // Execute
+  const { result, error } = runSafeTask(task);
+  const durationMs = Date.now() - cycleStart;
+
+  if (error) {
+    log('WARN', `Scheduler: task ${task.id} FAILED — ${error}`);
+    task.lastError = error;
+    if (task.attempts >= SCHEDULER_CONFIG.maxAttempts) {
+      task.status = 'failed';
+      log('ERROR', `Scheduler: task ${task.id} exhausted ${SCHEDULER_CONFIG.maxAttempts} attempts — marked FAILED`);
+    } else {
+      task.status = 'queued'; // retry next cycle
+      log('INFO', `Scheduler: task ${task.id} queued for retry (${task.attempts}/${SCHEDULER_CONFIG.maxAttempts})`);
+    }
+  } else {
+    task.status = 'done';
+    task.result = result;
+    log('INFO', `Scheduler: task ${task.id} DONE — result=${JSON.stringify(result)}`);
+  }
+
+  const completedAt = new Date().toISOString();
+  task.updatedAt = completedAt;
+
+  state.lastRunAt = completedAt;
+  state.lastRunDurationMs = durationMs;
+  state.totalRuns += 1;
+  state.lastError = error ?? null;
+  saveState(state);
+
+  // Write run log (reuses engine logger)
+  const runLog: RunLog = {
+    runId,
+    taskId: task.id,
+    lane: 'BACKYARD',
+    status: task.status === 'done' ? 'complete' : task.status === 'failed' ? 'failed' : 'pending',
+    startedAt: now,
+    completedAt,
+    durationMs,
+    filesChanged: [],
+    validationPassed: !error,
+    deployed: false,
+    error: error,
+    claudeSummary: error ? `FAIL: ${error}` : `${task.type} task result: ${JSON.stringify(result)}`,
+  };
+  writeRunLog(runLog);
+
+  _isRunning = false;
+  return true;
+}
+
+/** Start the scheduler. No-op if already started. */
+export function startScheduler(intervalMs?: number): void {
+  if (_timer !== null) {
+    log('INFO', 'Scheduler: already running');
+    return;
+  }
+
+  const state = loadState();
+  const interval = intervalMs ?? state.intervalMs ?? SCHEDULER_CONFIG.intervalMs;
+  state.status = 'running';
+  state.intervalMs = interval;
+  saveState(state);
+
+  log('INFO', `Scheduler: started (interval=${interval}ms)`);
+
+  // Run immediately, then on interval
+  processQueue();
+  _timer = setInterval(() => {
+    const s = loadState();
+    s.status = 'running';
+    saveState(s);
+    processQueue();
+  }, interval);
+}
+
+/** Stop the scheduler. No-op if already stopped. */
+export function stopScheduler(): void {
+  if (_timer === null) {
+    log('INFO', 'Scheduler: already stopped');
+    return;
+  }
+  clearInterval(_timer);
+  _timer = null;
+
+  const state = loadState();
+  state.status = 'idle';
+  saveState(state);
+
+  log('INFO', 'Scheduler: stopped');
+}
+
+/** Return current scheduler status (reads from persisted state). */
+export function getSchedulerStatus(): SchedulerState & { isTimerActive: boolean } {
+  return { ...loadState(), isTimerActive: _timer !== null };
+}
+
+/** Add a task to the scheduler queue. Returns the created task. */
+export function addTask(
+  type: SchedulerTask['type'],
+  payload: Record<string, unknown>,
+  id?: string
+): SchedulerTask {
+  const state = loadState();
+  const now = new Date().toISOString();
+  const task: SchedulerTask = {
+    id: id ?? `sched-${randomUUID().slice(0, 8)}`,
+    type,
+    payload,
+    status: 'queued',
+    attempts: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+  state.tasks.push(task);
+  saveState(state);
+  log('INFO', `Scheduler: enqueued task ${task.id} (type=${type})`);
+  return task;
+}
+
+/** Return all tasks in the scheduler queue. */
+export function listTasks(): SchedulerTask[] {
+  return loadState().tasks;
+}
+
+/** Reset the scheduler state (for testing). */
+export function resetScheduler(): void {
+  stopScheduler();
+  saveState(defaultState());
+  log('INFO', 'Scheduler: state reset');
+}

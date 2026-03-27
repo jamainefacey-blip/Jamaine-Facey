@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pain Engine — Scheduler Control</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0B0F19;
+    --surface: #121826;
+    --border: #1E2D42;
+    --gold: #C6A85A;
+    --text: #F5F7FA;
+    --muted: #7A8FA6;
+    --green: #3ECF8E;
+    --red: #E05252;
+    --yellow: #E0A952;
+    --radius: 8px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; padding: 24px; }
+  h1 { font-size: 18px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .card__label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 8px; }
+  .card__value { font-size: 22px; font-weight: 700; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+  .badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .badge--idle { color: var(--muted); background: rgba(122,143,166,.12); }
+  .badge--running { color: var(--green); background: rgba(62,207,142,.12); animation: pulse 1.4s ease-in-out infinite; }
+  .badge--error { color: var(--red); background: rgba(224,82,82,.12); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .controls { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  button { padding: 9px 18px; border-radius: var(--radius); border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .btn--start { background: var(--gold); color: #0B0F19; }
+  .btn--stop { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .btn--add { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn--reset { background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 12px; }
+  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 6px 10px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 10px; border-bottom: 1px solid rgba(30,45,66,.5); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+  .status-queued  { background: rgba(122,143,166,.15); color: var(--muted); }
+  .status-running { background: rgba(62,207,142,.15); color: var(--green); }
+  .status-done    { background: rgba(198,168,90,.15); color: var(--gold); }
+  .status-failed  { background: rgba(224,82,82,.15); color: var(--red); }
+  .mono { font-family: 'Fira Code', 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .add-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; display: none; }
+  .add-form.open { display: block; }
+  .form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  select, input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 7px 10px; font-size: 13px; }
+  select { min-width: 120px; }
+  input { flex: 1; min-width: 200px; }
+  .error-banner { background: rgba(224,82,82,.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 10px 14px; color: var(--red); font-size: 12px; margin-bottom: 16px; display: none; }
+  .error-banner.visible { display: block; }
+  .last-run { color: var(--muted); font-size: 12px; }
+  .empty { color: var(--muted); text-align: center; padding: 24px; font-size: 13px; }
+  .refresh-indicator { font-size: 11px; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<h1>Pain Engine — Scheduler Control</h1>
+<p class="subtitle">SAFE MODE &nbsp;·&nbsp; types: eval, data &nbsp;·&nbsp; API: <span id="api-url">http://localhost:4446</span></p>
+
+<div id="error-banner" class="error-banner"></div>
+
+<!-- Status row -->
+<div class="grid">
+  <div class="card">
+    <div class="card__label">Engine Status</div>
+    <div id="status-badge" class="badge badge--idle">idle</div>
+  </div>
+  <div class="card">
+    <div class="card__label">Last Run</div>
+    <div class="card__value last-run" id="last-run">—</div>
+  </div>
+  <div class="card">
+    <div class="card__label">Queue Count</div>
+    <div class="card__value" id="queue-count">0</div>
+  </div>
+  <div class="card">
+    <div class="card__label">Total Runs</div>
+    <div class="card__value" id="total-runs">0</div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn--start" id="btn-start" onclick="startScheduler()">Start Scheduler</button>
+  <button class="btn--stop" id="btn-stop" onclick="stopScheduler()" disabled>Stop Scheduler</button>
+  <button class="btn--add" onclick="toggleAddForm()">+ Add Task</button>
+  <button class="btn--reset" onclick="resetAll()">Reset State</button>
+  <span class="refresh-indicator" id="refresh-indicator">auto-refresh every 5s</span>
+</div>
+
+<!-- Add task form -->
+<div class="add-form" id="add-form">
+  <div class="section-title">Add Task</div>
+  <div class="form-row">
+    <select id="task-type" onchange="updatePayloadHint()">
+      <option value="eval">eval</option>
+      <option value="data">data</option>
+      <option value="notify" disabled>notify (blocked)</option>
+      <option value="deploy" disabled>deploy (blocked)</option>
+    </select>
+    <input type="text" id="task-payload" placeholder='{"expression": "2 + 2"}' />
+    <button class="btn--start" onclick="addTask()">Enqueue</button>
+  </div>
+  <div class="mono" id="payload-hint">Payload hint: { "expression": "2 + 2" }</div>
+</div>
+
+<!-- Queue table -->
+<div class="section-title">Task Queue</div>
+<div class="card" style="padding:0; overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Attempts</th>
+        <th>Result / Error</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody id="queue-body">
+      <tr><td colspan="6" class="empty">No tasks in queue</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const API = 'http://localhost:4446';
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  function setError(msg) {
+    const el = document.getElementById('error-banner');
+    if (msg) { el.textContent = msg; el.classList.add('visible'); }
+    else { el.classList.remove('visible'); }
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleTimeString() + ' ' + d.toLocaleDateString();
+  }
+
+  function fmtMs(ms) {
+    if (ms == null) return '—';
+    return ms < 1000 ? `${ms}ms` : `${(ms/1000).toFixed(1)}s`;
+  }
+
+  // ── State (localStorage cache) ─────────────────────────────────────────────
+
+  function cacheState(state) {
+    try { localStorage.setItem('scheduler_state', JSON.stringify(state)); } catch {}
+  }
+
+  function loadCachedState() {
+    try { return JSON.parse(localStorage.getItem('scheduler_state') || 'null'); } catch { return null; }
+  }
+
+  // ── API calls ──────────────────────────────────────────────────────────────
+
+  async function fetchStatus() {
+    const res = await fetch(`${API}/status`);
+    if (!res.ok) throw new Error(`/status ${res.status}`);
+    return res.json();
+  }
+
+  async function fetchQueue() {
+    const res = await fetch(`${API}/queue`);
+    if (!res.ok) throw new Error(`/queue ${res.status}`);
+    return res.json();
+  }
+
+  async function startScheduler() {
+    await fetch(`${API}/start`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    await refresh();
+  }
+
+  async function stopScheduler() {
+    await fetch(`${API}/stop`, { method: 'POST' });
+    await refresh();
+  }
+
+  async function addTask() {
+    const type = document.getElementById('task-type').value;
+    const rawPayload = document.getElementById('task-payload').value.trim();
+    let payload = {};
+    if (rawPayload) {
+      try { payload = JSON.parse(rawPayload); }
+      catch { setError('Invalid JSON in payload field'); return; }
+    }
+    const res = await fetch(`${API}/queue/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, payload }),
+    });
+    const body = await res.json();
+    if (!res.ok) { setError(body.error || 'Add failed'); return; }
+    setError(null);
+    document.getElementById('task-payload').value = '';
+    await refresh();
+  }
+
+  async function resetAll() {
+    if (!confirm('Reset all scheduler state and tasks?')) return;
+    await fetch(`${API}/queue/reset`, { method: 'POST' });
+    await refresh();
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  function renderStatus(status) {
+    const badge = document.getElementById('status-badge');
+    badge.className = `badge badge--${status.status}`;
+    badge.textContent = status.isTimerActive ? 'running' : status.status;
+
+    document.getElementById('last-run').textContent =
+      status.lastRunAt ? `${fmtTime(status.lastRunAt)} (${fmtMs(status.lastRunDurationMs)})` : '—';
+    document.getElementById('queue-count').textContent = status.queuedCount ?? status.queueCount ?? 0;
+    document.getElementById('total-runs').textContent = status.totalRuns ?? 0;
+
+    const isRunning = status.isTimerActive;
+    document.getElementById('btn-start').disabled = isRunning;
+    document.getElementById('btn-stop').disabled = !isRunning;
+  }
+
+  function renderQueue(tasks) {
+    const tbody = document.getElementById('queue-body');
+    if (!tasks || tasks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">No tasks in queue</td></tr>';
+      return;
+    }
+    tbody.innerHTML = tasks.map(t => {
+      const result = t.result != null ? JSON.stringify(t.result) : (t.lastError ? `⚠ ${t.lastError}` : '—');
+      return `<tr>
+        <td class="mono">${t.id}</td>
+        <td>${t.type}</td>
+        <td><span class="status-pill status-${t.status}">${t.status}</span></td>
+        <td>${t.attempts}</td>
+        <td class="mono" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${result}">${result}</td>
+        <td class="mono">${fmtTime(t.updatedAt)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Main refresh ───────────────────────────────────────────────────────────
+
+  async function refresh() {
+    try {
+      const [status, queueData] = await Promise.all([fetchStatus(), fetchQueue()]);
+      renderStatus(status);
+      renderQueue(queueData.tasks);
+      cacheState({ status, tasks: queueData.tasks, fetchedAt: new Date().toISOString() });
+      setError(null);
+      document.getElementById('refresh-indicator').textContent = `refreshed ${new Date().toLocaleTimeString()}`;
+    } catch (e) {
+      setError(`API unreachable: ${e.message}. Start with: npx tsx engine/scheduler-server.ts`);
+      // Render cached state if available
+      const cached = loadCachedState();
+      if (cached) {
+        renderStatus(cached.status);
+        renderQueue(cached.tasks);
+      }
+    }
+  }
+
+  function toggleAddForm() {
+    const f = document.getElementById('add-form');
+    f.classList.toggle('open');
+  }
+
+  function updatePayloadHint() {
+    const type = document.getElementById('task-type').value;
+    const hints = {
+      eval: '{ "expression": "2 + 2" }',
+      data: '{ "file": "status.json" }',
+    };
+    document.getElementById('payload-hint').textContent = `Payload hint: ${hints[type] || '{}'}`;
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  refresh();
+  setInterval(refresh, 5_000);
+</script>
+</body>
+</html>
