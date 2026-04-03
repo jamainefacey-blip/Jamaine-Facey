@@ -1,0 +1,8 @@
+node_modules/
+.next/
+database/ps-os.db
+database/ps-os.db-shm
+database/ps-os.db-wal
+dist/
+.env.local
+*.log
