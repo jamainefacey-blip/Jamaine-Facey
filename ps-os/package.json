@@ -7,7 +7,8 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "electron:dev": "concurrently \"node server.js\" \"wait-on http://localhost:3001 && electron .\"",
+    "electron:dev": "concurrently \"node server.js\" \"wait-on http://localhost:3001 && electron --no-sandbox .\"",
+    "electron:dev:headless": "concurrently \"node server.js\" \"wait-on http://localhost:3001 && xvfb-run -a electron --no-sandbox .\"",
     "electron:build": "next build && electron-builder"
   },
   "dependencies": {

@@ -1,6 +1,10 @@
 'use strict';
 
 const { app, BrowserWindow, shell } = require('electron');
+
+// Note: when running as root on Linux, launch with --no-sandbox flag:
+//   electron --no-sandbox .
+// The npm scripts (electron:dev, electron:dev:headless) include this flag automatically.
 const { spawn } = require('child_process');
 const path = require('path');
 const http = require('http');
