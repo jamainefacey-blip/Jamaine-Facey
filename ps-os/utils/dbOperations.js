@@ -88,6 +88,33 @@ function touchSystemState() {
   `).run();
 }
 
+function searchAssets(query, filters = {}) {
+  const db = getDb();
+  const like = `%${query}%`;
+
+  // EXISTS subquery guarantees no duplicate rows (vs LEFT JOIN)
+  let sql = `
+    SELECT * FROM assets
+    WHERE (
+      name    LIKE ? COLLATE NOCASE OR
+      purpose LIKE ? COLLATE NOCASE OR
+      EXISTS (
+        SELECT 1 FROM notes
+        WHERE notes.asset_id = assets.id
+          AND notes.content LIKE ? COLLATE NOCASE
+      )
+    )
+  `;
+  const params = [like, like, like];
+
+  if (filters.type)     { sql += ' AND type = ?';           params.push(filters.type); }
+  if (filters.status)   { sql += ' AND status = ?';         params.push(filters.status); }
+  if (filters.priority) { sql += ' AND priority = ?';       params.push(parseInt(filters.priority)); }
+
+  sql += ' ORDER BY last_updated DESC';
+  return db.prepare(sql).all(...params);
+}
+
 function getAllAssets(filters = {}) {
   const db = getDb();
   let query = 'SELECT * FROM assets WHERE 1=1';
@@ -208,6 +235,7 @@ module.exports = {
   createLink,
   logIngestion,
   getAllAssets,
+  searchAssets,
   getAssetById,
   updateAsset,
   deleteAsset,

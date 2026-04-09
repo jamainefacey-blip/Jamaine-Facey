@@ -25,28 +25,47 @@ export default function Sidebar({ assets, selectedId, onSelect, search, onSearch
         />
       </div>
 
-      <div style={styles.assetCount}>{assets.length} assets</div>
+      <div style={styles.assetCount}>
+        {search.trim()
+          ? `${assets.length} result${assets.length !== 1 ? 's' : ''}`
+          : `${assets.length} assets`}
+      </div>
 
-      {Object.entries(grouped).map(([type, items]) => {
-        if (!items.length) return null;
-        return (
-          <div key={type}>
-            <div style={styles.groupHeader}>
-              <span style={styles.groupIcon}>{TYPE_ICONS[type]}</span>
-              {type.toUpperCase()}S
-              <span style={styles.groupCount}>{items.length}</span>
+      {search.trim() ? (
+        // Flat list when searching (across types)
+        <div style={styles.scrollList}>
+          {assets.map(asset => (
+            <AssetRow
+              key={asset.id}
+              asset={asset}
+              selected={asset.id === selectedId}
+              onClick={() => onSelect(asset.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        // Grouped by type when browsing
+        Object.entries(grouped).map(([type, items]) => {
+          if (!items.length) return null;
+          return (
+            <div key={type}>
+              <div style={styles.groupHeader}>
+                <span style={styles.groupIcon}>{TYPE_ICONS[type]}</span>
+                {type.toUpperCase()}S
+                <span style={styles.groupCount}>{items.length}</span>
+              </div>
+              {items.map(asset => (
+                <AssetRow
+                  key={asset.id}
+                  asset={asset}
+                  selected={asset.id === selectedId}
+                  onClick={() => onSelect(asset.id)}
+                />
+              ))}
             </div>
-            {items.map(asset => (
-              <AssetRow
-                key={asset.id}
-                asset={asset}
-                selected={asset.id === selectedId}
-                onClick={() => onSelect(asset.id)}
-              />
-            ))}
-          </div>
-        );
-      })}
+          );
+        })
+      )}
 
       {assets.length === 0 && (
         <div style={styles.empty}>
@@ -113,6 +132,7 @@ const styles = {
     fontWeight: 700,
     letterSpacing: 1.5,
   },
+  scrollList: { overflowY: 'auto' },
   groupIcon: { fontSize: 12 },
   groupCount: {
     marginLeft: 'auto',

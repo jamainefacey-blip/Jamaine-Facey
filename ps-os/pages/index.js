@@ -14,18 +14,30 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [toast, setToast] = useState(null);
   const lastUpdatedRef = useRef(null);
+  const searchRef = useRef('');
+  const abortRef = useRef(null);
 
   const fetchAssets = useCallback(async () => {
+    // Cancel any in-flight request
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+
+    const q = searchRef.current.trim();
+    const params = new URLSearchParams();
+    if (q) params.set('query', q);
+    if (filters.type) params.set('type', filters.type);
+    if (filters.status) params.set('status', filters.status);
+    if (filters.priority) params.set('priority', filters.priority);
+
     try {
-      const params = new URLSearchParams();
-      if (filters.type) params.set('type', filters.type);
-      if (filters.status) params.set('status', filters.status);
-      if (filters.priority) params.set('priority', filters.priority);
-      const res = await fetch(`/api/assets?${params}`);
+      const res = await fetch(`/api/assets?${params}`, { signal });
       if (!res.ok) return;
       const { assets } = await res.json();
       setAssets(assets);
-    } catch {}
+    } catch (err) {
+      if (err.name !== 'AbortError') console.error('[search]', err.message);
+    }
   }, [filters]);
 
   const fetchAssetDetail = useCallback(async (id) => {
@@ -38,8 +50,13 @@ export default function Home() {
     } catch {}
   }, []);
 
-  // Initial load
-  useEffect(() => { fetchAssets(); }, [fetchAssets]);
+  // Debounced fetch — immediate for filter changes, 300ms delay for search input
+  useEffect(() => {
+    searchRef.current = search;
+    const delay = search.trim() ? 300 : 0;
+    const timer = setTimeout(fetchAssets, delay);
+    return () => clearTimeout(timer);
+  }, [search, fetchAssets]);
 
   // Load detail when selection changes
   useEffect(() => { fetchAssetDetail(selectedId); }, [selectedId, fetchAssetDetail]);
@@ -83,12 +100,6 @@ export default function Home() {
     setTimeout(() => setToast(null), 4000);
   }
 
-  // Client-side search filter
-  const filtered = assets.filter(a =>
-    !search || a.name.toLowerCase().includes(search.toLowerCase()) ||
-    (a.purpose || '').toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div style={styles.root}>
       <TopBar
@@ -99,7 +110,7 @@ export default function Home() {
       />
       <div style={styles.body}>
         <Sidebar
-          assets={filtered}
+          assets={assets}
           selectedId={selectedId}
           onSelect={id => setSelectedId(id === selectedId ? null : id)}
           search={search}
