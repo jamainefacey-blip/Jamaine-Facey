@@ -13,10 +13,15 @@ export default function AssetDetail({ asset, onUpdated, onDeleted }) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({});
+  const [notes, setNotes] = useState([]);
+  const [noteText, setNoteText] = useState('');
+  const [addingNote, setAddingNote] = useState(false);
 
   useEffect(() => {
     setEditing(false);
     setForm({});
+    setNotes(asset?.notes || []);
+    setNoteText('');
   }, [asset?.id]);
 
   if (!asset) {
@@ -29,6 +34,26 @@ export default function AssetDetail({ asset, onUpdated, onDeleted }) {
         </div>
       </div>
     );
+  }
+
+  async function handleAddNote() {
+    if (!noteText.trim()) return;
+    setAddingNote(true);
+    try {
+      const res = await fetch(`/api/assets/${asset.id}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: noteText.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add note');
+      setNotes(prev => [...prev, data.note]);
+      setNoteText('');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setAddingNote(false);
+    }
   }
 
   function startEdit() {
@@ -140,21 +165,36 @@ export default function AssetDetail({ asset, onUpdated, onDeleted }) {
       </div>
 
       {/* Notes */}
-      {asset.notes && asset.notes.length > 0 && (
-        <Section title="Notes" count={asset.notes.length}>
-          <div style={styles.notesList}>
-            {asset.notes.map(note => (
-              <div key={note.id} style={styles.note}>
-                <div style={styles.noteContent}>{note.content}</div>
-                <div style={styles.noteMeta}>
-                  {note.source && <span style={styles.noteSource}>{note.source}</span>}
-                  <span style={styles.noteDate}>{formatDate(note.created_at)}</span>
-                </div>
+      <Section title="Notes" count={notes.length}>
+        <div style={styles.notesList}>
+          {notes.map(note => (
+            <div key={note.id} style={styles.note}>
+              <div style={styles.noteContent}>{note.content}</div>
+              <div style={styles.noteMeta}>
+                {note.source && <span style={styles.noteSource}>{note.source}</span>}
+                <span style={styles.noteDate}>{formatDate(note.created_at)}</span>
               </div>
-            ))}
-          </div>
-        </Section>
-      )}
+            </div>
+          ))}
+        </div>
+        <div style={styles.noteInputRow}>
+          <textarea
+            style={styles.noteInput}
+            placeholder="Add a note…"
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAddNote(); }}
+            rows={2}
+          />
+          <button
+            style={{ ...styles.btn, ...styles.btnAddNote, ...(addingNote ? styles.btnDisabled : {}) }}
+            onClick={handleAddNote}
+            disabled={addingNote || !noteText.trim()}
+          >
+            {addingNote ? '…' : '+ Add'}
+          </button>
+        </div>
+      </Section>
 
       {/* Linked Assets */}
       {asset.links && asset.links.length > 0 && (
@@ -285,7 +325,14 @@ const styles = {
   sectionHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 },
   sectionTitle: { color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' },
   sectionCount: { background: '#1e1e3a', color: '#6b7280', borderRadius: 10, padding: '1px 7px', fontSize: 10 },
-  notesList: { display: 'flex', flexDirection: 'column', gap: 8 },
+  notesList: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 },
+  noteInputRow: { display: 'flex', gap: 8, alignItems: 'flex-start' },
+  noteInput: {
+    flex: 1, background: '#0d0d1a', border: '1px solid #1e1e3a',
+    color: '#e5e7eb', padding: '8px 10px', borderRadius: 6, fontSize: 13,
+    fontFamily: 'inherit', resize: 'none',
+  },
+  btnAddNote: { background: '#7c3aed', color: '#fff', whiteSpace: 'nowrap', padding: '8px 14px' },
   note: { background: '#111128', border: '1px solid #1e1e3a', borderRadius: 8, padding: '12px 14px' },
   noteContent: { color: '#e5e7eb', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' },
   noteMeta: { display: 'flex', gap: 12, marginTop: 6 },

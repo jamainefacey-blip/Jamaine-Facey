@@ -192,6 +192,17 @@ function deleteAsset(id) {
   return true;
 }
 
+function addNote(assetId, text, source = 'manual') {
+  const db = getDb();
+  const exists = db.prepare('SELECT id FROM assets WHERE id = ?').get(assetId);
+  if (!exists) return null;
+  const result = db.prepare(
+    "INSERT INTO notes (asset_id, content, source, created_at) VALUES (?, ?, ?, datetime('now'))"
+  ).run(assetId, text.trim(), source);
+  touchSystemState();
+  return db.prepare('SELECT * FROM notes WHERE id = ?').get(result.lastInsertRowid);
+}
+
 module.exports = {
   upsertAsset,
   createLink,
@@ -200,6 +211,7 @@ module.exports = {
   getAssetById,
   updateAsset,
   deleteAsset,
+  addNote,
   getIngestionLogs,
   getSystemState,
 };
