@@ -1,10 +1,24 @@
+import { useState, useEffect } from 'react';
+
 const TYPE_ICONS = { project: '◈', tool: '⚙', workflow: '⇌', system: '◉' };
 const STATUS_COLORS = {
   idea: '#4b5563', defined: '#2563eb', building: '#d97706',
   active: '#059669', monetising: '#7c3aed', exit: '#dc2626',
 };
+const VALID_STATUSES = ['idea', 'defined', 'building', 'active', 'monetising', 'exit'];
+const VALID_TYPES = ['project', 'tool', 'workflow', 'system'];
 
-export default function AssetDetail({ asset }) {
+export default function AssetDetail({ asset, onUpdated, onDeleted }) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [form, setForm] = useState({});
+
+  useEffect(() => {
+    setEditing(false);
+    setForm({});
+  }, [asset?.id]);
+
   if (!asset) {
     return (
       <div style={styles.empty}>
@@ -17,24 +31,111 @@ export default function AssetDetail({ asset }) {
     );
   }
 
+  function startEdit() {
+    setForm({
+      name: asset.name,
+      type: asset.type,
+      status: asset.status,
+      priority: asset.priority,
+      purpose: asset.purpose || '',
+    });
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setEditing(false);
+    setForm({});
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/assets/${asset.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      setEditing(false);
+      setForm({});
+      onUpdated && onUpdated(data.asset);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Delete "${asset.name}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/assets/${asset.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Delete failed');
+      }
+      onDeleted && onDeleted(asset.id);
+    } catch (err) {
+      alert(err.message);
+      setDeleting(false);
+    }
+  }
+
   const statusColor = STATUS_COLORS[asset.status] || '#4b5563';
 
   return (
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.headerTop}>
-          <span style={styles.typeIcon}>{TYPE_ICONS[asset.type] || '◈'}</span>
-          <h1 style={styles.name}>{asset.name}</h1>
-        </div>
-        <div style={styles.badges}>
-          <Badge text={asset.type} color="#1e3a5f" />
-          <Badge text={asset.status} color={statusColor} />
-          <PriorityBadge priority={asset.priority} />
-        </div>
-        {asset.purpose && <p style={styles.purpose}>{asset.purpose}</p>}
-        <div style={styles.timestamp}>
-          Last updated: {formatDate(asset.last_updated)}
+        {editing ? (
+          <EditForm form={form} setForm={setForm} />
+        ) : (
+          <>
+            <div style={styles.headerTop}>
+              <span style={styles.typeIcon}>{TYPE_ICONS[asset.type] || '◈'}</span>
+              <h1 style={styles.name}>{asset.name}</h1>
+            </div>
+            <div style={styles.badges}>
+              <Badge text={asset.type} color="#1e3a5f" />
+              <Badge text={asset.status} color={statusColor} />
+              <PriorityBadge priority={asset.priority} />
+            </div>
+            {asset.purpose && <p style={styles.purpose}>{asset.purpose}</p>}
+            <div style={styles.timestamp}>Last updated: {formatDate(asset.last_updated)}</div>
+          </>
+        )}
+
+        {/* Action buttons */}
+        <div style={styles.actions}>
+          {editing ? (
+            <>
+              <button
+                style={{ ...styles.btn, ...styles.btnSave, ...(saving ? styles.btnDisabled : {}) }}
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              <button style={{ ...styles.btn, ...styles.btnCancel }} onClick={cancelEdit}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button style={{ ...styles.btn, ...styles.btnEdit }} onClick={startEdit}>
+                Edit
+              </button>
+              <button
+                style={{ ...styles.btn, ...styles.btnDelete, ...(deleting ? styles.btnDisabled : {}) }}
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -75,6 +176,44 @@ export default function AssetDetail({ asset }) {
   );
 }
 
+function EditForm({ form, setForm }) {
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+  return (
+    <div style={styles.editForm}>
+      <div style={styles.editRow}>
+        <label style={styles.editLabel}>Name</label>
+        <input style={styles.editInput} value={form.name || ''} onChange={set('name')} />
+      </div>
+      <div style={styles.editRow}>
+        <label style={styles.editLabel}>Type</label>
+        <select style={styles.editSelect} value={form.type || ''} onChange={set('type')}>
+          {VALID_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+      <div style={styles.editRow}>
+        <label style={styles.editLabel}>Status</label>
+        <select style={styles.editSelect} value={form.status || ''} onChange={set('status')}>
+          {VALID_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </div>
+      <div style={styles.editRow}>
+        <label style={styles.editLabel}>Priority</label>
+        <select style={styles.editSelect} value={form.priority || 3} onChange={set('priority')}>
+          {[1,2,3,4,5].map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </div>
+      <div style={styles.editRow}>
+        <label style={styles.editLabel}>Purpose</label>
+        <textarea
+          style={{ ...styles.editInput, minHeight: 64, resize: 'vertical' }}
+          value={form.purpose || ''}
+          onChange={set('purpose')}
+        />
+      </div>
+    </div>
+  );
+}
+
 function Section({ title, count, children }) {
   return (
     <div style={styles.section}>
@@ -107,99 +246,55 @@ function PriorityBadge({ priority }) {
 
 function formatDate(ts) {
   if (!ts) return '—';
-  try {
-    return new Date(ts + 'Z').toLocaleString();
-  } catch {
-    return ts;
-  }
+  try { return new Date(ts + 'Z').toLocaleString(); } catch { return ts; }
 }
 
 const styles = {
-  container: {
-    flex: 1,
-    padding: 32,
-    overflowY: 'auto',
-    maxWidth: 860,
-  },
+  container: { flex: 1, padding: 32, overflowY: 'auto', maxWidth: 860 },
   empty: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#6b7280',
+    flex: 1, display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center', color: '#6b7280',
   },
-  header: {
-    borderBottom: '1px solid #1e1e3a',
-    paddingBottom: 20,
-    marginBottom: 24,
-  },
+  header: { borderBottom: '1px solid #1e1e3a', paddingBottom: 20, marginBottom: 24 },
   headerTop: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 },
   typeIcon: { fontSize: 28, color: '#7c3aed' },
   name: { margin: 0, fontSize: 28, fontWeight: 800, color: '#f9fafb' },
   badges: { display: 'flex', gap: 8, marginBottom: 12 },
-  badge: {
-    padding: '3px 10px',
-    borderRadius: 20,
-    fontSize: 12,
-    fontWeight: 600,
-    textTransform: 'capitalize',
-  },
-  purpose: {
-    color: '#9ca3af',
-    fontSize: 15,
-    lineHeight: 1.6,
-    margin: '8px 0 12px',
-  },
+  badge: { padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, textTransform: 'capitalize' },
+  purpose: { color: '#9ca3af', fontSize: 15, lineHeight: 1.6, margin: '8px 0 12px' },
   timestamp: { color: '#4b5563', fontSize: 11 },
+  actions: { display: 'flex', gap: 8, marginTop: 14 },
+  btn: { padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' },
+  btnEdit:    { background: '#1e1e3a', color: '#9ca3af' },
+  btnDelete:  { background: '#7f1d1d', color: '#fca5a5' },
+  btnSave:    { background: '#059669', color: '#fff' },
+  btnCancel:  { background: '#1e1e3a', color: '#9ca3af' },
+  btnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
+  editForm: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 4 },
+  editRow: { display: 'flex', alignItems: 'flex-start', gap: 12 },
+  editLabel: { color: '#6b7280', fontSize: 12, fontWeight: 600, width: 64, paddingTop: 7, flexShrink: 0 },
+  editInput: {
+    flex: 1, background: '#0d0d1a', border: '1px solid #1e1e3a',
+    color: '#e5e7eb', padding: '6px 10px', borderRadius: 6, fontSize: 13, fontFamily: 'inherit',
+  },
+  editSelect: {
+    flex: 1, background: '#0d0d1a', border: '1px solid #1e1e3a',
+    color: '#e5e7eb', padding: '6px 10px', borderRadius: 6, fontSize: 13, cursor: 'pointer',
+  },
   section: { marginBottom: 28 },
-  sectionHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    color: '#6b7280',
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  sectionCount: {
-    background: '#1e1e3a',
-    color: '#6b7280',
-    borderRadius: 10,
-    padding: '1px 7px',
-    fontSize: 10,
-  },
+  sectionHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sectionTitle: { color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' },
+  sectionCount: { background: '#1e1e3a', color: '#6b7280', borderRadius: 10, padding: '1px 7px', fontSize: 10 },
   notesList: { display: 'flex', flexDirection: 'column', gap: 8 },
-  note: {
-    background: '#111128',
-    border: '1px solid #1e1e3a',
-    borderRadius: 8,
-    padding: '12px 14px',
-  },
+  note: { background: '#111128', border: '1px solid #1e1e3a', borderRadius: 8, padding: '12px 14px' },
   noteContent: { color: '#e5e7eb', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' },
   noteMeta: { display: 'flex', gap: 12, marginTop: 6 },
-  noteSource: {
-    color: '#7c3aed',
-    fontSize: 11,
-    background: '#7c3aed11',
-    padding: '1px 6px',
-    borderRadius: 4,
-  },
+  noteSource: { color: '#7c3aed', fontSize: 11, background: '#7c3aed11', padding: '1px 6px', borderRadius: 4 },
   noteDate: { color: '#4b5563', fontSize: 11 },
   linkGrid: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   linkCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    background: '#111128',
-    border: '1px solid #1e1e3a',
-    borderRadius: 8,
-    padding: '8px 12px',
-    minWidth: 180,
+    display: 'flex', alignItems: 'center', gap: 8, background: '#111128',
+    border: '1px solid #1e1e3a', borderRadius: 8, padding: '8px 12px', minWidth: 180,
   },
   linkIcon: { fontSize: 18, color: '#7c3aed' },
   linkName: { color: '#e5e7eb', fontSize: 13, fontWeight: 500 },

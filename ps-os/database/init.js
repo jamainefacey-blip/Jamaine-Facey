@@ -8,7 +8,7 @@ let db;
 function getDb() {
   if (db) return db;
 
-  const dbPath = path.join(__dirname, 'ps-os.db');
+  const dbPath = path.join(process.cwd(), 'database', 'ps-os.db');
   db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');

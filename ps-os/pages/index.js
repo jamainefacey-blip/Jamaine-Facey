@@ -106,7 +106,20 @@ export default function Home() {
           onSearch={setSearch}
         />
         <main style={styles.main}>
-          <AssetDetail asset={selectedAsset} />
+          <AssetDetail
+            asset={selectedAsset}
+            onUpdated={(updated) => {
+              setSelectedAsset(updated);
+              setAssets(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
+              showToast('Asset updated');
+            }}
+            onDeleted={(id) => {
+              setSelectedId(null);
+              setSelectedAsset(null);
+              setAssets(prev => prev.filter(a => a.id !== id));
+              showToast('Asset deleted');
+            }}
+          />
         </main>
       </div>
 

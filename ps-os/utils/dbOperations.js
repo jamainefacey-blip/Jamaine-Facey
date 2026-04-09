@@ -141,12 +141,65 @@ function getSystemState() {
   return row ? row.value : null;
 }
 
+function updateAsset(id, fields) {
+  const db = getDb();
+  const validTypes = ['project', 'tool', 'workflow', 'system'];
+  const validStatuses = ['idea', 'defined', 'building', 'active', 'monetising', 'exit'];
+
+  const sets = [];
+  const params = [];
+
+  if (fields.name !== undefined) {
+    if (!fields.name.trim()) throw new Error('name cannot be empty');
+    sets.push('name = ?'); params.push(fields.name.trim());
+  }
+  if (fields.type !== undefined) {
+    if (!validTypes.includes(fields.type)) throw new Error('invalid type');
+    sets.push('type = ?'); params.push(fields.type);
+  }
+  if (fields.status !== undefined) {
+    if (!validStatuses.includes(fields.status)) throw new Error('invalid status');
+    sets.push('status = ?'); params.push(fields.status);
+  }
+  if (fields.priority !== undefined) {
+    const p = parseInt(fields.priority);
+    if (isNaN(p) || p < 1 || p > 5) throw new Error('priority must be 1–5');
+    sets.push('priority = ?'); params.push(p);
+  }
+  if (fields.purpose !== undefined) {
+    sets.push('purpose = ?'); params.push(fields.purpose);
+  }
+
+  if (sets.length === 0) throw new Error('no fields to update');
+
+  sets.push("last_updated = datetime('now')");
+  params.push(id);
+
+  const result = db.prepare(
+    `UPDATE assets SET ${sets.join(', ')} WHERE id = ?`
+  ).run(...params);
+
+  if (result.changes === 0) return null;
+  touchSystemState();
+  return getAssetById(id);
+}
+
+function deleteAsset(id) {
+  const db = getDb();
+  const result = db.prepare('DELETE FROM assets WHERE id = ?').run(id);
+  if (result.changes === 0) return false;
+  touchSystemState();
+  return true;
+}
+
 module.exports = {
   upsertAsset,
   createLink,
   logIngestion,
   getAllAssets,
   getAssetById,
+  updateAsset,
+  deleteAsset,
   getIngestionLogs,
   getSystemState,
 };
