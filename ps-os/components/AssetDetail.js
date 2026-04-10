@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { parseCommand, executeCommand, listCommands } from '../utils/commandRouter';
 
 const TYPE_ICONS = { project: '◈', tool: '⚙', workflow: '⇌', system: '◉' };
 const STATUS_COLORS = {
@@ -15,14 +16,18 @@ export default function AssetDetail({ asset, onUpdated, onDeleted }) {
   const [form, setForm] = useState({});
   const [notes, setNotes] = useState([]);
   const [noteText, setNoteText] = useState('');
-  const [addingNote, setAddingNote] = useState(false);
+  const [executing, setExecuting] = useState(false);
+  const [cmdFeedback, setCmdFeedback] = useState(null); // { ok, message }
 
   useEffect(() => {
     setEditing(false);
     setForm({});
     setNotes(asset?.notes || []);
     setNoteText('');
+    setCmdFeedback(null);
   }, [asset?.id]);
+
+  const isCommand = noteText.trim().startsWith('/');
 
   if (!asset) {
     return (
@@ -36,23 +41,67 @@ export default function AssetDetail({ asset, onUpdated, onDeleted }) {
     );
   }
 
-  async function handleAddNote() {
-    if (!noteText.trim()) return;
-    setAddingNote(true);
+  function feedback(ok, message) {
+    setCmdFeedback({ ok, message });
+    if (ok) setTimeout(() => setCmdFeedback(null), 3000);
+  }
+
+  async function handleSubmit() {
+    const raw = noteText.trim();
+    if (!raw) return;
+    setCmdFeedback(null);
+    setExecuting(true);
+
     try {
-      const res = await fetch(`/api/assets/${asset.id}/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: noteText.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to add note');
-      setNotes(prev => [...prev, data.note]);
-      setNoteText('');
+      if (raw.startsWith('/')) {
+        // — COMMAND PATH —
+        let result;
+        try {
+          result = executeCommand(raw);
+        } catch (err) {
+          feedback(false, err.message);
+          return;
+        }
+
+        if (result.type === 'patch') {
+          const res = await fetch(`/api/assets/${asset.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result.data),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Command failed');
+          onUpdated && onUpdated(data.asset);
+          setNoteText('');
+          feedback(true, result.message);
+        } else if (result.type === 'note') {
+          const res = await fetch(`/api/assets/${asset.id}/notes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: result.text }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Command failed');
+          setNotes(prev => [...prev, data.note]);
+          setNoteText('');
+          feedback(true, result.message);
+        }
+      } else {
+        // — NOTE PATH —
+        const res = await fetch(`/api/assets/${asset.id}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: raw }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to add note');
+        setNotes(prev => [...prev, data.note]);
+        setNoteText('');
+      }
     } catch (err) {
-      alert(err.message);
+      feedback(false, err.message);
     } finally {
-      setAddingNote(false);
+      setExecuting(false);
     }
   }
 
@@ -179,21 +228,34 @@ export default function AssetDetail({ asset, onUpdated, onDeleted }) {
         </div>
         <div style={styles.noteInputRow}>
           <textarea
-            style={styles.noteInput}
-            placeholder="Add a note…"
+            style={{
+              ...styles.noteInput,
+              ...(isCommand ? styles.noteInputCommand : {}),
+            }}
+            placeholder="Add a note… or /command"
             value={noteText}
-            onChange={e => setNoteText(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAddNote(); }}
+            onChange={e => { setNoteText(e.target.value); setCmdFeedback(null); }}
+            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
             rows={2}
           />
           <button
-            style={{ ...styles.btn, ...styles.btnAddNote, ...(addingNote ? styles.btnDisabled : {}) }}
-            onClick={handleAddNote}
-            disabled={addingNote || !noteText.trim()}
+            style={{ ...styles.btn, ...styles.btnAddNote, ...(executing ? styles.btnDisabled : {}) }}
+            onClick={handleSubmit}
+            disabled={executing || !noteText.trim()}
           >
-            {addingNote ? '…' : '+ Add'}
+            {executing ? '…' : isCommand ? '⚡ Run' : '+ Add'}
           </button>
         </div>
+
+        {isCommand && !cmdFeedback && (
+          <CommandHint input={noteText} />
+        )}
+
+        {cmdFeedback && (
+          <div style={{ ...styles.cmdFeedback, ...(cmdFeedback.ok ? styles.cmdOk : styles.cmdErr) }}>
+            {cmdFeedback.ok ? '✓ ' : '✗ '}{cmdFeedback.message}
+          </div>
+        )}
       </Section>
 
       {/* Linked Assets */}
@@ -250,6 +312,30 @@ function EditForm({ form, setForm }) {
           onChange={set('purpose')}
         />
       </div>
+    </div>
+  );
+}
+
+function CommandHint({ input }) {
+  const trimmed = input.trim().slice(1); // remove leading /
+  const [cmd] = trimmed.split(/\s+/);
+  const all = listCommands();
+  const match = all.find(c => c.name === (cmd || '').toLowerCase());
+
+  if (match) {
+    return (
+      <div style={styles.cmdHint}>
+        <span style={styles.cmdHintName}>/{match.name}</span>
+        <span style={styles.cmdHintDesc}>{match.description}</span>
+      </div>
+    );
+  }
+  // Show available commands if partial/unknown
+  return (
+    <div style={styles.cmdHint}>
+      {all.map(c => (
+        <span key={c.name} style={styles.cmdChip}>/{c.name}</span>
+      ))}
     </div>
   );
 }
@@ -346,4 +432,26 @@ const styles = {
   linkIcon: { fontSize: 18, color: '#7c3aed' },
   linkName: { color: '#e5e7eb', fontSize: 13, fontWeight: 500 },
   linkType: { color: '#4b5563', fontSize: 11, textTransform: 'capitalize' },
+  noteInputCommand: {
+    borderColor: '#7c3aed',
+    background: '#0d0d22',
+    color: '#c4b5fd',
+    fontFamily: 'monospace',
+  },
+  cmdFeedback: {
+    marginTop: 6, padding: '5px 10px', borderRadius: 6,
+    fontSize: 12, fontWeight: 600, whiteSpace: 'pre-wrap',
+  },
+  cmdOk:  { background: '#05966922', color: '#34d399', border: '1px solid #05966944' },
+  cmdErr: { background: '#dc262622', color: '#f87171', border: '1px solid #dc262644' },
+  cmdHint: {
+    display: 'flex', flexWrap: 'wrap', gap: 6,
+    marginTop: 4, padding: '4px 2px',
+  },
+  cmdHintName: { color: '#a78bfa', fontSize: 12, fontWeight: 700, fontFamily: 'monospace', marginRight: 8 },
+  cmdHintDesc: { color: '#6b7280', fontSize: 12 },
+  cmdChip: {
+    background: '#1e1e3a', color: '#7c3aed', borderRadius: 4,
+    padding: '2px 7px', fontSize: 11, fontFamily: 'monospace',
+  },
 };
