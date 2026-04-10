@@ -1,5 +1,6 @@
 'use strict';
 
+import { normaliseAssetPayload } from './assetNormaliser';
 import { getAllAssets, getAssetById, upsertAsset, addNote, createLink } from './dbOperations';
 
 const MAX_ACTIONS = 5;
@@ -27,7 +28,7 @@ const DB_HANDLERS = {
 
 // Explicit write map — no dynamic dispatch, no eval
 const DB_WRITE_MAP = {
-  'db:upsertAsset': (p) => ({ id: upsertAsset(p || {}, 'execution-engine') }),
+  'db:upsertAsset': (p) => { const safe = normaliseAssetPayload(p); return { id: upsertAsset(safe, 'execution-engine') }; },
   'db:addNote':     (p) => addNote(p?.assetId, String(p?.text || ''), p?.source || 'execution-engine'),
   'db:linkAssets':  (p) => { createLink(p?.assetId, p?.linkedAssetId); return { linked: true }; },
 };
