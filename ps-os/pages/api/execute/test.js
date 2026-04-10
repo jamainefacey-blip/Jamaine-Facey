@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
 
-  const { input } = body || {};
+  const { input, allowWrite = false } = body || {};
   if (!input || typeof input !== 'string' || !input.trim()) {
     return res.status(400).json({ error: 'input required' });
   }
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
   const { actions } = routeCommand({ intent: query, skills: skillTokens });
 
   // Step 3: Execute actions
-  const execution = await executeActions(actions);
+  const execution = await executeActions(actions, { allowWrite: allowWrite === true });
 
   return res.status(200).json({
     query,
