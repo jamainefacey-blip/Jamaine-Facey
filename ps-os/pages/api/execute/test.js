@@ -35,8 +35,8 @@ export default async function handler(req, res) {
   const skillTokens = skills.flatMap(s => [s.name, ...s.patterns]);
   const { actions } = routeCommand({ intent: query, skills: skillTokens });
 
-  // Step 3: Simulate execution
-  const execution = executeActions(actions);
+  // Step 3: Execute actions
+  const execution = await executeActions(actions);
 
   return res.status(200).json({
     query,
