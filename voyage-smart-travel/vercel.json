@@ -1,6 +1,12 @@
 {
   "framework": null,
+  "functions": {
+    "api/ava-evaluate.js": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/ava-evaluate", "destination": "/api/ava-evaluate" },
+    { "source": "/(.*)",             "destination": "/index.html" }
   ]
 }
