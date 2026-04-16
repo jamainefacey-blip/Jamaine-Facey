@@ -1,11 +1,13 @@
-import { storeMemory, trackUsage } from '../../utils/usageTracker';
+import { storeMemory, trackUsage, getUsage } from '../../utils/usageTracker';
+
+const USAGE_LIMIT = 5;
 
 const SYSTEM_PROMPT = `You are AVA, the intelligence layer of Pain System OS.
 Respond with ONLY valid JSON — no markdown, no text outside the JSON object.
 Required fields:
   spoken     (string)  — conversational reply
   written    (string)  — structured/formatted reply
-  intent     (string)  — detected user intent, e.g. "create_asset", "search", "status"
+  intent     (string)  — detected user intent: prefer "build_request" when user describes a business problem or asks to build something
   confidence (number)  — 0.0 to 1.0
   panel      (object)  — UI panel hint, e.g. { "type": "asset", "action": "open" }
   actions    (array)   — list of suggested system actions`;
@@ -23,6 +25,24 @@ export default async function handler(req, res) {
 
   const sid   = String(sessionId || 'default').trim().slice(0, 64);
   const query = input.trim().slice(0, 2000);
+
+  // Usage limit enforcement
+  try {
+    const usageCount = getUsage(sid).length;
+    if (usageCount >= USAGE_LIMIT) {
+      return res.status(200).json({
+        preview: {
+          spoken:     'You have reached your free usage limit.',
+          written:    'Upgrade to continue using AVA.',
+          intent:     'paywall',
+          confidence: 1,
+        },
+        full:            null,
+        paywallRequired: true,
+        usageCount,
+      });
+    }
+  } catch {}
 
   let raw, usage;
   try {
@@ -75,5 +95,24 @@ export default async function handler(req, res) {
     trackUsage(sid, '/api/ava', tokens);
   } catch {}
 
-  return res.status(200).json(result);
+  // Intent filter: non-build intents get a redirect hint
+  if (result.intent !== 'build_request') {
+    result.redirectHint = "I'll build that for you → go to /build";
+  }
+
+  // Split preview / full
+  const writtenLines = result.written.split('\n');
+  const previewWritten = writtenLines.slice(0, 3).join('\n');
+
+  return res.status(200).json({
+    preview: {
+      spoken:     result.spoken,
+      written:    previewWritten,
+      intent:     result.intent,
+      confidence: result.confidence,
+      ...(result.redirectHint ? { redirectHint: result.redirectHint } : {}),
+    },
+    full:            result,
+    paywallRequired: false,
+  });
 }
