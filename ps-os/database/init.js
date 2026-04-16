@@ -53,6 +53,22 @@ function getDb() {
     );
 
     INSERT OR IGNORE INTO system_state(key, value) VALUES ('last_updated', datetime('now'));
+
+    CREATE TABLE IF NOT EXISTS ava_memory (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT    NOT NULL,
+      input      TEXT    NOT NULL,
+      response   TEXT    NOT NULL,
+      created_at TEXT    DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS usage_logs (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT    NOT NULL,
+      endpoint   TEXT    NOT NULL,
+      tokens     INTEGER DEFAULT 0,
+      created_at TEXT    DEFAULT (datetime('now'))
+    );
   `);
 
   return db;
