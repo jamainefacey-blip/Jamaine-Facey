@@ -1,13 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+
+const SESSION_ID   = 'build-session';
+const STORAGE_KEY  = `ava_full_${SESSION_ID}`;
 
 export default function Build() {
-  const [input,    setInput]    = useState('');
-  const [preview,  setPreview]  = useState(null);
-  const [full,     setFull]     = useState(null);
-  const [unlocked, setUnlocked] = useState(false);
-  const [paywall,  setPaywall]  = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState(null);
+  const router = useRouter();
+
+  const [input,       setInput]       = useState('');
+  const [preview,     setPreview]     = useState(null);
+  const [full,        setFull]        = useState(null);
+  const [unlocked,    setUnlocked]    = useState(false);
+  const [paywall,     setPaywall]     = useState(false);
+  const [loading,     setLoading]     = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const [error,       setError]       = useState(null);
+
+  // On mount: check ?unlocked=true from Stripe success redirect
+  useEffect(() => {
+    if (router.query.unlocked === 'true') {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const { preview: p, full: f } = JSON.parse(stored);
+          setPreview(p);
+          setFull(f);
+          setUnlocked(true);
+        }
+      } catch {}
+      // Clean URL
+      router.replace('/build', undefined, { shallow: true });
+    }
+  }, [router.query.unlocked]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -23,7 +47,7 @@ export default function Build() {
       const res  = await fetch('/api/ava', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ input: input.trim(), sessionId: 'build-session' }),
+        body:    JSON.stringify({ input: input.trim(), sessionId: SESSION_ID }),
       });
       const data = await res.json();
 
@@ -35,10 +59,33 @@ export default function Build() {
 
       setPreview(data.preview);
       setFull(data.full);
+      // Persist for post-payment restore
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ preview: data.preview, full: data.full })); } catch {}
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleUnlock() {
+    setRedirecting(true);
+    setError(null);
+    try {
+      const res  = await fetch('/api/create-checkout-session', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ sessionId: SESSION_ID }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'No checkout URL returned');
+      }
+    } catch (err) {
+      setError(err.message);
+      setRedirecting(false);
     }
   }
 
@@ -76,15 +123,13 @@ export default function Build() {
           <h2 style={s.h2}>Preview</h2>
           <p style={s.spoken}>{preview.spoken}</p>
           <pre style={s.pre}>{preview.written}</pre>
-          {preview.redirectHint && (
-            <p style={s.hint}>{preview.redirectHint}</p>
-          )}
+          {preview.redirectHint && <p style={s.hint}>{preview.redirectHint}</p>}
 
           {!unlocked ? (
             <div style={s.lock}>
               <span>Full output is locked</span>
-              <button style={s.unlockBtn} onClick={() => setUnlocked(true)}>
-                Unlock Full System
+              <button style={s.unlockBtn} onClick={handleUnlock} disabled={redirecting}>
+                {redirecting ? 'Redirecting...' : 'Unlock Full System — £29'}
               </button>
             </div>
           ) : (

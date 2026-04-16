@@ -19,6 +19,7 @@
     "pdf-parse": "^1.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "stripe": "^22.0.2",
     "tesseract.js": "^5.1.0"
   },
   "devDependencies": {
@@ -29,7 +30,15 @@
   "build": {
     "appId": "com.painsystem.os",
     "productName": "Pain System OS",
-    "directories": { "output": "dist" },
-    "files": ["electron/**/*", ".next/**/*", "database/**/*", "utils/**/*", "node_modules/**/*"]
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/**/*",
+      "database/**/*",
+      "utils/**/*",
+      "node_modules/**/*"
+    ]
   }
 }
