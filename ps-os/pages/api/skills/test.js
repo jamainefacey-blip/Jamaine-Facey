@@ -35,15 +35,27 @@ function insertSkillNote(hubId, skill) {
   ).run(hubId, text);
 }
 
+const MOCK_REPOS = [
+  { name: 'mock/command-router',   description: 'CLI command routing and dispatch library', url: 'https://github.com/mock/command-router',   stars: 42, owner: 'mock', repoName: 'command-router',   readmeSummary: null },
+  { name: 'mock/pipeline-engine',  description: 'Workflow pipeline automation framework',   url: 'https://github.com/mock/pipeline-engine',  stars: 18, owner: 'mock', repoName: 'pipeline-engine',  readmeSummary: null },
+  { name: 'mock/schema-validator', description: 'Schema validation and data sanitisation',  url: 'https://github.com/mock/schema-validator', stars: 31, owner: 'mock', repoName: 'schema-validator', readmeSummary: null },
+];
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { query, store } = req.query;
+  const { query, store, mock } = req.query;
   if (!query || !query.trim()) {
     return res.status(400).json({ error: 'query parameter required' });
   }
 
-  const { results, rateLimited, error } = await searchGitHub(query.trim());
+  let results, rateLimited = false, error;
+
+  if (mock === '1') {
+    results = MOCK_REPOS;
+  } else {
+    ({ results, rateLimited, error } = await searchGitHub(query.trim()));
+  }
 
   const skills = [];
   for (const raw of results) {
@@ -59,10 +71,11 @@ export default async function handler(req, res) {
     count:       skills.length,
     skills,
     rateLimited: rateLimited || false,
+    mock:        mock === '1',
   };
   if (error) response.error = error;
 
-  if (store === '1' && skills.length > 0) {
+  if (store === '1') {
     try {
       const hubId       = findOrCreateHub();
       const existingUrls = getExistingSourceUrls(hubId);

@@ -74,4 +74,18 @@ function getDb() {
   return db;
 }
 
+// Seed required system assets
+function seedSystemAssets() {
+  const db = getDb();
+  const hub = db.prepare("SELECT id FROM assets WHERE name = 'Skills Hub' LIMIT 1").get();
+  if (!hub) {
+    db.prepare(`
+      INSERT INTO assets (name, type, purpose, status, priority, last_updated)
+      VALUES ('Skills Hub', 'system', 'Extracted skill repository', 'active', 3, datetime('now'))
+    `).run();
+  }
+}
+
+seedSystemAssets();
+
 module.exports = { getDb };
