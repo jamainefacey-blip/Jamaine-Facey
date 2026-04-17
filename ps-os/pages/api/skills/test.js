@@ -35,11 +35,14 @@ function insertSkillNote(hubId, skill) {
   ).run(hubId, text);
 }
 
-const MOCK_REPOS = [
-  { name: 'mock/command-router',   description: 'CLI command routing and dispatch library', url: 'https://github.com/mock/command-router',   stars: 42, owner: 'mock', repoName: 'command-router',   readmeSummary: null },
-  { name: 'mock/pipeline-engine',  description: 'Workflow pipeline automation framework',   url: 'https://github.com/mock/pipeline-engine',  stars: 18, owner: 'mock', repoName: 'pipeline-engine',  readmeSummary: null },
-  { name: 'mock/schema-validator', description: 'Schema validation and data sanitisation',  url: 'https://github.com/mock/schema-validator', stars: 31, owner: 'mock', repoName: 'schema-validator', readmeSummary: null },
-];
+function getMockRepos(query) {
+  const slug = encodeURIComponent(query);
+  return [
+    { name: 'mock/command-router',   description: 'CLI command routing and dispatch library', url: `https://github.com/mock/command-router?q=${slug}`,   stars: 42, owner: 'mock', repoName: 'command-router',   readmeSummary: null },
+    { name: 'mock/pipeline-engine',  description: 'Workflow pipeline automation framework',   url: `https://github.com/mock/pipeline-engine?q=${slug}`,  stars: 18, owner: 'mock', repoName: 'pipeline-engine',  readmeSummary: null },
+    { name: 'mock/schema-validator', description: 'Schema validation and data sanitisation',  url: `https://github.com/mock/schema-validator?q=${slug}`, stars: 31, owner: 'mock', repoName: 'schema-validator', readmeSummary: null },
+  ];
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -52,7 +55,7 @@ export default async function handler(req, res) {
   let results, rateLimited = false, error;
 
   if (mock === '1') {
-    results = MOCK_REPOS;
+    results = getMockRepos(query.trim());
   } else {
     ({ results, rateLimited, error } = await searchGitHub(query.trim()));
   }
