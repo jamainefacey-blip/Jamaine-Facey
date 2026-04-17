@@ -1,45 +1,47 @@
 {
   "runtime_status": {
-    "ava_api":    "broken",
-    "memory_api": "running",
-    "skills_api": "running",
-    "build_flow": "running",
-    "stripe":     "broken"
+    "status_api":   "running",
+    "skills_api":   "running",
+    "memory_api":   "running",
+    "assets_api":   "running",
+    "build_page":   "running",
+    "ava_api":      "broken",
+    "stripe":       "broken"
   },
   "verification_evidence": {
-    "status_endpoint_response":   "{\"lastUpdated\":\"2026-04-09 21:31:43\"}",
-    "skills_test_response":       "{\"query\":\"command\",\"count\":3,\"mock\":true}",
-    "ava_test_response":          "{\"error\":\"ANTHROPIC_API_KEY not configured\"}",
-    "memory_post_response":       "{\"stored\":true}",
-    "memory_get_response":        "{\"sessionId\":\"snap2\",\"count\":1,\"records\":[...]}",
-    "stripe_response":            "{\"error\":\"STRIPE_SECRET_KEY not configured\"}",
-    "assets_skills_hub":          "{\"assets\":[{\"id\":2,\"name\":\"Skills Hub\",\"type\":\"system\",\"status\":\"active\"}]}"
+    "GET /api/status":             "200 — {\"lastUpdated\":\"2026-04-09 21:31:43\"}",
+    "GET /api/skills/test?mock=1": "200 — count:3, patterns verified",
+    "POST /api/memory (store)":    "200 — {\"stored\":true}",
+    "GET /api/memory?sessionId=":  "200 — count:1, record returned",
+    "GET /api/assets":             "200 — Skills Hub + 1 asset returned",
+    "GET /build":                  "200 — HTML rendered",
+    "POST /api/ava":               "500 — {\"error\":\"ANTHROPIC_API_KEY not configured\"}",
+    "POST /api/create-checkout-session": "500 — {\"error\":\"STRIPE_SECRET_KEY not configured\"}"
   },
-  "env_vars": {
-    "ANTHROPIC_API_KEY":      { "required": true,  "set": false, "used_by": "pages/api/ava.js",                    "effect_if_missing": "POST /api/ava returns 500" },
-    "STRIPE_SECRET_KEY":      { "required": true,  "set": false, "used_by": "pages/api/create-checkout-session.js", "effect_if_missing": "POST /api/create-checkout-session returns 500" },
-    "NEXT_PUBLIC_BASE_URL":   { "required": false, "set": false, "used_by": "pages/api/create-checkout-session.js", "effect_if_missing": "defaults to http://localhost:3001" },
-    "GITHUB_TOKEN":           { "required": false, "set": false, "used_by": "utils/githubConnector.js",             "effect_if_missing": "GitHub rate limit 60 req/hr instead of 5000" },
-    "OPENAI_API_KEY":         { "required": false, "set": false, "used_by": "utils/aiParser.js",                   "effect_if_missing": "file ingestion uses keyword fallback" },
-    "PORT":                   { "required": false, "set": true,  "used_by": "server.js",                           "effect_if_missing": "defaults to 3001" }
-  },
-  "env_example_file": ".env.example",
-  "code_state": {
-    "last_commit": "9816490 chore(ps-os): add live system snapshot (2026-04-17)",
-    "branch":      "claude/pain-system-os-v1-gwXH2"
+  "env_status": {
+    "ANTHROPIC_API_KEY":    "MISSING — /api/ava blocked",
+    "STRIPE_SECRET_KEY":    "MISSING — /api/create-checkout-session blocked",
+    "NEXT_PUBLIC_BASE_URL": "SET — http://localhost:3001",
+    "PORT":                 "SET — 3001",
+    "GITHUB_TOKEN":         "MISSING — optional, rate limit degraded",
+    "OPENAI_API_KEY":       "MISSING — optional, file ingestion fallback active"
   },
   "failures_detected": [
     {
-      "service":  "ava_api",
+      "endpoint": "POST /api/ava",
       "error":    "ANTHROPIC_API_KEY not configured",
-      "fix":      "Set ANTHROPIC_API_KEY in .env.local — get key from console.anthropic.com"
+      "blocker":  "Set ANTHROPIC_API_KEY in .env.local — key from console.anthropic.com"
     },
     {
-      "service":  "stripe",
+      "endpoint": "POST /api/create-checkout-session",
       "error":    "STRIPE_SECRET_KEY not configured",
-      "fix":      "Set STRIPE_SECRET_KEY in .env.local — get key from dashboard.stripe.com/apikeys"
+      "blocker":  "Set STRIPE_SECRET_KEY in .env.local — key from dashboard.stripe.com/apikeys"
     }
   ],
-  "server_restart": "PASS — server started cleanly, /api/status 200 confirmed",
-  "timestamp": "2026-04-17T16:15:00Z"
+  "code_state": {
+    "last_commit": "9e362d5 chore(ps-os): env config — .env.example + updated snapshot",
+    "branch":      "claude/pain-system-os-v1-gwXH2",
+    "server":      "running — pid 3236"
+  },
+  "timestamp": "2026-04-17T17:12:20Z"
 }
