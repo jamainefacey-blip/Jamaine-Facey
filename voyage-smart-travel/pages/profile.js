@@ -83,6 +83,12 @@ window.renderProfile = function () {
     + '</div>'
     + '</div>';
 
+  /* ── Booking History ─────────────────────────────────────────────────────── */
+  var bookingSection = '<div class="profile-section" id="profile-booking-history">'
+    + '<h3 class="profile-section-title">Booking History</h3>'
+    + '<p class="profile-muted profile-bookings-loading">Loading bookings\u2026</p>'
+    + '</div>';
+
   /* ── Accessibility (PREMIUM+) ─────────────────────────────────────────────── */
   var accessSection;
   if (isPremium) {
@@ -161,6 +167,7 @@ window.renderProfile = function () {
     + basicInfo
     + prefsSection
     + historySection
+    + bookingSection
     + accessSection
     + sosSection
     + painSection
@@ -197,3 +204,47 @@ function _lockedSection(title, requiredTier) {
     + '<p class="profile-locked-msg">Upgrade to <strong>' + label + '</strong> to access this section.</p>'
     + '</div>';
 }
+
+/* ── Booking history renderer (called from router after async fetch) ─────── */
+window.renderProfileBookings = function (bookings) {
+  var title = '<h3 class="profile-section-title">Booking History'
+    + ' <span class="profile-section-count">' + (bookings ? bookings.length : 0) + '</span></h3>';
+
+  if (!bookings || bookings.length === 0) {
+    return '<div class="profile-section" id="profile-booking-history">'
+      + title
+      + '<p class="profile-empty">No bookings yet. Plan your first trip to get started.</p>'
+      + '</div>';
+  }
+
+  var STATUS_LABEL = { CONFIRMED: 'Confirmed', PENDING: 'Pending', CANCELLED: 'Cancelled' };
+  var STATUS_CLASS = { CONFIRMED: 'booking-status--confirmed', PENDING: 'booking-status--pending', CANCELLED: 'booking-status--cancelled' };
+  var CURRENCY_SYMBOL = { GBP: '£', USD: '$', EUR: '€', AED: 'AED ' };
+
+  var cards = bookings.map(function (b) {
+    var statusLabel = STATUS_LABEL[b.status] || b.status;
+    var statusClass = STATUS_CLASS[b.status] || '';
+    var symbol      = CURRENCY_SYMBOL[b.currency] || b.currency + ' ';
+    var route       = (b.origin ? _esc(b.origin) + ' \u2192 ' : '') + _esc(b.destination);
+    var dates       = _esc(b.departure_date) + (b.return_date ? ' \u2013 ' + _esc(b.return_date) : '');
+    var flight      = b.carrier ? _esc(b.carrier) + (b.flight_number ? ' \xb7 ' + _esc(b.flight_number) : '') : '';
+
+    return '<div class="booking-card">'
+      + '<div class="booking-card-header">'
+      +   '<div class="booking-card-route">' + route + '</div>'
+      +   '<span class="booking-status-badge ' + statusClass + '">' + statusLabel + '</span>'
+      + '</div>'
+      + '<div class="booking-card-meta">'
+      +   (flight ? '<span class="booking-card-flight">' + flight + '</span>' : '')
+      +   '<span class="booking-card-dates">' + dates + '</span>'
+      +   '<span class="booking-card-price">' + symbol + (b.price || 0).toLocaleString('en-GB') + '</span>'
+      + '</div>'
+      + '<div class="booking-card-ref">Ref: ' + _esc(b.confirmation_ref) + '</div>'
+      + '</div>';
+  }).join('');
+
+  return '<div class="profile-section" id="profile-booking-history">'
+    + title
+    + '<div class="profile-booking-list">' + cards + '</div>'
+    + '</div>';
+};

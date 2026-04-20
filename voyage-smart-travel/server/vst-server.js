@@ -26,6 +26,7 @@ const tls          = require('tls');
 const net          = require('net');
 const FareRouter   = require('./fare-router');
 const { handleRegister, handleLogin, handleGetMe, handlePatchMe } = require('./user-handlers');
+const { handleCreateBooking, handleGetBookings, handleGetBooking, handleCancelBooking } = require('./booking-handlers');
 
 const PORT       = parseInt(process.env.PORT) || 3000;
 const STATIC_ROOT = path.join(__dirname, '..');
@@ -388,6 +389,21 @@ const server = http.createServer(async (req, res) => {
   } else if (req.method === 'PATCH' && req.url === '/v1/users/me') {
     try { await handlePatchMe(req, res); }
     catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+
+  /* ── Booking routes ──────────────────────────────────────────────────── */
+  } else if (req.method === 'POST' && req.url === '/v1/bookings') {
+    try { await handleCreateBooking(req, res); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+  } else if (req.method === 'GET' && req.url === '/v1/bookings') {
+    try { await handleGetBookings(req, res); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+  } else if ((function () { var m = req.url.match(/^\/v1\/bookings\/([^/?]+)\/cancel$/); if (m) { req._bookingId = m[1]; } return m; })()) {
+    try { await handleCancelBooking(req, res, req._bookingId); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+  } else if ((function () { var m = req.url.match(/^\/v1\/bookings\/([^/?]+)$/); if (m) { req._bookingId = m[1]; } return m; })()) {
+    try { await handleGetBooking(req, res, req._bookingId); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+
   } else if (req.method === 'GET' || req.method === 'HEAD') {
     serveStatic(req, res);
   } else {

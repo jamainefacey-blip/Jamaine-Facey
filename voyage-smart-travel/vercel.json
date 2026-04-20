@@ -6,7 +6,9 @@
     "api/v1-users-register.js":      { "maxDuration": 10 },
     "api/v1-users-login.js":         { "maxDuration": 10 },
     "api/v1-users-me.js":            { "maxDuration": 10 },
-    "api/v1-notifications-send.js":  { "maxDuration": 30 }
+    "api/v1-notifications-send.js":  { "maxDuration": 30 },
+    "api/v1-bookings.js":            { "maxDuration": 10 },
+    "api/v1-bookings-id.js":         { "maxDuration": 10 }
   },
   "rewrites": [
     { "source": "/api/ava-evaluate",                  "destination": "/api/ava-evaluate" },
@@ -16,6 +18,9 @@
     { "source": "/v1/users/me",                       "destination": "/api/v1-users-me" },
     { "source": "/v1/notifications/send",             "destination": "/api/v1-notifications-send" },
     { "source": "/v1/notifications/delivery-records", "destination": "/api/v1-notifications-send" },
+    { "source": "/v1/bookings/:id/cancel",            "destination": "/api/v1-bookings-id?booking_id=:id&action=cancel" },
+    { "source": "/v1/bookings/:id",                   "destination": "/api/v1-bookings-id?booking_id=:id" },
+    { "source": "/v1/bookings",                       "destination": "/api/v1-bookings" },
     { "source": "/(.*)",                              "destination": "/index.html" }
   ]
 }

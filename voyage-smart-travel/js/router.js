@@ -666,6 +666,23 @@ window.VSTRouter = (function () {
           var page = document.getElementById('profile-page');
           if (page) page.innerHTML = window.renderProfile().replace(/^[\s\S]*?<div class="profile-page" id="profile-page">/, '').replace(/<\/div>\s*<\/div>\s*<\/section>\s*$/, '');
         }).catch(function () { /* silently keep cached */ });
+
+        /* Async fetch booking history — populates #profile-booking-history */
+        var token = window.VSTAuth.getToken();
+        if (token) {
+          fetch('/v1/bookings', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              var el = document.getElementById('profile-booking-history');
+              if (el && window.renderProfileBookings) {
+                el.outerHTML = window.renderProfileBookings(data.bookings || []);
+              }
+            })
+            .catch(function () {
+              var el = document.getElementById('profile-booking-history');
+              if (el) el.innerHTML = '<h3 class="profile-section-title">Booking History</h3><p class="profile-empty">Could not load bookings.</p>';
+            });
+        }
       }
 
       var logoutBtn = document.getElementById('profile-logout');
