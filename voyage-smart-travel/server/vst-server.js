@@ -2,9 +2,13 @@
  * VST Server — Phase 6 Secure API Proxy + Static File Server
  *
  * Routes:
- *   POST /api/ava-evaluate   — secure Ava Phase 6 evaluation (key server-side only)
- *   POST /api/fares/search   — live fare search via FareRouter (Amadeus primary)
- *   GET  /*                  — static SPA files
+ *   POST /api/ava-evaluate      — secure Ava Phase 6 evaluation
+ *   POST /api/fares/search      — live fare search via FareRouter
+ *   POST /v1/users/register     — user registration
+ *   POST /v1/users/login        — user login + JWT
+ *   GET  /v1/users/me           — authenticated user profile
+ *   PATCH /v1/users/me          — update profile
+ *   GET  /*                     — static SPA files
  *
  * Environment:
  *   PORT              — listen port (default 3000)
@@ -12,15 +16,16 @@
  *   AVA_MODEL         — model override (default claude-haiku-4-5-20251001)
  *   AVA_TIMEOUT       — upstream timeout ms (default 20000)
  *   AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET, AMADEUS_ENV
- *   SKYSCANNER_API_KEY, KIWI_API_KEY
+ *   JWT_SECRET        — HMAC-SHA256 key for JWT signing
  */
 'use strict';
-const http       = require('http');
-const fs         = require('fs');
-const path       = require('path');
-const tls        = require('tls');
-const net        = require('net');
-const FareRouter = require('./fare-router');
+const http         = require('http');
+const fs           = require('fs');
+const path         = require('path');
+const tls          = require('tls');
+const net          = require('net');
+const FareRouter   = require('./fare-router');
+const { handleRegister, handleLogin, handleGetMe, handlePatchMe } = require('./user-handlers');
 
 const PORT       = parseInt(process.env.PORT) || 3000;
 const STATIC_ROOT = path.join(__dirname, '..');
@@ -371,6 +376,18 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: 'internal error' }));
       }
     }
+  } else if (req.method === 'POST' && req.url === '/v1/users/register') {
+    try { await handleRegister(req, res); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+  } else if (req.method === 'POST' && req.url === '/v1/users/login') {
+    try { await handleLogin(req, res); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+  } else if (req.method === 'GET' && req.url === '/v1/users/me') {
+    try { await handleGetMe(req, res); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+  } else if (req.method === 'PATCH' && req.url === '/v1/users/me') {
+    try { await handlePatchMe(req, res); }
+    catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
   } else if (req.method === 'GET' || req.method === 'HEAD') {
     serveStatic(req, res);
   } else {

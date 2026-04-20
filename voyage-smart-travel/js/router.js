@@ -17,6 +17,8 @@ window.VSTRouter = (function () {
     'trip-request':  window.renderTripRequest,
     'dashboard':     window.renderDashboard,
     'pain-control':  window.renderPainControl,
+    'auth':          window.renderAuth,
+    'profile':       window.renderProfile,
   };
 
   var DEFAULT_ROUTE = 'home';
@@ -541,6 +543,88 @@ window.VSTRouter = (function () {
       /* View logs */
       if (logsBtn) {
         logsBtn.addEventListener('click', openLogs);
+      }
+    }
+
+    /* ── Auth page interactions ─────────────────────────────────────────────── */
+    if (route === 'auth') {
+      var A = window.VSTAuth;
+
+      /* Tab switching */
+      var authTabs = document.getElementById('auth-tabs');
+      var loginPanel    = document.getElementById('auth-login-panel');
+      var registerPanel = document.getElementById('auth-register-panel');
+      if (authTabs) {
+        authTabs.addEventListener('click', function (e) {
+          var btn = e.target.closest('.auth-tab');
+          if (!btn) return;
+          authTabs.querySelectorAll('.auth-tab').forEach(function (t) { t.classList.remove('auth-tab--active'); });
+          btn.classList.add('auth-tab--active');
+          var tab = btn.dataset.tab;
+          if (loginPanel)    loginPanel.style.display    = tab === 'login'    ? '' : 'none';
+          if (registerPanel) registerPanel.style.display = tab === 'register' ? '' : 'none';
+        });
+      }
+
+      /* Login form */
+      var loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var email    = (document.getElementById('login-email')    || {}).value || '';
+          var password = (document.getElementById('login-password') || {}).value || '';
+          var btn      = document.getElementById('login-submit');
+          var errEl    = document.getElementById('login-error');
+          if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
+          if (errEl) errEl.style.display = 'none';
+          A.login(email.trim(), password)
+            .then(function () { navigate('profile'); })
+            .catch(function (err) {
+              if (btn) { btn.textContent = 'Sign In'; btn.disabled = false; }
+              if (errEl) { errEl.textContent = err.message || 'Sign in failed.'; errEl.style.display = 'block'; }
+            });
+        });
+      }
+
+      /* Register form */
+      var regForm = document.getElementById('register-form');
+      if (regForm) {
+        regForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var name     = (document.getElementById('reg-name')     || {}).value || '';
+          var email    = (document.getElementById('reg-email')    || {}).value || '';
+          var password = (document.getElementById('reg-password') || {}).value || '';
+          var terms    = (document.getElementById('reg-terms')    || {}).checked;
+          var btn      = document.getElementById('register-submit');
+          var errEl    = document.getElementById('register-error');
+          if (btn) { btn.textContent = 'Creating account…'; btn.disabled = true; }
+          if (errEl) errEl.style.display = 'none';
+          A.register(email.trim(), password, name.trim(), terms)
+            .then(function () { navigate('profile'); })
+            .catch(function (err) {
+              if (btn) { btn.textContent = 'Create Account'; btn.disabled = false; }
+              if (errEl) { errEl.textContent = err.message || 'Registration failed.'; errEl.style.display = 'block'; }
+            });
+        });
+      }
+    }
+
+    /* ── Profile page interactions ──────────────────────────────────────────── */
+    if (route === 'profile') {
+      /* If user just arrived and has a token, refresh profile from server */
+      if (window.VSTAuth && window.VSTAuth.isLoggedIn()) {
+        window.VSTAuth.getMe().then(function () {
+          var page = document.getElementById('profile-page');
+          if (page) page.innerHTML = window.renderProfile().replace(/^[\s\S]*?<div class="profile-page" id="profile-page">/, '').replace(/<\/div>\s*<\/div>\s*<\/section>\s*$/, '');
+        }).catch(function () { /* silently keep cached */ });
+      }
+
+      var logoutBtn = document.getElementById('profile-logout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          window.VSTAuth.logout();
+          navigate('home');
+        });
       }
     }
 
