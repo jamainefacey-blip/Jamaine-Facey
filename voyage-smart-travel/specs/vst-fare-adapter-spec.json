@@ -1,0 +1,481 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vst:specs:fare-adapter:v1",
+  "title": "VST Live Fare API Adapter Interface",
+  "version": "1.0.0",
+  "phase": "2.2",
+  "status": "SPEC — NOT DEPLOYED",
+  "governance": "Governance Before Build. No public deployment until approved.",
+
+  "overview": {
+    "problem": "VST must display live fares without coupling to a single provider. Provider APIs differ in coverage, rate limits, pricing models, and response shape. The adapter layer normalises these differences so the VST product layer never needs to know which provider served a result.",
+    "solution": "A provider-agnostic FareAdapter interface with concrete implementations per provider. A FareRouter sits in front, executing the provider chain according to the fallback policy. Results are normalised to a common FareResult schema before being returned to callers.",
+    "design_principles": [
+      "VST product code imports FareRouter only — never a concrete provider adapter.",
+      "Adding a new provider = implement FareAdapter interface + register in provider registry.",
+      "Removing a provider = remove from registry. No product code changes.",
+      "Every provider failure is caught and logged. The router falls back transparently.",
+      "Cached results are served when live data is unavailable, clearly labelled with cache metadata."
+    ]
+  },
+
+  "provider_evaluation": {
+    "skyscanner": {
+      "status": "EVALUATED",
+      "recommendation": "SECONDARY",
+      "type": "Affiliate / B2C aggregator",
+      "data_source": "Aggregated from airlines and OTAs",
+      "coverage": {
+        "flights": "global — strongest on low-cost carriers",
+        "hotels": false,
+        "cars": false
+      },
+      "api_access": {
+        "model": "Affiliate partnership required. No public API key sign-up.",
+        "auth": "API key in request header",
+        "base_url": "https://partners.api.skyscanner.net/apiservices",
+        "docs": "https://developers.skyscanner.net"
+      },
+      "rate_limits": {
+        "default_rpm": 50,
+        "burst": "not documented",
+        "notes": "Limits enforced per partner account. Exceeding triggers 429."
+      },
+      "strengths": [
+        "Strong LCC coverage (Ryanair, easyJet, Wizz Air)",
+        "Flexible-date grid search available",
+        "Live pricing — not cached fares"
+      ],
+      "weaknesses": [
+        "Affiliate approval required — not instant",
+        "Response can be 'polling' — must re-poll until complete",
+        "No seat map data",
+        "No NDC/ancillary data"
+      ],
+      "response_latency_p50_ms": 800,
+      "response_latency_p95_ms": 3500,
+      "polling_required": true,
+      "vst_priority_in_chain": 2
+    },
+    "amadeus": {
+      "status": "EVALUATED",
+      "recommendation": "PRIMARY",
+      "type": "GDS / Enterprise B2B",
+      "data_source": "Direct airline NDC feeds + GDS",
+      "coverage": {
+        "flights": "global — strongest on full-service carriers and business travel",
+        "hotels": true,
+        "cars": true,
+        "trains": true
+      },
+      "api_access": {
+        "model": "Self-service sign-up (test) → production approval",
+        "auth": "OAuth 2.0 client_credentials — access token expires in 1799s",
+        "base_url_test": "https://test.api.amadeus.com",
+        "base_url_prod": "https://api.amadeus.com",
+        "docs": "https://developers.amadeus.com"
+      },
+      "rate_limits": {
+        "test_rpm": 40,
+        "prod_rpm": "negotiated per agreement",
+        "notes": "Self-service test environment generous for development. Production limits require Amadeus agreement."
+      },
+      "key_endpoints": {
+        "flight_offers_search": "GET /v2/shopping/flight-offers",
+        "flight_offers_price":  "POST /v1/shopping/flight-offers/pricing",
+        "flight_order_create":  "POST /v1/booking/flight-orders",
+        "airport_search":       "GET /v1/reference-data/locations"
+      },
+      "strengths": [
+        "IATA-certified data — highest accuracy for full-service carriers",
+        "Includes ancillaries: bags, seats, meals in offer",
+        "NDC content available",
+        "OAuth token caching reduces auth overhead",
+        "Rich error codes and structured error responses",
+        "Business travel policy integration possible"
+      ],
+      "weaknesses": [
+        "Test environment does not reflect real fares",
+        "Production requires commercial agreement",
+        "LCC coverage weaker than Skyscanner (Ryanair not in Amadeus)"
+      ],
+      "response_latency_p50_ms": 600,
+      "response_latency_p95_ms": 2800,
+      "polling_required": false,
+      "vst_priority_in_chain": 1
+    },
+    "kiwi": {
+      "status": "EVALUATED",
+      "recommendation": "TERTIARY",
+      "type": "OTA aggregator — self-transfer specialist",
+      "data_source": "Aggregated — proprietary connection-building algorithm",
+      "coverage": {
+        "flights": "global — strongest for multi-leg self-transfer itineraries",
+        "hotels": false,
+        "cars": false
+      },
+      "api_access": {
+        "model": "Partner programme sign-up",
+        "auth": "API key in header (apikey)",
+        "base_url": "https://api.tequila.kiwi.com",
+        "docs": "https://tequila.kiwi.com/portal/docs/tequila-api"
+      },
+      "rate_limits": {
+        "default_rpm": 100,
+        "notes": "More generous than Skyscanner for partners. Rate limits documented per plan."
+      },
+      "key_endpoints": {
+        "search": "GET /v2/search",
+        "booking": "POST /v2/booking"
+      },
+      "strengths": [
+        "Best for routes with no direct flights — finds virtual interlining",
+        "Flexible date search built-in",
+        "Radius search (search from airports within X km)",
+        "Higher RPM limits"
+      ],
+      "weaknesses": [
+        "Self-transfer itineraries carry missed-connection risk",
+        "Brand trust lower than Amadeus for corporate travel",
+        "Fare accuracy occasionally stale on busy routes"
+      ],
+      "response_latency_p50_ms": 900,
+      "response_latency_p95_ms": 4000,
+      "polling_required": false,
+      "vst_priority_in_chain": 3
+    }
+  },
+
+  "fallback_chain": {
+    "description": "Provider priority order and conditions under which the router falls to the next provider.",
+    "default_chain": ["amadeus", "skyscanner", "kiwi"],
+    "fallback_triggers": [
+      "HTTP 4xx (except 400 which is re-thrown as a bad request error)",
+      "HTTP 5xx",
+      "Network timeout (exceeds adapter timeout_ms)",
+      "Empty results array (no fares found — not an error, but triggers fallback for coverage)",
+      "Schema validation failure on provider response",
+      "Provider circuit breaker open"
+    ],
+    "empty_result_handling": {
+      "description": "Empty results from provider 1 are not an error — different providers cover different routes. The router falls to provider 2 and merges results.",
+      "merge_strategy": "UNION — deduplicate by (origin, destination, departure_date, carrier, flight_number)",
+      "max_results_returned": 50,
+      "sort_by": "price_asc"
+    },
+    "circuit_breaker": {
+      "description": "Each provider has an independent circuit breaker. Prevents cascade failures.",
+      "failure_threshold": 5,
+      "window_seconds": 60,
+      "open_duration_seconds": 30,
+      "states": ["CLOSED", "OPEN", "HALF_OPEN"]
+    }
+  },
+
+  "fare_adapter_interface": {
+    "description": "TypeScript-style interface definition. All concrete provider adapters must implement this.",
+    "interface": "FareAdapter",
+    "methods": {
+      "search": {
+        "signature": "search(request: FareSearchRequest): Promise<FareSearchResult>",
+        "description": "Search for one-way or return flights. Must resolve within timeout_ms.",
+        "throws": ["FareAdapterError", "FareTimeoutError", "FareValidationError"]
+      },
+      "getProviderName": {
+        "signature": "getProviderName(): string",
+        "description": "Returns provider identifier e.g. 'amadeus', 'skyscanner', 'kiwi'."
+      },
+      "healthCheck": {
+        "signature": "healthCheck(): Promise<AdapterHealthStatus>",
+        "description": "Returns current health. Used by circuit breaker and monitoring.",
+        "returns": "{ status: 'ok'|'degraded'|'down', latency_ms: number, last_error?: string }"
+      }
+    },
+    "config_per_adapter": {
+      "type": "object",
+      "properties": {
+        "api_key":      { "type": "string", "description": "From environment variable — never hardcoded." },
+        "client_id":    { "type": "string", "description": "OAuth client_id for Amadeus." },
+        "client_secret":{ "type": "string", "description": "OAuth client_secret for Amadeus.", "sensitive": true },
+        "base_url":     { "type": "string" },
+        "timeout_ms":   { "type": "integer", "default": 8000 },
+        "max_retries":  { "type": "integer", "default": 1 },
+        "enabled":      { "type": "boolean", "default": true }
+      }
+    }
+  },
+
+  "fare_search_request_schema": {
+    "description": "Provider-agnostic search request. Passed to each adapter.",
+    "type": "object",
+    "required": ["origin", "destination", "departure_date", "passengers"],
+    "properties": {
+      "origin": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "IATA airport or city code."
+      },
+      "destination": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$"
+      },
+      "departure_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "return_date": {
+        "type": "string",
+        "format": "date",
+        "description": "Omit for one-way."
+      },
+      "trip_type": {
+        "type": "string",
+        "enum": ["ONE_WAY", "RETURN", "MULTI_CITY"],
+        "default": "RETURN"
+      },
+      "passengers": {
+        "type": "object",
+        "properties": {
+          "adults":   { "type": "integer", "minimum": 1, "maximum": 9, "default": 1 },
+          "children": { "type": "integer", "minimum": 0, "maximum": 8, "default": 0 },
+          "infants":  { "type": "integer", "minimum": 0, "maximum": 4, "default": 0 }
+        }
+      },
+      "cabin_class": {
+        "type": "string",
+        "enum": ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"],
+        "default": "ECONOMY"
+      },
+      "currency": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "default": "GBP"
+      },
+      "non_stop_only": {
+        "type": "boolean",
+        "default": false
+      },
+      "max_stops": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 3
+      },
+      "flexible_dates": {
+        "type": "boolean",
+        "default": false,
+        "description": "When true, adapters that support it return +/- 3 day grid."
+      },
+      "max_results": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 20
+      },
+      "requested_by_user_id": {
+        "type": "string",
+        "description": "Used for rate-limit attribution and personalisation."
+      }
+    }
+  },
+
+  "fare_result_schema": {
+    "description": "Normalised fare result returned by every adapter regardless of provider.",
+    "type": "object",
+    "required": ["provider", "offers", "search_id", "cached", "fetched_at"],
+    "properties": {
+      "provider":   { "type": "string", "description": "Which adapter served this result." },
+      "search_id":  { "type": "string", "format": "uuid", "description": "Opaque ID for this search session." },
+      "cached":     { "type": "boolean" },
+      "cache_age_seconds": { "type": "integer" },
+      "fetched_at": { "type": "string", "format": "date-time" },
+      "expires_at": { "type": "string", "format": "date-time", "description": "After this time, result should be re-fetched." },
+      "offers": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["offer_id", "price", "itineraries"],
+          "properties": {
+            "offer_id": { "type": "string", "description": "Provider-scoped offer reference. Opaque." },
+            "price": {
+              "type": "object",
+              "required": ["total", "currency"],
+              "properties": {
+                "total":           { "type": "number" },
+                "base":            { "type": "number" },
+                "taxes":           { "type": "number" },
+                "fees":            { "type": "number" },
+                "currency":        { "type": "string", "pattern": "^[A-Z]{3}$" },
+                "price_per_adult": { "type": "number" },
+                "is_firm":         { "type": "boolean", "description": "False = indicative only, must re-price before booking." }
+              }
+            },
+            "itineraries": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "description": "Index 0 = outbound, index 1 = return (if RETURN trip).",
+              "items": {
+                "type": "object",
+                "required": ["duration_minutes", "segments"],
+                "properties": {
+                  "duration_minutes": { "type": "integer" },
+                  "stops":            { "type": "integer" },
+                  "segments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["origin", "destination", "departure_at", "arrival_at", "carrier", "flight_number"],
+                      "properties": {
+                        "origin":        { "type": "string", "pattern": "^[A-Z]{3}$" },
+                        "destination":   { "type": "string", "pattern": "^[A-Z]{3}$" },
+                        "departure_at":  { "type": "string", "format": "date-time" },
+                        "arrival_at":    { "type": "string", "format": "date-time" },
+                        "carrier":       { "type": "string", "pattern": "^[A-Z0-9]{2}$", "description": "IATA carrier code." },
+                        "operating_carrier": { "type": "string", "description": "If different from marketing carrier." },
+                        "flight_number": { "type": "string" },
+                        "aircraft_type": { "type": "string" },
+                        "cabin_class":   { "type": "string" },
+                        "booking_class": { "type": "string" },
+                        "duration_minutes": { "type": "integer" },
+                        "terminal_origin":      { "type": "string" },
+                        "terminal_destination": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "baggage": {
+              "type": "object",
+              "properties": {
+                "cabin_included":    { "type": "boolean" },
+                "checked_kg":        { "type": "number", "description": "0 = not included." },
+                "checked_pieces":    { "type": "integer" },
+                "additional_bag_price": { "type": "number" }
+              }
+            },
+            "carbon_estimate_kg": {
+              "type": "number",
+              "description": "Estimated CO2e for this itinerary. Provided by adapter if available, otherwise null."
+            },
+            "deep_link": {
+              "type": "string",
+              "format": "uri",
+              "description": "Provider affiliate deep link to complete booking. May require redirect through VST tracking."
+            },
+            "self_transfer": {
+              "type": "boolean",
+              "default": false,
+              "description": "True for Kiwi virtual interlining — missed connection risk is on traveller."
+            },
+            "fare_rules_available": { "type": "boolean" },
+            "refundable": {
+              "type": "string",
+              "enum": ["YES", "NO", "PARTIALLY", "UNKNOWN"]
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "fare_adapter_error_schema": {
+    "description": "Standardised error thrown by any adapter. The router catches these and falls to the next provider.",
+    "type": "object",
+    "required": ["error_code", "provider", "message"],
+    "properties": {
+      "error_code": {
+        "type": "string",
+        "enum": [
+          "PROVIDER_TIMEOUT",
+          "PROVIDER_UNAVAILABLE",
+          "PROVIDER_RATE_LIMITED",
+          "PROVIDER_AUTH_FAILED",
+          "PROVIDER_BAD_REQUEST",
+          "PROVIDER_EMPTY_RESULT",
+          "PROVIDER_SCHEMA_MISMATCH",
+          "CIRCUIT_BREAKER_OPEN"
+        ]
+      },
+      "provider":    { "type": "string" },
+      "message":     { "type": "string" },
+      "http_status": { "type": "integer" },
+      "retryable":   { "type": "boolean" },
+      "timestamp":   { "type": "string", "format": "date-time" }
+    }
+  },
+
+  "cache_policy": {
+    "description": "Fare results are cached to reduce provider API calls and protect against rate limits.",
+    "ttl_seconds": {
+      "default": 300,
+      "note": "5 minutes. Fares are dynamic; do not cache longer without explicit provider agreement."
+    },
+    "cache_key": "sha256(origin + destination + departure_date + return_date + adults + children + cabin_class + currency)",
+    "stale_while_revalidate": {
+      "enabled": true,
+      "max_stale_seconds": 60,
+      "description": "Serve stale result while async revalidation runs. Result is labelled cached:true."
+    },
+    "bypass_cache": {
+      "trigger": "Final pricing step before booking must bypass cache and re-fetch live price.",
+      "endpoint_hint": "Include header X-VST-Bypass-Cache: true"
+    }
+  },
+
+  "environment_variables": {
+    "description": "All provider credentials are injected via environment variables. Never hardcoded.",
+    "amadeus": {
+      "AMADEUS_CLIENT_ID":     "OAuth client_id",
+      "AMADEUS_CLIENT_SECRET": "OAuth client_secret — sensitive",
+      "AMADEUS_ENV":           "'test' or 'production'"
+    },
+    "skyscanner": {
+      "SKYSCANNER_API_KEY": "Partner API key — sensitive"
+    },
+    "kiwi": {
+      "KIWI_API_KEY": "Tequila partner API key — sensitive"
+    },
+    "router": {
+      "FARE_PROVIDER_CHAIN":   "Comma-separated ordered list e.g. 'amadeus,skyscanner,kiwi'",
+      "FARE_CACHE_TTL_SECONDS": "Override default cache TTL",
+      "FARE_TIMEOUT_MS":        "Per-adapter timeout override"
+    }
+  },
+
+  "vst_api_surface": {
+    "description": "Public VST API endpoints that consume the fare adapter. Not provider endpoints.",
+    "endpoints": {
+      "POST /v1/fares/search":          "Trigger a search. Returns search_id and initial results.",
+      "GET  /v1/fares/search/{id}":     "Poll for results (for polling providers like Skyscanner).",
+      "POST /v1/fares/price":           "Re-price a specific offer before booking. Always bypasses cache.",
+      "GET  /v1/fares/alerts":          "List active fare alerts for authenticated user.",
+      "POST /v1/fares/alerts":          "Create a fare alert for a route.",
+      "DELETE /v1/fares/alerts/{id}":   "Delete a fare alert."
+    },
+    "fare_alert_schema": {
+      "type": "object",
+      "required": ["user_id", "origin", "destination", "target_price_gbp", "departure_window"],
+      "properties": {
+        "alert_id":           { "type": "string", "format": "uuid" },
+        "user_id":            { "type": "string" },
+        "origin":             { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "destination":        { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "target_price_gbp":   { "type": "number" },
+        "cabin_class":        { "type": "string", "default": "ECONOMY" },
+        "departure_window": {
+          "type": "object",
+          "properties": {
+            "from": { "type": "string", "format": "date" },
+            "to":   { "type": "string", "format": "date" }
+          }
+        },
+        "active":             { "type": "boolean", "default": true },
+        "triggered_at":       { "type": "string", "format": "date-time" },
+        "triggered_price_gbp":{ "type": "number" },
+        "notification_event": { "type": "string", "const": "BOOKING_FARE_ALERT_TRIGGERED",
+                                 "description": "Emitted to the notification architecture when alert fires." }
+      }
+    }
+  }
+}

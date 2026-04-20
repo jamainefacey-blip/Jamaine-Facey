@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vst:specs:notification-architecture:v1",
+  "title": "VST Unified Notification Architecture",
+  "version": "1.0.0",
+  "phase": "2.2",
+  "status": "SPEC — NOT DEPLOYED",
+  "governance": "Governance Before Build. No public deployment until approved.",
+
+  "overview": {
+    "description": "Single notification layer serving all VST event types. OneSignal handles push and in-app channels. Twilio handles SMS, voice, and WhatsApp. All events flow through a central NotificationEvent envelope that carries routing metadata, so the delivery layer is fully swappable.",
+    "stack": {
+      "push_and_in_app": "OneSignal",
+      "sms": "Twilio Programmable SMS",
+      "whatsapp": "Twilio WhatsApp Business API",
+      "voice": "Twilio Voice (TwiML)",
+      "email": "reserved — not in this phase"
+    },
+    "principle": "Events are provider-agnostic at creation time. The routing engine resolves channels and providers at delivery time based on user preferences, tier, event priority, and channel availability."
+  },
+
+  "event_types": {
+    "description": "Exhaustive enum of notification event types grouped by domain.",
+    "booking": [
+      "BOOKING_CONFIRMED",
+      "BOOKING_REMINDER_24H",
+      "BOOKING_REMINDER_2H",
+      "BOOKING_CHANGED",
+      "BOOKING_CANCELLED",
+      "BOOKING_REFUND_ISSUED",
+      "CHECKIN_OPEN",
+      "FLIGHT_DELAY",
+      "FLIGHT_GATE_CHANGE",
+      "FLIGHT_CANCELLED"
+    ],
+    "sos": [
+      "SOS_TRIGGERED",
+      "SOS_ACKNOWLEDGED",
+      "SOS_CONTACT_ALERTED",
+      "SOS_RESOLVED",
+      "SOS_ESCALATED_TO_EMERGENCY_SERVICES"
+    ],
+    "pain_guard": [
+      "PAIN_GUARD_TASK_QUEUED",
+      "PAIN_GUARD_TASK_RUNNING",
+      "PAIN_GUARD_TASK_COMPLETED",
+      "PAIN_GUARD_TASK_FAILED",
+      "PAIN_GUARD_HANDOFF_REQUIRED",
+      "PAIN_GUARD_ESCALATION"
+    ],
+    "eco": [
+      "ECO_MILESTONE_REACHED",
+      "ECO_OFFSET_PURCHASED",
+      "ECO_BADGE_EARNED",
+      "ECO_MONTHLY_SUMMARY",
+      "ECO_LEADERBOARD_CHANGE"
+    ],
+    "community": [
+      "COMMUNITY_POST_LIKED",
+      "COMMUNITY_POST_COMMENTED",
+      "COMMUNITY_MENTION",
+      "COMMUNITY_FOLLOW_NEW",
+      "COMMUNITY_TRIP_SHARED",
+      "COMMUNITY_MODERATION_ACTION"
+    ],
+    "account": [
+      "ACCOUNT_WELCOME",
+      "ACCOUNT_TIER_UPGRADED",
+      "ACCOUNT_VERIFICATION_REQUIRED",
+      "ACCOUNT_GDPR_EXPORT_READY",
+      "ACCOUNT_PASSWORD_CHANGED",
+      "ACCOUNT_SUSPICIOUS_LOGIN"
+    ]
+  },
+
+  "priority_levels": {
+    "P0_CRITICAL": {
+      "value": 0,
+      "description": "Life-safety events. No opt-out. Delivered immediately on all available channels.",
+      "examples": ["SOS_TRIGGERED", "SOS_ESCALATED_TO_EMERGENCY_SERVICES"],
+      "max_delivery_ms": 5000,
+      "retry_policy": "aggressive"
+    },
+    "P1_HIGH": {
+      "value": 1,
+      "description": "Time-sensitive operational events. Respects do-not-disturb only for non-SOS.",
+      "examples": ["BOOKING_CANCELLED", "FLIGHT_GATE_CHANGE", "ACCOUNT_SUSPICIOUS_LOGIN", "PAIN_GUARD_HANDOFF_REQUIRED"],
+      "max_delivery_ms": 30000,
+      "retry_policy": "standard"
+    },
+    "P2_NORMAL": {
+      "value": 2,
+      "description": "Standard informational events. Respects user quiet hours.",
+      "examples": ["BOOKING_CONFIRMED", "FLIGHT_DELAY", "PAIN_GUARD_TASK_COMPLETED", "ECO_MILESTONE_REACHED"],
+      "max_delivery_ms": 300000,
+      "retry_policy": "standard"
+    },
+    "P3_LOW": {
+      "value": 3,
+      "description": "Ambient / social events. Batched during quiet hours.",
+      "examples": ["COMMUNITY_POST_LIKED", "ECO_LEADERBOARD_CHANGE", "ECO_MONTHLY_SUMMARY"],
+      "max_delivery_ms": 3600000,
+      "retry_policy": "relaxed"
+    }
+  },
+
+  "channel_routing_rules": {
+    "description": "Default channel selection by priority. User preferences and tier may override.",
+    "P0_CRITICAL": {
+      "channels": ["sms", "voice", "push"],
+      "require_all": true,
+      "override_dnd": true,
+      "override_opt_out": true
+    },
+    "P1_HIGH": {
+      "channels": ["push", "sms"],
+      "require_all": false,
+      "override_dnd": false,
+      "override_opt_out": false
+    },
+    "P2_NORMAL": {
+      "channels": ["push", "in_app"],
+      "require_all": false,
+      "override_dnd": false,
+      "override_opt_out": false
+    },
+    "P3_LOW": {
+      "channels": ["in_app"],
+      "require_all": false,
+      "override_dnd": false,
+      "override_opt_out": false
+    },
+    "tier_overrides": {
+      "GUEST": {
+        "blocked_channels": ["sms", "voice", "whatsapp"],
+        "note": "Guests receive push and in-app only. Phone not verified."
+      },
+      "PREMIUM": {
+        "additional_channels": ["whatsapp"],
+        "note": "WhatsApp available if user opts in."
+      },
+      "VOYAGE_ELITE": {
+        "additional_channels": ["whatsapp", "voice"],
+        "note": "Elite users get voice callbacks for P1+ events if opted in."
+      }
+    }
+  },
+
+  "notification_event_schema": {
+    "description": "Canonical envelope for all notification events. Produced by any VST service, consumed by the notification router.",
+    "type": "object",
+    "required": ["event_id", "event_type", "priority", "recipient", "payload", "created_at"],
+    "properties": {
+      "event_id": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Unique event ID. Used for deduplication."
+      },
+      "event_type": {
+        "type": "string",
+        "description": "One of the event_types enum values."
+      },
+      "priority": {
+        "type": "string",
+        "enum": ["P0_CRITICAL", "P1_HIGH", "P2_NORMAL", "P3_LOW"]
+      },
+      "recipient": {
+        "type": "object",
+        "required": ["user_id"],
+        "properties": {
+          "user_id": { "type": "string" },
+          "phone":   { "type": "string", "description": "E.164 format. Required for SMS/voice/WhatsApp." },
+          "onesignal_player_id": { "type": "string", "description": "Required for push/in-app." },
+          "locale":  { "type": "string", "default": "en-GB" },
+          "timezone": { "type": "string", "description": "IANA timezone. Used for quiet-hours calculation." }
+        }
+      },
+      "payload": {
+        "type": "object",
+        "required": ["title", "body"],
+        "properties": {
+          "title":      { "type": "string", "maxLength": 65 },
+          "body":       { "type": "string", "maxLength": 240 },
+          "sms_body":   { "type": "string", "maxLength": 160, "description": "SMS-specific copy. Falls back to body if absent." },
+          "voice_twiml":{ "type": "string", "description": "TwiML string for Twilio voice calls. P0 only." },
+          "deep_link":  { "type": "string", "description": "VST app deep link URL." },
+          "image_url":  { "type": "string", "description": "Rich notification image. OneSignal only." },
+          "data":       { "type": "object", "description": "Arbitrary key-value pairs passed through to the app." }
+        }
+      },
+      "created_at":  { "type": "string", "format": "date-time" },
+      "expires_at":  { "type": "string", "format": "date-time", "description": "If undelivered by this time, discard." },
+      "idempotency_key": { "type": "string", "description": "Caller-supplied key for at-most-once delivery." },
+      "source_service": { "type": "string", "description": "Service that produced this event, e.g. 'booking', 'sos', 'pain_engine'." },
+      "correlation_id":  { "type": "string", "description": "Trace ID for cross-service observability." }
+    }
+  },
+
+  "delivery_record_schema": {
+    "description": "Persisted record of each delivery attempt. Written by the notification router after each provider call.",
+    "type": "object",
+    "properties": {
+      "delivery_id":   { "type": "string", "format": "uuid" },
+      "event_id":      { "type": "string", "format": "uuid" },
+      "channel":       { "type": "string", "enum": ["push", "in_app", "sms", "whatsapp", "voice", "email"] },
+      "provider":      { "type": "string", "enum": ["onesignal", "twilio"] },
+      "provider_msg_id": { "type": "string" },
+      "status":        { "type": "string", "enum": ["queued", "sent", "delivered", "read", "failed", "bounced"] },
+      "attempted_at":  { "type": "string", "format": "date-time" },
+      "delivered_at":  { "type": "string", "format": "date-time" },
+      "failure_reason":{ "type": "string" },
+      "attempt_number":{ "type": "integer" }
+    }
+  },
+
+  "retry_policies": {
+    "aggressive": {
+      "description": "P0 only. Retry rapidly across all available channels.",
+      "max_attempts": 10,
+      "backoff": "fixed",
+      "interval_ms": 2000,
+      "channel_fallback": true,
+      "channel_fallback_order": ["push", "sms", "voice"]
+    },
+    "standard": {
+      "description": "P1/P2 events.",
+      "max_attempts": 5,
+      "backoff": "exponential",
+      "initial_ms": 5000,
+      "max_interval_ms": 300000,
+      "channel_fallback": false
+    },
+    "relaxed": {
+      "description": "P3 events. Single attempt; no retry on failure.",
+      "max_attempts": 1,
+      "backoff": "none",
+      "channel_fallback": false
+    }
+  },
+
+  "provider_config": {
+    "onesignal": {
+      "env_vars": {
+        "ONESIGNAL_APP_ID":  "OneSignal application ID",
+        "ONESIGNAL_API_KEY": "REST API key (server-side only, never client-exposed)"
+      },
+      "endpoints": {
+        "create_notification": "POST https://onesignal.com/api/v1/notifications",
+        "get_notification":    "GET  https://onesignal.com/api/v1/notifications/{id}"
+      },
+      "capabilities": ["push", "in_app"],
+      "rate_limit": "No hard published limit. Recommended: batch low-priority."
+    },
+    "twilio": {
+      "env_vars": {
+        "TWILIO_ACCOUNT_SID":   "Twilio Account SID",
+        "TWILIO_AUTH_TOKEN":    "Twilio Auth Token (server-side only)",
+        "TWILIO_FROM_NUMBER":   "E.164 sender number for SMS/voice",
+        "TWILIO_WHATSAPP_FROM": "WhatsApp sender ID e.g. whatsapp:+14155238886"
+      },
+      "endpoints": {
+        "sms":       "POST https://api.twilio.com/2010-04-01/Accounts/{SID}/Messages.json",
+        "whatsapp":  "POST https://api.twilio.com/2010-04-01/Accounts/{SID}/Messages.json (To: whatsapp:+...)",
+        "voice":     "POST https://api.twilio.com/2010-04-01/Accounts/{SID}/Calls.json"
+      },
+      "capabilities": ["sms", "whatsapp", "voice"],
+      "rate_limit": "1 SMS/sec per number by default. Request higher limits via Twilio support."
+    }
+  },
+
+  "sos_flow": {
+    "description": "End-to-end SOS notification sequence. SOS_TRIGGERED must complete all steps or escalate.",
+    "steps": [
+      { "step": 1, "action": "Emit SOS_TRIGGERED event (P0_CRITICAL)", "actor": "VST SOS service" },
+      { "step": 2, "action": "Push notification to traveller device via OneSignal", "sla_ms": 2000 },
+      { "step": 3, "action": "SMS to traveller primary number via Twilio", "sla_ms": 3000 },
+      { "step": 4, "action": "SMS to all SOS contacts on user profile", "sla_ms": 5000 },
+      { "step": 5, "action": "Voice call to SOS contacts if SMS unacknowledged after 60s", "sla_ms": 65000 },
+      { "step": 6, "action": "Emit SOS_ESCALATED_TO_EMERGENCY_SERVICES if contacts unreachable", "sla_ms": 120000 }
+    ],
+    "acknowledgement": "SOS resolved when traveller or SOS contact taps the deep link and confirms status."
+  },
+
+  "pain_guard_handoff": {
+    "description": "When the Pain Engine flags a PAIN_GUARD_HANDOFF_REQUIRED event, a notification is sent to the assigned human operator (concierge or manager). Separate from traveller-facing notifications.",
+    "recipient_type": "operator",
+    "channels": ["push", "in_app"],
+    "payload_fields": ["task_id", "task_type", "user_id", "urgency_score", "deep_link_to_pain_control"]
+  },
+
+  "opt_out_and_consent": {
+    "description": "User opt-out is respected at the channel level, never the event level for P0. Stored on user profile under notification_preferences.",
+    "granularity": ["channel", "event_domain"],
+    "p0_override": "P0_CRITICAL events (SOS) cannot be opted out at the user level. Compliant with PECR/GDPR legitimate interest basis.",
+    "unsubscribe_endpoint": "POST /v1/users/{id}/notification-preferences"
+  }
+}
