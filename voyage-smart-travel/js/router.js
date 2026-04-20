@@ -304,6 +304,12 @@ window.VSTRouter = (function () {
           if (saveBtn) {
             saveBtn.addEventListener('click', function () {
               var savedTrip = window.VSTTrips.create(result);
+              if (window.VSTNotifications) {
+                window.VSTNotifications.bookingConfirmed({
+                  destination: result.destination,
+                  ref: savedTrip && savedTrip.id,
+                });
+              }
 
               if (stepEval)    stepEval.classList.remove('trip-step--active');
               if (stepConfirm) stepConfirm.classList.add('trip-step--active', 'trip-step--done');
@@ -505,6 +511,13 @@ window.VSTRouter = (function () {
           PE.runOnce().then(function (newStatus) {
             render('pain-control'); /* re-render page with updated state */
             showToast('Engine run complete — status: ' + newStatus.lastRunStatus, 'success');
+            if (newStatus.handoff_required && window.VSTNotifications) {
+              window.VSTNotifications.painGuardHandoff({
+                task_id:       newStatus.currentTaskId || 'unknown',
+                task_type:     'pain_guard',
+                urgency_score: newStatus.urgency_score || 0,
+              });
+            }
           }).catch(function () {
             runBtn.disabled = false;
             runBtn.innerHTML = '<span class="pc-action-icon">&#9654;</span> Run Engine Once';
@@ -543,6 +556,42 @@ window.VSTRouter = (function () {
       /* View logs */
       if (logsBtn) {
         logsBtn.addEventListener('click', openLogs);
+      }
+    }
+
+    /* ── Safety page — SOS demo trigger ────────────────────────────────────── */
+    if (route === 'safety') {
+      var sosDemoBtn    = document.getElementById('sos-demo-trigger');
+      var sosDemoResult = document.getElementById('sos-demo-result');
+      if (sosDemoBtn) {
+        sosDemoBtn.addEventListener('click', function () {
+          sosDemoBtn.disabled   = true;
+          sosDemoBtn.textContent = 'Sending SOS…';
+          if (sosDemoResult) { sosDemoResult.style.display = 'none'; sosDemoResult.className = 'sos-demo-result'; }
+          var user         = window.VSTAuth && window.VSTAuth.getCachedUser();
+          var sosContacts  = (user && user.sos_contacts) || [];
+          var location     = 'Demo Location — not a real emergency';
+          var notifPromise = window.VSTNotifications
+            ? window.VSTNotifications.sosTriggered(location, sosContacts)
+            : Promise.resolve({ accepted: true });
+          notifPromise.then(function (res) {
+            sosDemoBtn.disabled   = false;
+            sosDemoBtn.textContent = 'Trigger SOS Demo';
+            if (sosDemoResult) {
+              sosDemoResult.className   = 'sos-demo-result sos-demo-result--sent';
+              sosDemoResult.innerHTML   = '<strong>SOS alert dispatched.</strong> Push, SMS, and voice escalation queued for all SOS contacts. Event ID: <code>' + (res.event_id || 'demo') + '</code>';
+              sosDemoResult.style.display = 'block';
+            }
+          }).catch(function () {
+            sosDemoBtn.disabled   = false;
+            sosDemoBtn.textContent = 'Trigger SOS Demo';
+            if (sosDemoResult) {
+              sosDemoResult.className   = 'sos-demo-result sos-demo-result--error';
+              sosDemoResult.innerHTML   = 'SOS dispatch failed — check console or provider credentials.';
+              sosDemoResult.style.display = 'block';
+            }
+          });
+        });
       }
     }
 

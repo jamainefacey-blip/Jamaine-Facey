@@ -1,18 +1,21 @@
 {
   "framework": null,
   "functions": {
-    "api/ava-evaluate.js":       { "maxDuration": 30 },
-    "api/fares-search.js":       { "maxDuration": 20 },
-    "api/v1-users-register.js":  { "maxDuration": 10 },
-    "api/v1-users-login.js":     { "maxDuration": 10 },
-    "api/v1-users-me.js":        { "maxDuration": 10 }
+    "api/ava-evaluate.js":           { "maxDuration": 30 },
+    "api/fares-search.js":           { "maxDuration": 20 },
+    "api/v1-users-register.js":      { "maxDuration": 10 },
+    "api/v1-users-login.js":         { "maxDuration": 10 },
+    "api/v1-users-me.js":            { "maxDuration": 10 },
+    "api/v1-notifications-send.js":  { "maxDuration": 30 }
   },
   "rewrites": [
-    { "source": "/api/ava-evaluate",    "destination": "/api/ava-evaluate" },
-    { "source": "/api/fares/search",    "destination": "/api/fares-search" },
-    { "source": "/v1/users/register",   "destination": "/api/v1-users-register" },
-    { "source": "/v1/users/login",      "destination": "/api/v1-users-login" },
-    { "source": "/v1/users/me",         "destination": "/api/v1-users-me" },
-    { "source": "/(.*)",                "destination": "/index.html" }
+    { "source": "/api/ava-evaluate",                  "destination": "/api/ava-evaluate" },
+    { "source": "/api/fares/search",                  "destination": "/api/fares-search" },
+    { "source": "/v1/users/register",                 "destination": "/api/v1-users-register" },
+    { "source": "/v1/users/login",                    "destination": "/api/v1-users-login" },
+    { "source": "/v1/users/me",                       "destination": "/api/v1-users-me" },
+    { "source": "/v1/notifications/send",             "destination": "/api/v1-notifications-send" },
+    { "source": "/v1/notifications/delivery-records", "destination": "/api/v1-notifications-send" },
+    { "source": "/(.*)",                              "destination": "/index.html" }
   ]
 }

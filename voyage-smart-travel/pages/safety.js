@@ -142,8 +142,27 @@ window.renderSafety = function () {
       </div>
     </section>
 
-    <!-- CTA -->
+    <!-- SOS Demo -->
     <section class="section">
+      <div class="section-inner">
+        <div class="sos-demo-panel">
+          <div class="sos-demo-icon" aria-hidden="true">&#128680;</div>
+          <div class="sos-demo-content">
+            ${C.renderSectionHeader({
+              eyebrow: 'SOS Demo',
+              title:   'Test the <span>SOS alert system</span>',
+              sub:     'Tap the button to trigger a test SOS. In a live scenario, this dispatches push, SMS, and voice escalation to all saved emergency contacts within seconds.',
+            })}
+            <p class="sos-demo-note">This demo requires active OneSignal and Twilio credentials. Without credentials, the event is logged but no message is sent.</p>
+            <button class="btn btn-sos" id="sos-demo-trigger">Trigger SOS Demo</button>
+            <div class="sos-demo-result" id="sos-demo-result" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section section-alt">
       <div class="section-inner">
         ${C.renderCTABanner({
           title: 'Travel knowing someone has your back',
