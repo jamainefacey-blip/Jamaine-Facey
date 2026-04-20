@@ -188,6 +188,18 @@ window.renderEvalResult = function (result, ava) {
       <!-- Phase 6 structured intelligence -->
       ${p6Panel(p6)}
 
+      <!-- Live fare results — populated async by VSTFareSearch -->
+      <div class="fare-panel" id="trip-fare-panel">
+        <div class="fare-panel-header">
+          <h3 class="fare-panel-title">Live Fares</h3>
+          <span class="fare-panel-meta">Searching available flights&hellip;</span>
+        </div>
+        <div class="fare-loading">
+          <div class="fare-loading-bar"></div>
+          <p class="fare-loading-text">Checking Amadeus&hellip;</p>
+        </div>
+      </div>
+
       <!-- Actions -->
       <div class="eval-actions">
         <button class="btn btn-primary" id="trip-save-btn">
@@ -273,6 +285,105 @@ window.renderTripSuccess = function (result) {
         </button>
       </div>
     </div>`;
+};
+
+/* ── Fare results renderer ───────────────────────────────────────────────── */
+window.renderFareResults = function (fareResult) {
+  if (!fareResult) {
+    return '<div class="fare-panel fare-panel--error">'
+      + '<div class="fare-panel-header"><h3 class="fare-panel-title">Live Fares</h3></div>'
+      + '<p class="fare-unavailable">Fare search unavailable. Check availability directly with your airline.</p>'
+      + '</div>';
+  }
+
+  if (fareResult.error && (!fareResult.offers || fareResult.offers.length === 0)) {
+    return '<div class="fare-panel fare-panel--notice">'
+      + '<div class="fare-panel-header"><h3 class="fare-panel-title">Live Fares</h3></div>'
+      + '<p class="fare-unavailable">' + fareResult.error + '</p>'
+      + '</div>';
+  }
+
+  if (!fareResult.offers || fareResult.offers.length === 0) {
+    return '<div class="fare-panel fare-panel--notice">'
+      + '<div class="fare-panel-header"><h3 class="fare-panel-title">Live Fares</h3></div>'
+      + '<p class="fare-unavailable">No fares found for this route on the selected dates.</p>'
+      + '</div>';
+  }
+
+  function fmtTime(dt) {
+    if (!dt) return '—';
+    try { return new Date(dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }); }
+    catch (e) { return dt.slice(11, 16) || '—'; }
+  }
+
+  function fmtDuration(mins) {
+    if (!mins) return '—';
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
+  }
+
+  function fmtPrice(price) {
+    if (!price) return '—';
+    var sym = { GBP: '£', USD: '$', EUR: '€', AED: 'AED ' }[price.currency] || (price.currency + ' ');
+    return sym + Number(price.total).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  var providerLabel = {
+    amadeus:    'Amadeus',
+    skyscanner: 'Skyscanner',
+    kiwi:       'Kiwi.com',
+    none:       '—',
+  }[fareResult.provider] || fareResult.provider;
+
+  var currency    = (fareResult.offers[0] && fareResult.offers[0].price && fareResult.offers[0].price.currency) || 'GBP';
+  var cachedBadge = fareResult.cached
+    ? '<span class="fare-cache-badge">cached &middot; ' + (fareResult.cache_age_seconds || 0) + 's ago</span>'
+    : '';
+
+  var offerRows = fareResult.offers.slice(0, 5).map(function (offer) {
+    var outbound = offer.itineraries && offer.itineraries[0];
+    var seg0     = outbound && outbound.segments && outbound.segments[0];
+    var segLast  = outbound && outbound.segments && outbound.segments[outbound.segments.length - 1];
+    var stops    = outbound ? outbound.stops : 0;
+    var stopLabel = stops === 0 ? 'Non-stop' : stops + ' stop' + (stops > 1 ? 's' : '');
+    var carrier   = seg0 ? seg0.carrier : '—';
+    var flightNum = seg0 ? seg0.flight_number : '—';
+    var depTime   = seg0 ? fmtTime(seg0.departure_at) : '—';
+    var arrTime   = segLast ? fmtTime(segLast.arrival_at) : '—';
+    var duration  = outbound ? fmtDuration(outbound.duration_minutes) : '—';
+    var priceStr  = fmtPrice(offer.price);
+
+    return '<div class="fare-offer">'
+      + '<div class="fare-offer-carrier">' + carrier + ' <span class="fare-offer-fnum">' + flightNum + '</span></div>'
+      + '<div class="fare-offer-times">'
+      +   '<span class="fare-offer-dep">' + depTime + '</span>'
+      +   '<span class="fare-offer-arrow"> &rarr; </span>'
+      +   '<span class="fare-offer-arr">' + arrTime + '</span>'
+      + '</div>'
+      + '<div class="fare-offer-detail">'
+      +   '<span class="fare-offer-duration">' + duration + '</span>'
+      +   ' &middot; <span class="fare-offer-stops' + (stops === 0 ? ' fare-offer-stops--direct' : '') + '">' + stopLabel + '</span>'
+      + '</div>'
+      + '<div class="fare-offer-price">' + priceStr + '</div>'
+      + '</div>';
+  }).join('');
+
+  var originCode = fareResult.origin_iata || '—';
+  var destCode   = fareResult.dest_iata   || '—';
+
+  return '<div class="fare-panel">'
+    + '<div class="fare-panel-header">'
+    +   '<h3 class="fare-panel-title">Live Fares</h3>'
+    +   '<span class="fare-panel-meta">'
+    +     originCode + ' &rarr; ' + destCode
+    +     ' &middot; ' + providerLabel
+    +     ' &middot; ' + currency
+    +     cachedBadge
+    +   '</span>'
+    + '</div>'
+    + '<div class="fare-offers">' + offerRows + '</div>'
+    + '<p class="fare-disclaimer">Prices are indicative and may change. Confirm at checkout before booking.</p>'
+    + '</div>';
 };
 
 /* ── Page renderer ───────────────────────────────────────────────────────── */

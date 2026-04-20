@@ -3059,3 +3059,174 @@ button { font-family: inherit; }
     transition: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FARE PANEL — Phase 3.1 Live Fare Search Results
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fare-panel {
+  background: var(--surface-2, #111827);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 20px;
+}
+
+.fare-panel--error,
+.fare-panel--notice {
+  border-color: rgba(255,255,255,0.05);
+  opacity: 0.7;
+}
+
+.fare-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.fare-panel-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.fare-panel-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted, #64748b);
+  letter-spacing: 0.02em;
+}
+
+.fare-cache-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(99,102,241,0.15);
+  color: #818cf8;
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+/* ── Loading state ───────────────────────────────────────────────────────── */
+.fare-loading {
+  padding: 8px 0 4px;
+}
+
+.fare-loading-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent, #6366f1) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: fare-sweep 1.4s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes fare-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.fare-loading-text {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+/* ── Offer list ──────────────────────────────────────────────────────────── */
+.fare-offers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fare-offer {
+  display: grid;
+  grid-template-columns: 56px 1fr auto auto;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+
+.fare-offer:hover {
+  border-color: rgba(99,102,241,0.3);
+}
+
+.fare-offer-carrier {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary, #f1f5f9);
+  white-space: nowrap;
+}
+
+.fare-offer-fnum {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--text-muted, #64748b);
+}
+
+.fare-offer-times {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  white-space: nowrap;
+}
+
+.fare-offer-arrow {
+  color: var(--text-muted, #64748b);
+  font-weight: 400;
+}
+
+.fare-offer-detail {
+  font-size: 0.7rem;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.fare-offer-stops--direct {
+  color: #34d399;
+}
+
+.fare-offer-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent, #6366f1);
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ── Footer note ─────────────────────────────────────────────────────────── */
+.fare-disclaimer {
+  margin: 12px 0 0;
+  font-size: 0.68rem;
+  color: var(--text-muted, #64748b);
+  opacity: 0.7;
+}
+
+.fare-unavailable {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+  padding: 4px 0 2px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .fare-offer {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  .fare-offer-carrier { grid-column: 1; }
+  .fare-offer-price   { grid-column: 2; justify-self: end; }
+  .fare-offer-times   { grid-column: 1; }
+  .fare-offer-detail  { grid-column: 2; text-align: right; }
+}

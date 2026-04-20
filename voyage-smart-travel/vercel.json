@@ -1,12 +1,12 @@
 {
   "framework": null,
   "functions": {
-    "api/ava-evaluate.js": {
-      "maxDuration": 30
-    }
+    "api/ava-evaluate.js":  { "maxDuration": 30 },
+    "api/fares-search.js":  { "maxDuration": 20 }
   },
   "rewrites": [
-    { "source": "/api/ava-evaluate", "destination": "/api/ava-evaluate" },
-    { "source": "/(.*)",             "destination": "/index.html" }
+    { "source": "/api/ava-evaluate",   "destination": "/api/ava-evaluate" },
+    { "source": "/api/fares/search",   "destination": "/api/fares-search" },
+    { "source": "/(.*)",               "destination": "/index.html" }
   ]
 }

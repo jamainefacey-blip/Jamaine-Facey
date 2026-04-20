@@ -381,6 +381,26 @@ window.VSTRouter = (function () {
               if (stepEval) stepEval.classList.add('trip-step--active', 'trip-step--done');
 
               wireResultButtons(result);
+
+              /* ── Live fare search — async, non-blocking ─────────────────── */
+              if (window.VSTFareSearch) {
+                var farePanel = document.getElementById('trip-fare-panel');
+                window.VSTFareSearch.search({
+                  origin:         origin,
+                  destination:    destination,
+                  departureDate:  departureDate,
+                  returnDate:     returnDate || null,
+                  tripType:       tripType,
+                  travellerCount: travellerCount,
+                  currency:       'GBP',
+                }).then(function (fareResult) {
+                  farePanel = document.getElementById('trip-fare-panel');
+                  if (farePanel) farePanel.outerHTML = window.renderFareResults(fareResult);
+                }).catch(function () {
+                  farePanel = document.getElementById('trip-fare-panel');
+                  if (farePanel) farePanel.outerHTML = window.renderFareResults(null);
+                });
+              }
             });
 
         }, 700);

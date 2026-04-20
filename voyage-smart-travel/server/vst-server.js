@@ -3,6 +3,7 @@
  *
  * Routes:
  *   POST /api/ava-evaluate   — secure Ava Phase 6 evaluation (key server-side only)
+ *   POST /api/fares/search   — live fare search via FareRouter (Amadeus primary)
  *   GET  /*                  — static SPA files
  *
  * Environment:
@@ -10,13 +11,16 @@
  *   ANTHROPIC_API_KEY — Anthropic API key (preferred)
  *   AVA_MODEL         — model override (default claude-haiku-4-5-20251001)
  *   AVA_TIMEOUT       — upstream timeout ms (default 20000)
+ *   AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET, AMADEUS_ENV
+ *   SKYSCANNER_API_KEY, KIWI_API_KEY
  */
 'use strict';
-const http = require('http');
-const fs   = require('fs');
-const path = require('path');
-const tls  = require('tls');
-const net  = require('net');
+const http       = require('http');
+const fs         = require('fs');
+const path       = require('path');
+const tls        = require('tls');
+const net        = require('net');
+const FareRouter = require('./fare-router');
 
 const PORT       = parseInt(process.env.PORT) || 3000;
 const STATIC_ROOT = path.join(__dirname, '..');
@@ -201,6 +205,46 @@ function buildPrompt(fd) {
     + '\n\nRETURN ONLY this exact JSON shape:\n' + JSON.stringify(schema, null, 2);
 }
 
+/* ── Fare search handler ─────────────────────────────────────────────────── */
+async function handleFareSearch(req, res) {
+  let fd;
+  try {
+    const body = await readBody(req);
+    fd = JSON.parse(body);
+  } catch (e) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'invalid request body' }));
+    return;
+  }
+
+  try {
+    const bypassCache = req.headers['x-vst-bypass-cache'] === 'true';
+    /* Normalise field names from frontend (camelCase) to adapter (snake_case) */
+    const searchReq = {
+      origin:         fd.origin,
+      destination:    fd.destination,
+      departure_date: fd.departureDate || fd.departure_date,
+      return_date:    fd.returnDate    || fd.return_date    || null,
+      trip_type:      fd.tripType      || fd.trip_type      || 'return',
+      passengers:     { adults: parseInt(fd.travellerCount || fd.adults || 1, 10), children: 0 },
+      cabin_class:    fd.cabinClass    || fd.cabin_class    || 'ECONOMY',
+      currency:       fd.currency      || 'GBP',
+      non_stop_only:  !!fd.nonStopOnly,
+      max_results:    10,
+    };
+    const result = await FareRouter.search(searchReq, bypassCache);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(result));
+  } catch (e) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      provider: 'none', search_id: '', cached: false,
+      fetched_at: new Date().toISOString(), offers: [],
+      error: 'Fare search temporarily unavailable.',
+    }));
+  }
+}
+
 /* ── Ava evaluation handler ──────────────────────────────────────────────── */
 async function handleAvaEvaluate(req, res) {
   /* Never expose key status in error responses beyond generic 503 */
@@ -312,6 +356,15 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'POST' && req.url === '/api/ava-evaluate') {
     try {
       await handleAvaEvaluate(req, res);
+    } catch (e) {
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'internal error' }));
+      }
+    }
+  } else if (req.method === 'POST' && req.url === '/api/fares/search') {
+    try {
+      await handleFareSearch(req, res);
     } catch (e) {
       if (!res.headersSent) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
