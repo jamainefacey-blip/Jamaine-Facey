@@ -27,6 +27,7 @@ const net          = require('net');
 const FareRouter   = require('./fare-router');
 const { handleRegister, handleLogin, handleGetMe, handlePatchMe } = require('./user-handlers');
 const { handleCreateBooking, handleGetBookings, handleGetBooking, handleCancelBooking } = require('./booking-handlers');
+const eco = require('./eco-engine');
 
 const PORT       = parseInt(process.env.PORT) || 3000;
 const STATIC_ROOT = path.join(__dirname, '..');
@@ -403,6 +404,24 @@ const server = http.createServer(async (req, res) => {
   } else if ((function () { var m = req.url.match(/^\/v1\/bookings\/([^/?]+)$/); if (m) { req._bookingId = m[1]; } return m; })()) {
     try { await handleGetBooking(req, res, req._bookingId); }
     catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
+
+  /* ── Eco calculate ──────────────────────────────────────────────────────── */
+  } else if ((req.method === 'GET' || req.method === 'POST') && req.url.split('?')[0] === '/v1/eco/calculate') {
+    try {
+      var params  = {};
+      var qs      = req.url.split('?')[1] || '';
+      qs.split('&').forEach(function (pair) { var kv = pair.split('='); if (kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || ''); });
+      var origin  = params.origin || params.o;
+      var dest    = params.destination || params.d;
+      var cabin   = params.cabin_class || params.cabin || 'ECONOMY';
+      var pax     = params.passengers || params.pax || 1;
+      if (!origin || !dest) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'MISSING_PARAMS' })); }
+      else {
+        var calc = eco.calculate(origin, dest, cabin, pax);
+        if (calc.error === 'UNKNOWN_AIRPORT') { res.writeHead(422, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(calc)); }
+        else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(calc)); }
+      }
+    } catch (e) { if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: 'internal error' })); } }
 
   } else if (req.method === 'GET' || req.method === 'HEAD') {
     serveStatic(req, res);

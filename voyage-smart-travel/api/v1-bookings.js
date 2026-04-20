@@ -9,6 +9,7 @@
 const { BookingStore } = require('../server/booking-store');
 const { jwt, UserStore } = require('../server/user-store');
 const { dispatch }    = require('../server/notification-service');
+const eco             = require('../server/eco-engine');
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -47,15 +48,23 @@ module.exports = async function handler(req, res) {
     var user = UserStore.findById(claims.sub);
     var tier = (user && user.tier) || claims.tier || 'GUEST';
 
+    var ecoResult = (body.origin && body.destination)
+      ? eco.calculate(body.origin, body.destination, body.cabin_class || 'ECONOMY', body.passengers || 1)
+      : null;
+
     var booking = BookingStore.create({
-      user_id:        claims.sub,
+      user_id:           claims.sub,
       tier,
-      origin:         body.origin        || null,
-      destination:    body.destination,
-      departure_date: body.departure_date,
-      return_date:    body.return_date   || null,
-      carrier:        body.carrier       || null,
-      flight_number:  body.flight_number || null,
+      origin:            body.origin            || null,
+      destination:       body.destination,
+      departure_date:    body.departure_date,
+      return_date:       body.return_date       || null,
+      carrier:           body.carrier           || null,
+      flight_number:     body.flight_number     || null,
+      co2_kg:            ecoResult && !ecoResult.error ? ecoResult.co2_kg            : null,
+      co2_per_person_kg: ecoResult && !ecoResult.error ? ecoResult.co2_per_person_kg : null,
+      eco_grade:         ecoResult && !ecoResult.error ? ecoResult.eco_grade         : null,
+      distance_km:       ecoResult && !ecoResult.error ? ecoResult.distance_km       : null,
       price:          body.price,
       currency:       body.currency      || 'GBP',
     });

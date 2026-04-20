@@ -144,6 +144,47 @@ window.renderProfile = function () {
     painSection = _lockedSection('Pain Guard', 'PREMIUM');
   }
 
+  /* ── Eco Dashboard (VOYAGE_ELITE) ────────────────────────────────────────── */
+  var ecoSection = '';
+  if (isElite && window.VSTEco) {
+    var carbonTotal   = Math.round(history.carbon_kg_total   || 0);
+    var carbonOffset  = Math.round(history.carbon_kg_offset  || 0);
+    var carbonNet     = Math.max(0, carbonTotal - carbonOffset);
+    var offsetCount   = Math.floor(carbonOffset / 150); /* proxy: each 150 kg = 1 offset purchase */
+    var badge         = window.VSTEco.badgeForCount(offsetCount);
+    var offsetCostNet = (carbonNet * 0.015).toFixed(2);
+    var progressPct   = Math.round((badge.progress || 0) * 100);
+
+    var badgeHtml = badge.id
+      ? '<span class="eco-badge eco-badge--' + badge.id.toLowerCase() + '">' + badge.label + '</span>'
+      : '<span class="eco-badge eco-badge--none">No badge yet</span>';
+
+    var nextMilestone = badge.next_count
+      ? '<div class="eco-progress-wrap">'
+          + '<div class="eco-progress-label">'
+          +   'Progress to ' + badge.next + ' (' + offsetCount + '/' + badge.next_count + ' offsets)'
+          + '</div>'
+          + '<div class="eco-progress-bar"><div class="eco-progress-fill" style="width:' + progressPct + '%"></div></div>'
+          + '</div>'
+      : '<p class="eco-progress-label">Maximum tier — Platinum achieved.</p>';
+
+    ecoSection = '<div class="profile-section eco-dashboard">'
+      + '<h3 class="profile-section-title">Carbon Dashboard</h3>'
+      + '<div class="eco-stats">'
+      +   '<div class="eco-stat"><div class="eco-stat-value">' + carbonTotal.toLocaleString('en-GB') + '<span class="eco-stat-unit">kg</span></div><div class="eco-stat-label">Total CO₂</div></div>'
+      +   '<div class="eco-stat eco-stat--offset"><div class="eco-stat-value">' + carbonOffset.toLocaleString('en-GB') + '<span class="eco-stat-unit">kg</span></div><div class="eco-stat-label">Offset</div></div>'
+      +   '<div class="eco-stat eco-stat--net"><div class="eco-stat-value">' + carbonNet.toLocaleString('en-GB') + '<span class="eco-stat-unit">kg</span></div><div class="eco-stat-label">Net remaining</div></div>'
+      +   '<div class="eco-stat"><div class="eco-stat-value">£' + offsetCostNet + '</div><div class="eco-stat-label">Cost to neutralise</div></div>'
+      + '</div>'
+      + '<div class="eco-badge-row">'
+      +   '<span class="eco-badge-label">Current badge:</span> ' + badgeHtml
+      + '</div>'
+      + nextMilestone
+      + '</div>';
+  } else if (isPremium && !isElite) {
+    ecoSection = _lockedSection('Carbon Dashboard', 'VOYAGE_ELITE');
+  }
+
   /* ── Elite features banner ────────────────────────────────────────────────── */
   var eliteBanner = isElite ? '<div class="profile-elite-banner">'
     + '<span class="profile-elite-icon">&#9733;</span>'
@@ -168,6 +209,7 @@ window.renderProfile = function () {
     + prefsSection
     + historySection
     + bookingSection
+    + ecoSection
     + accessSection
     + sosSection
     + painSection
@@ -229,6 +271,15 @@ window.renderProfileBookings = function (bookings) {
     var dates       = _esc(b.departure_date) + (b.return_date ? ' \u2013 ' + _esc(b.return_date) : '');
     var flight      = b.carrier ? _esc(b.carrier) + (b.flight_number ? ' \xb7 ' + _esc(b.flight_number) : '') : '';
 
+    var ecoHtml = '';
+    if (b.co2_per_person_kg && b.eco_grade) {
+      var gradeClass = window.VSTEco ? window.VSTEco.ecoGradeClass(b.eco_grade) : '';
+      ecoHtml = '<span class="booking-card-eco">'
+        + '<span class="eco-grade-badge ' + gradeClass + '">' + b.eco_grade + '</span>'
+        + ' ' + b.co2_per_person_kg.toLocaleString('en-GB') + ' kg CO₂/person'
+        + '</span>';
+    }
+
     return '<div class="booking-card">'
       + '<div class="booking-card-header">'
       +   '<div class="booking-card-route">' + route + '</div>'
@@ -239,6 +290,7 @@ window.renderProfileBookings = function (bookings) {
       +   '<span class="booking-card-dates">' + dates + '</span>'
       +   '<span class="booking-card-price">' + symbol + (b.price || 0).toLocaleString('en-GB') + '</span>'
       + '</div>'
+      + (ecoHtml ? '<div class="booking-card-eco-row">' + ecoHtml + '</div>' : '')
       + '<div class="booking-card-ref">Ref: ' + _esc(b.confirmation_ref) + '</div>'
       + '</div>';
   }).join('');

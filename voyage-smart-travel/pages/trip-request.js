@@ -353,6 +353,21 @@ window.renderFareResults = function (fareResult) {
     var duration  = outbound ? fmtDuration(outbound.duration_minutes) : '—';
     var priceStr  = fmtPrice(offer.price);
 
+    /* Eco estimate per person */
+    var ecoRow = '';
+    if (window.VSTEco && fareResult.origin_iata && fareResult.dest_iata) {
+      var cabinClass = (offer.cabin_class || 'ECONOMY').toUpperCase().replace(/[\s-]/g, '_');
+      var ecoCalc    = window.VSTEco.calculate(fareResult.origin_iata, fareResult.dest_iata, cabinClass, 1);
+      if (!ecoCalc.error) {
+        var gc = window.VSTEco.ecoGradeClass(ecoCalc.eco_grade);
+        ecoRow = '<div class="fare-offer-eco">'
+          + '<span class="eco-grade-badge ' + gc + '">' + ecoCalc.eco_grade + '</span>'
+          + ' <span class="fare-eco-co2">' + ecoCalc.co2_per_person_kg + ' kg CO&#8322;/person</span>'
+          + ' &middot; <span class="fare-eco-offset">offset £' + ecoCalc.offset_cost_gbp.toFixed(2) + '</span>'
+          + '</div>';
+      }
+    }
+
     return '<div class="fare-offer">'
       + '<div class="fare-offer-carrier">' + carrier + ' <span class="fare-offer-fnum">' + flightNum + '</span></div>'
       + '<div class="fare-offer-times">'
@@ -365,6 +380,7 @@ window.renderFareResults = function (fareResult) {
       +   ' &middot; <span class="fare-offer-stops' + (stops === 0 ? ' fare-offer-stops--direct' : '') + '">' + stopLabel + '</span>'
       + '</div>'
       + '<div class="fare-offer-price">' + priceStr + '</div>'
+      + ecoRow
       + '</div>';
   }).join('');
 
