@@ -1,0 +1,44 @@
+{
+  "name": "pain-system-os",
+  "version": "1.0.0",
+  "description": "Pain System OS v1 — Local asset ingestion and management desktop app",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js",
+    "electron:dev": "concurrently \"node server.js\" \"wait-on http://localhost:3001 && electron --no-sandbox .\"",
+    "electron:dev:headless": "concurrently \"node server.js\" \"wait-on http://localhost:3001 && xvfb-run -a electron --no-sandbox .\"",
+    "electron:build": "next build && electron-builder"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "chokidar": "^3.6.0",
+    "next": "^14.2.3",
+    "openai": "^4.47.1",
+    "pdf-parse": "^1.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "stripe": "^22.0.2",
+    "tesseract.js": "^5.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^31.0.0",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.painsystem.os",
+    "productName": "Pain System OS",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/**/*",
+      "database/**/*",
+      "utils/**/*",
+      "node_modules/**/*"
+    ]
+  }
+}

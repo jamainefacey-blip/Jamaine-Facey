@@ -1,0 +1,47 @@
+{
+  "runtime_status": {
+    "status_api":   "running",
+    "skills_api":   "running",
+    "memory_api":   "running",
+    "assets_api":   "running",
+    "build_page":   "running",
+    "ava_api":      "broken",
+    "stripe":       "broken"
+  },
+  "verification_evidence": {
+    "GET /api/status":             "200 — {\"lastUpdated\":\"2026-04-09 21:31:43\"}",
+    "GET /api/skills/test?mock=1": "200 — count:3, patterns verified",
+    "POST /api/memory (store)":    "200 — {\"stored\":true}",
+    "GET /api/memory?sessionId=":  "200 — count:1, record returned",
+    "GET /api/assets":             "200 — Skills Hub + 1 asset returned",
+    "GET /build":                  "200 — HTML rendered",
+    "POST /api/ava":               "500 — {\"error\":\"ANTHROPIC_API_KEY not configured\"}",
+    "POST /api/create-checkout-session": "500 — {\"error\":\"STRIPE_SECRET_KEY not configured\"}"
+  },
+  "env_status": {
+    "ANTHROPIC_API_KEY":    "MISSING — /api/ava blocked",
+    "STRIPE_SECRET_KEY":    "MISSING — /api/create-checkout-session blocked",
+    "NEXT_PUBLIC_BASE_URL": "SET — http://localhost:3001",
+    "PORT":                 "SET — 3001",
+    "GITHUB_TOKEN":         "MISSING — optional, rate limit degraded",
+    "OPENAI_API_KEY":       "MISSING — optional, file ingestion fallback active"
+  },
+  "failures_detected": [
+    {
+      "endpoint": "POST /api/ava",
+      "error":    "ANTHROPIC_API_KEY not configured",
+      "blocker":  "Set ANTHROPIC_API_KEY in .env.local — key from console.anthropic.com"
+    },
+    {
+      "endpoint": "POST /api/create-checkout-session",
+      "error":    "STRIPE_SECRET_KEY not configured",
+      "blocker":  "Set STRIPE_SECRET_KEY in .env.local — key from dashboard.stripe.com/apikeys"
+    }
+  ],
+  "code_state": {
+    "last_commit": "9e362d5 chore(ps-os): env config — .env.example + updated snapshot",
+    "branch":      "claude/pain-system-os-v1-gwXH2",
+    "server":      "running — pid 3236"
+  },
+  "timestamp": "2026-04-17T17:12:20Z"
+}
