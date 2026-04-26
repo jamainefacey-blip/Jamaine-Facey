@@ -3,12 +3,7 @@
 // Shared Claude API call logic for all agents.
 // ─────────────────────────────────────────────
 
-import https, { type Agent } from "node:https";
-import { HttpsProxyAgent } from "https-proxy-agent";
 import { PROMPT_LIMITS } from "../config.ts";
-
-const _proxyUrl = process.env["HTTPS_PROXY"] ?? process.env["HTTP_PROXY"];
-const _agent: Agent | undefined = _proxyUrl ? (new HttpsProxyAgent(_proxyUrl) as unknown as Agent) : undefined;
 
 export interface ClaudeMessage {
   role: "user" | "assistant";
@@ -25,7 +20,7 @@ export interface AgentCallOptions {
 
 /**
  * Single-turn Claude API call. Returns raw text response.
- * Safe for Deno/Netlify Edge environments (no Node deps).
+ * Uses fetch() — compatible with Deno (Netlify Edge) and Node.js 18+.
  */
 export async function callClaude(opts: AgentCallOptions): Promise<string> {
   const { systemPrompt, userPrompt, apiKey, model, maxTokens = PROMPT_LIMITS.maxOutputTokens } = opts;
@@ -42,37 +37,28 @@ export async function callClaude(opts: AgentCallOptions): Promise<string> {
     messages: [{ role: "user", content: truncated }],
   });
 
-  const data = await new Promise<Record<string, unknown>>((resolve, reject) => {
-    const req = https.request(
-      {
-        hostname: "api.anthropic.com",
-        path: "/v1/messages",
-        method: "POST",
-        agent: _agent,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
-          "anthropic-version": "2023-06-01",
-          "Content-Length": Buffer.byteLength(bodyStr),
-        },
-      },
-      (res) => {
-        let raw = "";
-        res.on("data", (chunk: Buffer) => { raw += chunk; });
-        res.on("end", () => {
-          if (res.statusCode && res.statusCode >= 400) {
-            reject(new Error(`Claude API error ${res.statusCode}: ${raw}`));
-          } else {
-            try { resolve(JSON.parse(raw) as Record<string, unknown>); }
-            catch { reject(new Error(`Claude API non-JSON response: ${raw.slice(0, 200)}`)); }
-          }
-        });
-      },
-    );
-    req.on("error", reject);
-    req.write(bodyStr);
-    req.end();
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: bodyStr,
   });
+
+  const raw = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Claude API error ${response.status}: ${raw}`);
+  }
+
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    throw new Error(`Claude API non-JSON response: ${raw.slice(0, 200)}`);
+  }
 
   const block = (data.content as Array<{type: string; text: string}>)?.[0];
   if (!block || block.type !== "text") {
