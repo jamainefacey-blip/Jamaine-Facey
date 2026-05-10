@@ -9,10 +9,12 @@
     "api/v1-notifications-send.js":  { "maxDuration": 30 },
     "api/v1-bookings.js":            { "maxDuration": 10 },
     "api/v1-bookings-id.js":         { "maxDuration": 10 },
-    "api/v1-eco-calculate.js":       { "maxDuration": 10 }
+    "api/v1-eco-calculate.js":       { "maxDuration": 10 },
+    "api/ava-itinerary.js":          { "maxDuration": 35 }
   },
   "rewrites": [
     { "source": "/api/ava-evaluate",                  "destination": "/api/ava-evaluate" },
+    { "source": "/api/ava-itinerary",                 "destination": "/api/ava-itinerary" },
     { "source": "/api/fares/search",                  "destination": "/api/fares-search" },
     { "source": "/v1/users/register",                 "destination": "/api/v1-users-register" },
     { "source": "/v1/users/login",                    "destination": "/api/v1-users-login" },
