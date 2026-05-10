@@ -15,6 +15,7 @@ window.VSTRouter = (function () {
     'partners':      window.renderPartners,
     'contact':       window.renderContact,
     'trip-request':  window.renderTripRequest,
+    'planner':       window.renderPlanner,
     'dashboard':     window.renderDashboard,
     'pain-control':  window.renderPainControl,
     'auth':          window.renderAuth,
@@ -690,6 +691,134 @@ window.VSTRouter = (function () {
         logoutBtn.addEventListener('click', function () {
           window.VSTAuth.logout();
           navigate('home');
+        });
+      }
+    }
+
+    /* ── Planner page interactions ─────────────────────────────────────────── */
+    if (route === 'planner') {
+      var plannerTranscript = document.getElementById('planner-transcript');
+      var plannerSubmitBtn  = document.getElementById('planner-submit');
+      var plannerResult     = document.getElementById('planner-result');
+      var plannerCharCount  = document.getElementById('planner-char-count');
+      var plannerChips      = document.getElementById('planner-chips');
+
+      /* Character counter */
+      if (plannerTranscript && plannerCharCount) {
+        plannerTranscript.addEventListener('input', function () {
+          plannerCharCount.textContent = plannerTranscript.value.length + ' / 500';
+        });
+      }
+
+      /* Example chip click → fill textarea */
+      if (plannerChips) {
+        plannerChips.addEventListener('click', function (e) {
+          var chip = e.target.closest('.planner-chip');
+          if (!chip) return;
+          var example = chip.dataset.example;
+          if (plannerTranscript) {
+            plannerTranscript.value = example;
+            plannerTranscript.dispatchEvent(new Event('input'));
+            plannerTranscript.focus();
+          }
+        });
+      }
+
+      /* Submit handler */
+      if (plannerSubmitBtn && plannerTranscript && plannerResult) {
+        plannerSubmitBtn.addEventListener('click', function () {
+          var transcript = plannerTranscript.value.trim();
+          if (!transcript) {
+            plannerTranscript.focus();
+            return;
+          }
+
+          /* Thinking state */
+          plannerSubmitBtn.disabled = true;
+          plannerSubmitBtn.textContent = 'AVA is thinking…';
+          plannerResult.style.display = 'block';
+          plannerResult.innerHTML = `
+            <div class="planner-thinking">
+              <div class="planner-thinking-dots">
+                <span class="planner-thinking-dot"></span>
+                <span class="planner-thinking-dot"></span>
+                <span class="planner-thinking-dot"></span>
+              </div>
+              <p class="planner-thinking-text">AVA is building your itinerary…</p>
+              <p class="planner-thinking-sub">Parsing trip details, calculating eco scores and planning your days</p>
+            </div>
+          `;
+
+          fetch('/api/ava-itinerary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transcript: transcript }),
+          })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.error) throw new Error(data.error);
+            plannerResult.innerHTML = window.renderItineraryCard(data);
+
+            /* Wire save button */
+            var saveBtn = document.getElementById('itin-save-btn');
+            if (saveBtn && window.VSTAuth && window.VSTAuth.isLoggedIn()) {
+              saveBtn.addEventListener('click', function () {
+                var itinToSave = {
+                  destination:   (data.parsed && data.parsed.destination_city) || 'Unknown',
+                  origin:        (data.parsed && data.parsed.origin_name) || '',
+                  departureDate: (data.parsed && data.parsed.departure_date) || '',
+                  returnDate:    (data.parsed && data.parsed.return_date) || '',
+                  tripType:      (data.parsed && data.parsed.trip_type) || 'return',
+                  travellerCount: (data.parsed && data.parsed.passengers) || 1,
+                  status:        'requested',
+                  itinerary:     data.itinerary,
+                  eco:           data.eco,
+                  source:        'ava_planner',
+                  evaluation:    {
+                    riskLevel:        'low',
+                    complianceStatus: 'compliant',
+                    approvalStatus:   'auto_approved',
+                    estimatedCost:    0,
+                  },
+                };
+                var saved = window.VSTTrips.create(itinToSave);
+                saveBtn.textContent = 'Saved to Dashboard';
+                saveBtn.disabled = true;
+                if (window.VSTNotifications && saved) {
+                  window.VSTNotifications.bookingConfirmed({
+                    destination: itinToSave.destination,
+                    ref: saved.id,
+                  });
+                }
+              });
+            }
+
+            /* Wire new trip button */
+            var newBtn = document.getElementById('itin-new-btn');
+            if (newBtn) {
+              newBtn.addEventListener('click', function () {
+                plannerResult.style.display = 'none';
+                plannerResult.innerHTML = '';
+                plannerTranscript.value = '';
+                if (plannerCharCount) plannerCharCount.textContent = '0 / 500';
+                plannerSubmitBtn.disabled = false;
+                plannerSubmitBtn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 10l16-8-8 16-2-6-6-2z"/></svg> Ask AVA';
+                plannerTranscript.focus();
+              });
+            }
+          })
+          .catch(function (err) {
+            plannerResult.innerHTML = `
+              <div class="planner-error">
+                <div class="planner-error-title">AVA couldn't process that request</div>
+                <p>${err.message || 'An unexpected error occurred. Please try again.'}</p>
+              </div>
+            `;
+          })
+          .finally(function () {
+            plannerSubmitBtn.disabled = false;
+            plannerSubmitBtn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 10l16-8-8 16-2-6-6-2z"/></svg> Ask AVA';
+          });
         });
       }
     }
