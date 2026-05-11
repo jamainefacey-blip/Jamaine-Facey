@@ -2,6 +2,7 @@
   "framework": null,
   "functions": {
     "api/ava-evaluate.js":           { "maxDuration": 30 },
+    "api/planner-chat.js":           { "maxDuration": 40 },
     "api/fares-search.js":           { "maxDuration": 20 },
     "api/v1-users-register.js":      { "maxDuration": 10 },
     "api/v1-users-login.js":         { "maxDuration": 10 },
@@ -14,6 +15,7 @@
   },
   "rewrites": [
     { "source": "/api/ava-evaluate",                  "destination": "/api/ava-evaluate" },
+    { "source": "/api/planner-chat",                  "destination": "/api/planner-chat" },
     { "source": "/api/ava-itinerary",                 "destination": "/api/ava-itinerary" },
     { "source": "/api/fares/search",                  "destination": "/api/fares-search" },
     { "source": "/v1/users/register",                 "destination": "/api/v1-users-register" },
