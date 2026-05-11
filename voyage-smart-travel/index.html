@@ -3,119 +3,615 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#09101f" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Voyage Smart Travel — the trusted platform for solo travellers. Safety-first, accessibility-led, confidence-built." />
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Voyage Smart Travel — travel with intention. AI-powered trip planning, eco-conscious flight search, and seamless booking in one platform." />
   <meta property="og:title" content="Voyage Smart Travel" />
-  <meta property="og:description" content="Travel with confidence. Every journey. Everywhere." />
+  <meta property="og:description" content="Travel with intention. AI-powered planning, eco-scoring, and booking." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://voyagesmarttravel.com" />
-  <title>Voyage Smart Travel</title>
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/design-system.css" />
+  <title>Voyage Smart Travel — Travel with Intention</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
 </head>
 <body>
 
-  <!-- ── App shell ───────────────────────────────────────────────────────── -->
-  <div id="vst-app">
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
 
-    <!-- Top navigation -->
-    <header class="site-header" id="site-header">
-      <div class="header-inner">
-        <a class="brand" href="#home" data-route="home" aria-label="Voyage Smart Travel home">
-          <span class="brand-mark">VST</span>
-          <span class="brand-name">Voyage Smart Travel</span>
-        </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-cta" href="/planner">Start Planning</a>
+      </div>
 
-        <nav class="main-nav" id="main-nav" aria-label="Primary navigation">
-          <a href="#home"          data-route="home"          class="nav-link">Home</a>
-          <a href="#safety"        data-route="safety"        class="nav-link">Safety</a>
-          <a href="#features"      data-route="features"      class="nav-link">Features</a>
-          <a href="#partners"      data-route="partners"      class="nav-link">Partners</a>
-          <a href="#planner"       data-route="planner"       class="nav-link">AVA Planner</a>
-          <a href="#trip-request"  data-route="trip-request"  class="nav-link">Request Trip</a>
-          <a href="#dashboard"     data-route="dashboard"     class="nav-link">Dashboard</a>
-          <a href="#profile"       data-route="profile"       class="nav-link" id="nav-profile" style="display:none;">Profile</a>
-          <a href="#auth"          data-route="auth"          class="nav-link" id="nav-signin">Sign In</a>
-          <a href="#contact"       data-route="contact"       class="nav-link nav-cta">Get Started</a>
-        </nav>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
 
-        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
-          <span></span><span></span><span></span>
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link nav-mobile-cta" href="/planner">Start Planning</a>
+  </div>
+
+  <!-- ── Hero ───────────────────────────────────────────────────── -->
+  <section class="hero" aria-label="Hero">
+    <div class="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=85');" aria-hidden="true"></div>
+    <div class="hero-gradient" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow page-enter">
+        <span class="hero-eyebrow-dot" aria-hidden="true"></span>
+        AI-powered travel · Eco-conscious · No friction
+      </div>
+
+      <h1 class="hero-title page-enter page-enter-d1">
+        Travel with<br><em>intention.</em>
+      </h1>
+
+      <p class="hero-sub page-enter page-enter-d2">
+        AVA finds flights, stays, and experiences that match your values — not just your budget.
+        Every trip scored for carbon impact.
+      </p>
+
+      <div class="ava-search page-enter page-enter-d3" role="search">
+        <label class="sr-only" for="hero-ava">Where do you want to go?</label>
+        <input
+          class="ava-search-input"
+          id="hero-ava"
+          type="text"
+          placeholder="Where do you want to go? Try &quot;10 days in Japan, low carbon&quot;"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="button" class="ava-search-btn" aria-label="Search with AVA">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
         </button>
       </div>
 
-      <!-- Mobile drawer -->
-      <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-        <a href="#home"          data-route="home"          class="mobile-link">Home</a>
-        <a href="#about"         data-route="about"         class="mobile-link">About</a>
-        <a href="#safety"        data-route="safety"        class="mobile-link">Safety</a>
-        <a href="#features"      data-route="features"      class="mobile-link">Features</a>
-        <a href="#accessibility" data-route="accessibility" class="mobile-link">Accessibility</a>
-        <a href="#partners"      data-route="partners"      class="mobile-link">Partners</a>
-        <a href="#planner"       data-route="planner"       class="mobile-link">AVA Planner</a>
-        <a href="#trip-request"  data-route="trip-request"  class="mobile-link">Request Trip</a>
-        <a href="#dashboard"     data-route="dashboard"     class="mobile-link">Dashboard</a>
-        <a href="#contact"       data-route="contact"       class="mobile-link mobile-link-cta">Get Started</a>
+      <div class="ava-chips page-enter page-enter-d4" aria-label="Quick searches">
+        <button type="button" class="ava-chip">Kyoto in spring</button>
+        <button type="button" class="ava-chip">Budget Iceland</button>
+        <button type="button" class="ava-chip">Amalfi Coast</button>
+        <button type="button" class="ava-chip">Safari, low carbon</button>
+        <button type="button" class="ava-chip">Solo Tokyo</button>
       </div>
-    </header>
+    </div>
 
-    <!-- Main content — pages render here -->
-    <main class="site-main" id="site-main">
-      <div class="loading-screen">
-        <div class="loading-spinner"></div>
-        <p>Loading…</p>
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <span>Scroll</span>
+      <span class="hero-scroll-line"></span>
+    </div>
+  </section>
+
+  <!-- ── Destination Carousel ───────────────────────────────────── -->
+  <section class="carousel-section" aria-label="Featured destinations">
+    <div class="carousel-header">
+      <div>
+        <p class="section-label">Curated escapes</p>
+        <h2 class="section-title" style="margin-bottom:0;">Where will you go?</h2>
       </div>
-    </main>
+      <div class="carousel-nav" aria-label="Carousel controls">
+        <button type="button" class="carousel-btn" id="carousel-prev" aria-label="Previous destinations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="carousel-btn" id="carousel-next" aria-label="Next destinations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-    <!-- Footer rendered by components -->
-    <footer class="site-footer" id="site-footer"></footer>
+    <div class="carousel-track" role="list">
 
-  </div><!-- /#vst-app -->
+      <!-- Kyoto -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=700&q=80" alt="Kyoto, Japan — bamboo forest at dusk" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 88">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            88
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Japan</p>
+          <h3 class="dest-card-name">Kyoto</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£680</span>
+          </div>
+        </div>
+      </article>
 
-  <!-- ── Scripts — load order matters ──────────────────────────────────── -->
-  <script src="js/components.js"></script>
-  <script src="js/trips.js"></script>
-  <script src="js/ava-engine.js"></script>
-  <script src="js/ava-phase6.js"></script>
-  <script src="js/fare-search.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/eco-engine.js"></script>
-  <script src="js/notifications.js"></script>
-  <script src="js/pain-engine-adapter.js"></script>
-  <script src="pages/home.js"></script>
-  <script src="pages/about.js"></script>
-  <script src="pages/safety.js"></script>
-  <script src="pages/features.js"></script>
-  <script src="pages/accessibility.js"></script>
-  <script src="pages/partners.js"></script>
-  <script src="pages/contact.js"></script>
-  <script src="pages/trip-request.js"></script>
-  <script src="pages/planner.js"></script>
-  <script src="pages/dashboard.js"></script>
-  <script src="pages/pain-control.js"></script>
-  <script src="pages/auth.js"></script>
-  <script src="pages/profile.js"></script>
-  <script src="js/router.js"></script>
-  <script>
-    /* Nav auth state — update Sign In / Profile links on auth change */
-    if (window.VSTAuth) {
-      function _updateNavAuth(user) {
-        var signinEl  = document.getElementById('nav-signin');
-        var profileEl = document.getElementById('nav-profile');
-        var loggedIn  = window.VSTAuth.isLoggedIn();
-        if (signinEl)  signinEl.style.display  = loggedIn ? 'none' : '';
-        if (profileEl) profileEl.style.display = loggedIn ? '' : 'none';
-        if (profileEl && user) {
-          var name = (user.identity && (user.identity.preferred_name || user.identity.full_name)) || 'Profile';
-          profileEl.textContent = name.split(' ')[0];
-        }
-      }
-      window.VSTAuth.onAuthChange(_updateNavAuth);
-      _updateNavAuth(window.VSTAuth.getCachedUser());
-    }
-  </script>
+      <!-- Amalfi Coast -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=700&q=80" alt="Amalfi Coast, Italy — colourful cliffside village" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 72">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            72
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Italy</p>
+          <h3 class="dest-card-name">Amalfi Coast</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£420</span>
+          </div>
+        </div>
+      </article>
 
+      <!-- Iceland -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=700&q=80" alt="Iceland — Northern Lights over snowy mountains" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 91">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            91
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Iceland</p>
+          <h3 class="dest-card-name">Reykjavík</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£310</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Morocco -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1548019979-b360abfc78f5?w=700&q=80" alt="Morocco — Marrakech medina alleyway" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 79">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            79
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Morocco</p>
+          <h3 class="dest-card-name">Marrakech</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£195</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Bali -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=700&q=80" alt="Bali, Indonesia — terraced rice fields" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 84">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            84
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Indonesia</p>
+          <h3 class="dest-card-name">Bali</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£590</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Patagonia -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=700&q=80" alt="Patagonia — dramatic granite peaks and glacial lake" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 95">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            95
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Argentina · Chile</p>
+          <h3 class="dest-card-name">Patagonia</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£890</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Tokyo -->
+      <article class="dest-card" role="listitem" tabindex="0">
+        <div class="dest-card-img-wrap">
+          <img class="dest-card-img" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=700&q=80" alt="Tokyo, Japan — illuminated city street at night" loading="lazy" />
+          <div class="dest-card-overlay" aria-hidden="true"></div>
+          <div class="dest-card-eco" aria-label="Eco score 82">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6l6-6-6-6v4H5v4h6v4z" fill="currentColor"/></svg>
+            82
+          </div>
+        </div>
+        <div class="dest-card-info">
+          <p class="dest-card-country">Japan</p>
+          <h3 class="dest-card-name">Tokyo</h3>
+          <div class="dest-card-footer">
+            <span class="dest-card-from">from</span>
+            <span class="dest-card-price">£720</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Featured Trips with Eco Scores ─────────────────────────── -->
+  <section class="section trips-section" aria-label="Featured trips">
+    <div class="section-inner">
+      <div class="section-head">
+        <p class="section-label">Live fares</p>
+        <h2 class="section-title">Flights worth taking</h2>
+        <p class="section-sub">Every flight scored on carbon emissions, offset availability, and airline sustainability practices.</p>
+      </div>
+
+      <div class="trips-grid">
+
+        <!-- LHR → CDG -->
+        <article class="trip-card">
+          <img class="trip-card-img" src="https://images.unsplash.com/photo-1431274172761-fca41d930114?w=600&q=80" alt="Paris at dusk from above the Seine" loading="lazy" />
+          <div class="trip-card-body">
+            <div class="trip-route">
+              <span class="trip-city">LHR</span>
+              <div class="trip-line" aria-hidden="true"></div>
+              <span class="trip-city">CDG</span>
+            </div>
+            <div class="trip-meta">
+              <div class="eco-badge" aria-label="Eco score 78">
+                <div class="eco-bar" aria-hidden="true">
+                  <div class="eco-fill mid" data-w="78"></div>
+                </div>
+                <span class="eco-score mid">78</span>
+              </div>
+              <div class="trip-price-wrap">
+                <div class="trip-price-label">from</div>
+                <div class="trip-price">£89</div>
+              </div>
+            </div>
+          </div>
+          <div class="trip-card-footer">
+            <span class="trip-date">Sat 14 Jun · 2h 05m</span>
+            <a class="trip-book" href="/planner?q=London+to+Paris">Book →</a>
+          </div>
+        </article>
+
+        <!-- JFK → LIS -->
+        <article class="trip-card">
+          <img class="trip-card-img" src="https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=600&q=80" alt="Lisbon — Alfama district and Tagus river" loading="lazy" />
+          <div class="trip-card-body">
+            <div class="trip-route">
+              <span class="trip-city">JFK</span>
+              <div class="trip-line" aria-hidden="true"></div>
+              <span class="trip-city">LIS</span>
+            </div>
+            <div class="trip-meta">
+              <div class="eco-badge" aria-label="Eco score 61">
+                <div class="eco-bar" aria-hidden="true">
+                  <div class="eco-fill mid" data-w="61"></div>
+                </div>
+                <span class="eco-score mid">61</span>
+              </div>
+              <div class="trip-price-wrap">
+                <div class="trip-price-label">from</div>
+                <div class="trip-price">£345</div>
+              </div>
+            </div>
+          </div>
+          <div class="trip-card-footer">
+            <span class="trip-date">Fri 20 Jun · 7h 30m</span>
+            <a class="trip-book" href="/planner?q=New+York+to+Lisbon">Book →</a>
+          </div>
+        </article>
+
+        <!-- DUB → OSL -->
+        <article class="trip-card">
+          <img class="trip-card-img" src="https://images.unsplash.com/photo-1513569771920-c9e1d31714af?w=600&q=80" alt="Oslo — waterfront with traditional wooden buildings" loading="lazy" />
+          <div class="trip-card-body">
+            <div class="trip-route">
+              <span class="trip-city">DUB</span>
+              <div class="trip-line" aria-hidden="true"></div>
+              <span class="trip-city">OSL</span>
+            </div>
+            <div class="trip-meta">
+              <div class="eco-badge" aria-label="Eco score 88">
+                <div class="eco-bar" aria-hidden="true">
+                  <div class="eco-fill high" data-w="88"></div>
+                </div>
+                <span class="eco-score high">88</span>
+              </div>
+              <div class="trip-price-wrap">
+                <div class="trip-price-label">from</div>
+                <div class="trip-price">£112</div>
+              </div>
+            </div>
+          </div>
+          <div class="trip-card-footer">
+            <span class="trip-date">Mon 16 Jun · 2h 50m</span>
+            <a class="trip-book" href="/planner?q=Dublin+to+Oslo">Book →</a>
+          </div>
+        </article>
+
+        <!-- SYD → NRT -->
+        <article class="trip-card">
+          <img class="trip-card-img" src="https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=600&q=80" alt="Sydney Harbour Bridge and Opera House at twilight" loading="lazy" />
+          <div class="trip-card-body">
+            <div class="trip-route">
+              <span class="trip-city">SYD</span>
+              <div class="trip-line" aria-hidden="true"></div>
+              <span class="trip-city">NRT</span>
+            </div>
+            <div class="trip-meta">
+              <div class="eco-badge" aria-label="Eco score 54">
+                <div class="eco-bar" aria-hidden="true">
+                  <div class="eco-fill low" data-w="54"></div>
+                </div>
+                <span class="eco-score low">54</span>
+              </div>
+              <div class="trip-price-wrap">
+                <div class="trip-price-label">from</div>
+                <div class="trip-price">£620</div>
+              </div>
+            </div>
+          </div>
+          <div class="trip-card-footer">
+            <span class="trip-date">Wed 18 Jun · 9h 55m</span>
+            <a class="trip-book" href="/planner?q=Sydney+to+Tokyo">Book →</a>
+          </div>
+        </article>
+
+        <!-- MAN → BCN -->
+        <article class="trip-card">
+          <img class="trip-card-img" src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=600&q=80" alt="Barcelona — Sagrada Familia at golden hour" loading="lazy" />
+          <div class="trip-card-body">
+            <div class="trip-route">
+              <span class="trip-city">MAN</span>
+              <div class="trip-line" aria-hidden="true"></div>
+              <span class="trip-city">BCN</span>
+            </div>
+            <div class="trip-meta">
+              <div class="eco-badge" aria-label="Eco score 82">
+                <div class="eco-bar" aria-hidden="true">
+                  <div class="eco-fill high" data-w="82"></div>
+                </div>
+                <span class="eco-score high">82</span>
+              </div>
+              <div class="trip-price-wrap">
+                <div class="trip-price-label">from</div>
+                <div class="trip-price">£74</div>
+              </div>
+            </div>
+          </div>
+          <div class="trip-card-footer">
+            <span class="trip-date">Thu 19 Jun · 2h 25m</span>
+            <a class="trip-book" href="/planner?q=Manchester+to+Barcelona">Book →</a>
+          </div>
+        </article>
+
+        <!-- LHR → NBO -->
+        <article class="trip-card">
+          <img class="trip-card-img" src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&q=80" alt="Kenya savanna — acacia trees at sunrise" loading="lazy" />
+          <div class="trip-card-body">
+            <div class="trip-route">
+              <span class="trip-city">LHR</span>
+              <div class="trip-line" aria-hidden="true"></div>
+              <span class="trip-city">NBO</span>
+            </div>
+            <div class="trip-meta">
+              <div class="eco-badge" aria-label="Eco score 69">
+                <div class="eco-bar" aria-hidden="true">
+                  <div class="eco-fill mid" data-w="69"></div>
+                </div>
+                <span class="eco-score mid">69</span>
+              </div>
+              <div class="trip-price-wrap">
+                <div class="trip-price-label">from</div>
+                <div class="trip-price">£480</div>
+              </div>
+            </div>
+          </div>
+          <div class="trip-card-footer">
+            <span class="trip-date">Tue 17 Jun · 8h 40m</span>
+            <a class="trip-book" href="/planner?q=London+to+Nairobi">Book →</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stats Bar ───────────────────────────────────────────────── -->
+  <div class="stats-bar" aria-label="Platform statistics">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-num">47+</div>
+        <div class="stat-label">Travel providers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">180</div>
+        <div class="stat-label">Countries covered</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">2.1M</div>
+        <div class="stat-label">Trips planned</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">91%</div>
+        <div class="stat-label">Carbon offset rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature Grid ────────────────────────────────────────────── -->
+  <section class="section" aria-label="Platform features">
+    <div class="section-inner">
+      <div class="section-head">
+        <p class="section-label">Why VST</p>
+        <h2 class="section-title">A smarter way to travel</h2>
+      </div>
+
+      <div class="features-grid">
+
+        <!-- Wide: AVA -->
+        <article class="feat-card feat-wide">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/>
+            </svg>
+          </div>
+          <h3 class="feat-title">AVA — your AI travel companion</h3>
+          <p class="feat-desc">Talk to AVA in plain language. "10 days in Japan, under £2k, low carbon" becomes a full itinerary with flights, stays, and local transport — in seconds.</p>
+          <div class="feat-stat">2.1M<div class="feat-stat-label">itineraries built</div></div>
+        </article>
+
+        <!-- Eco scoring -->
+        <article class="feat-card accent-teal">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <h3 class="feat-title">Eco scores on everything</h3>
+          <p class="feat-desc">Every flight, hotel, and activity carries a transparent sustainability score based on real emissions data — not greenwashing.</p>
+          <div class="feat-stat" style="color:var(--teal);">91%<div class="feat-stat-label">trips with offsets</div></div>
+        </article>
+
+        <!-- Smart booking -->
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <h3 class="feat-title">Under 3 taps to booking</h3>
+          <p class="feat-desc">Once AVA has your itinerary, booking is a single confirmation. No re-entering details, no hidden fees revealed at checkout.</p>
+        </article>
+
+        <!-- Price intelligence -->
+        <article class="feat-card accent-teal">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <h3 class="feat-title">Live fare intelligence</h3>
+          <p class="feat-desc">Real-time prices from 47+ providers, with predictions on whether to book now or wait — based on historic patterns and seat availability.</p>
+        </article>
+
+        <!-- 180 countries -->
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </div>
+          <h3 class="feat-title">180 countries, seamlessly</h3>
+          <p class="feat-desc">Flights, trains, ferries, and local transit unified into a single itinerary. Multi-modal travel has never felt this simple.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ────────────────────────────────────────────────────── -->
+  <section class="section cta-section" aria-label="Call to action">
+    <div class="section-inner" style="text-align:center;">
+      <p class="section-label" style="text-align:center;">Ready?</p>
+      <h2 class="cta-title">Your next journey<br><em>starts here.</em></h2>
+      <p class="cta-sub">Tell AVA where you want to go. It handles the rest.</p>
+      <div class="btn-group">
+        <a class="btn-primary" href="/planner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          Start planning with AVA
+        </a>
+        <a class="btn-ghost" href="/destinations">Browse destinations</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="vst-footer" aria-label="Site footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-mark">VST</div>
+        <p class="footer-tagline">Travel with intention. AI-powered planning, transparent eco scores, seamless booking.</p>
+        <div class="footer-socials" aria-label="Social media">
+          <a class="footer-social" href="https://twitter.com" aria-label="Twitter" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a class="footer-social" href="https://instagram.com" aria-label="Instagram" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a class="footer-social" href="https://linkedin.com" aria-label="LinkedIn" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zm2-3a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-head">Explore</p>
+        <a class="footer-lnk" href="/destinations">Destinations</a>
+        <a class="footer-lnk" href="/planner">AVA Planner</a>
+        <a class="footer-lnk" href="/">Flights</a>
+        <a class="footer-lnk" href="/">Hotels</a>
+        <a class="footer-lnk" href="/">Trains</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Company</p>
+        <a class="footer-lnk" href="/about">About</a>
+        <a class="footer-lnk" href="/about#values">Values</a>
+        <a class="footer-lnk" href="/about#mission">Mission</a>
+        <a class="footer-lnk" href="/">Press</a>
+        <a class="footer-lnk" href="/">Careers</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Legal</p>
+        <a class="footer-lnk" href="/">Privacy</a>
+        <a class="footer-lnk" href="/">Terms</a>
+        <a class="footer-lnk" href="/">Cookie Policy</a>
+        <a class="footer-lnk" href="/">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Voyage Smart Travel Ltd. All rights reserved.</span>
+      <span>Registered in England &amp; Wales · 14829301</span>
+    </div>
+  </footer>
+
+  <script src="js/premium.js"></script>
 </body>
 </html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Explore destinations around the world — each one eco-scored and curated by AVA for travellers who care about where they go and how they get there." />
+  <title>Destinations — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link active" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-cta" href="/planner">Start Planning</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link nav-mobile-cta" href="/planner">Start Planning</a>
+  </div>
+
+  <!-- ── Hero ───────────────────────────────────────────────────── -->
+  <header class="destinations-hero page-enter" aria-label="Destinations header">
+    <p class="section-label">180 countries · eco-scored</p>
+    <h1 class="section-title" style="font-size:clamp(2.75rem,7vw,5.5rem);">Where do you<br><span style="font-style:italic; color:var(--gold);">want to go?</span></h1>
+    <p class="section-sub" style="margin-top:1rem;">Every destination below comes with a live eco score, carbon offset options, and AVA-curated itinerary suggestions.</p>
+  </header>
+
+  <!-- ── Filter bar ─────────────────────────────────────────────── -->
+  <div class="filter-bar" role="group" aria-label="Filter destinations">
+    <button type="button" class="filter-btn active" data-filter="all">All</button>
+    <button type="button" class="filter-btn" data-filter="asia">Asia</button>
+    <button type="button" class="filter-btn" data-filter="europe">Europe</button>
+    <button type="button" class="filter-btn" data-filter="americas">Americas</button>
+    <button type="button" class="filter-btn" data-filter="africa">Africa &amp; Middle East</button>
+    <button type="button" class="filter-btn" data-filter="adventure">Adventure</button>
+    <button type="button" class="filter-btn" data-filter="culture">Culture</button>
+    <button type="button" class="filter-btn" data-filter="beach">Beach</button>
+  </div>
+
+  <!-- ── Destinations grid ──────────────────────────────────────── -->
+  <main class="destinations-grid" id="destinations-grid" aria-label="Destination cards">
+
+    <!-- Kyoto -->
+    <article class="dgrid-card" data-tags="asia culture adventure" tabindex="0" aria-label="Kyoto, Japan">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=700&q=80" alt="Kyoto — Fushimi Inari shrine torii gates at dawn" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 88">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          88
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Japan · Asia</p>
+        <h2 class="dgrid-name">Kyoto</h2>
+        <p class="dgrid-desc">Ancient temples, bamboo groves, and ryokan stays — Kyoto moves at a pace that rewards slowness. Best reached by bullet train from Tokyo.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Temples</span>
+          <span class="dgrid-tag">Slow travel</span>
+          <span class="dgrid-tag">Spring blossoms</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Reykjavík -->
+    <article class="dgrid-card" data-tags="europe adventure" tabindex="0" aria-label="Reykjavík, Iceland">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=700&q=80" alt="Iceland — aurora borealis over snowy mountains and frozen lake" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 91">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          91
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Iceland · Europe</p>
+        <h2 class="dgrid-name">Reykjavík</h2>
+        <p class="dgrid-desc">Geothermal pools, volcanic landscapes, and the Northern Lights. Iceland runs almost entirely on renewable energy — one of the most sustainable destinations on earth.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Adventure</span>
+          <span class="dgrid-tag">Northern Lights</span>
+          <span class="dgrid-tag">Geothermal</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Marrakech -->
+    <article class="dgrid-card" data-tags="africa culture" tabindex="0" aria-label="Marrakech, Morocco">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1548019979-b360abfc78f5?w=700&q=80" alt="Marrakech — colourful spice market in the medina" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 79">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          79
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Morocco · Africa</p>
+        <h2 class="dgrid-name">Marrakech</h2>
+        <p class="dgrid-desc">Labyrinthine souks, riad gardens, and Atlas mountain daytrips. A short hop from Europe with a sense of complete cultural immersion.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Souks</span>
+          <span class="dgrid-tag">Cuisine</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Amalfi Coast -->
+    <article class="dgrid-card" data-tags="europe beach culture" tabindex="0" aria-label="Amalfi Coast, Italy">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=700&q=80" alt="Amalfi Coast — pastel clifftop village above the Tyrrhenian Sea" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 72">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          72
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Italy · Europe</p>
+        <h2 class="dgrid-name">Amalfi Coast</h2>
+        <p class="dgrid-desc">Cliffside villages, sea-blue coves, and the scent of lemon groves. Best explored by ferry and on foot — no car required.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Beach</span>
+          <span class="dgrid-tag">Coastal</span>
+          <span class="dgrid-tag">Food &amp; Wine</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Patagonia -->
+    <article class="dgrid-card" data-tags="americas adventure" tabindex="0" aria-label="Patagonia, South America">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=700&q=80" alt="Patagonia — jagged Torres del Paine peaks reflected in glacial lake" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 95">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          95
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Argentina · Chile · Americas</p>
+        <h2 class="dgrid-name">Patagonia</h2>
+        <p class="dgrid-desc">The end of the world, and the beginning of perspective. Glaciers, condors, and trails that demand nothing but your full attention.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Adventure</span>
+          <span class="dgrid-tag">Trekking</span>
+          <span class="dgrid-tag">Wildlife</span>
+          <span class="dgrid-tag">Remote</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Bali -->
+    <article class="dgrid-card" data-tags="asia beach adventure culture" tabindex="0" aria-label="Bali, Indonesia">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=700&q=80" alt="Bali — emerald rice terraces at sunrise" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 84">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          84
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Indonesia · Asia</p>
+        <h2 class="dgrid-name">Bali</h2>
+        <p class="dgrid-desc">More than a beach destination — Ubud's rice terraces, temple ceremonies, and culinary depth make this one of Asia's most rewarding cultural escapes.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Beach</span>
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Wellness</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Tokyo -->
+    <article class="dgrid-card" data-tags="asia culture" tabindex="0" aria-label="Tokyo, Japan">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=700&q=80" alt="Tokyo — neon-lit street crossing at night" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 82">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          82
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Japan · Asia</p>
+        <h2 class="dgrid-name">Tokyo</h2>
+        <p class="dgrid-desc">A city of infinite layers. World-class transit, Michelin-starred ramen, and neighbourhoods that reward aimless wandering. Pair it with a shinkansen trip to Kyoto.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Food</span>
+          <span class="dgrid-tag">Urban</span>
+          <span class="dgrid-tag">Technology</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Nairobi / Kenya -->
+    <article class="dgrid-card" data-tags="africa adventure" tabindex="0" aria-label="Nairobi &amp; Kenya safari">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=700&q=80" alt="Kenya savanna — acacia tree silhouette at golden sunrise" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 76">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          76
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Kenya · Africa</p>
+        <h2 class="dgrid-name">Kenya Safari</h2>
+        <p class="dgrid-desc">The Maasai Mara at dawn, elephant herds at dusk. AVA works with conservation-certified camps to ensure your visit contributes directly to habitat protection.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Adventure</span>
+          <span class="dgrid-tag">Wildlife</span>
+          <span class="dgrid-tag">Conservation</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Lisbon -->
+    <article class="dgrid-card" data-tags="europe culture beach" tabindex="0" aria-label="Lisbon, Portugal">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=700&q=80" alt="Lisbon — tiled rooftops and Tagus River at dusk" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 85">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          85
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Portugal · Europe</p>
+        <h2 class="dgrid-name">Lisbon</h2>
+        <p class="dgrid-desc">Trams, fado, and pastéis de nata — Lisbon is Europe's most soulful capital. Easily reached by overnight train from Madrid.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Music</span>
+          <span class="dgrid-tag">Food</span>
+          <span class="dgrid-tag">Walkable</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Oslo -->
+    <article class="dgrid-card" data-tags="europe adventure" tabindex="0" aria-label="Oslo, Norway">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1513569771920-c9e1d31714af?w=700&q=80" alt="Oslo — Bryggen waterfront with colourful historic buildings" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 93">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          93
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Norway · Europe</p>
+        <h2 class="dgrid-name">Oslo</h2>
+        <p class="dgrid-desc">Electric ferries, forest trails 20 minutes from the centre, and world-class museums. Oslo leads the world in urban sustainability.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Adventure</span>
+          <span class="dgrid-tag">Nature</span>
+          <span class="dgrid-tag">Design</span>
+          <span class="dgrid-tag">Eco-leader</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Barcelona -->
+    <article class="dgrid-card" data-tags="europe culture beach" tabindex="0" aria-label="Barcelona, Spain">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=700&q=80" alt="Barcelona — Sagrada Família facade at golden hour" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 80">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          80
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">Spain · Europe</p>
+        <h2 class="dgrid-name">Barcelona</h2>
+        <p class="dgrid-desc">Gaudí's fever dream, beach life, and the world's best tapas. Reached in 6h from London by high-speed train — no airport required.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Beach</span>
+          <span class="dgrid-tag">Architecture</span>
+          <span class="dgrid-tag">Nightlife</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- New York -->
+    <article class="dgrid-card" data-tags="americas culture" tabindex="0" aria-label="New York, USA">
+      <div class="dgrid-img-wrap">
+        <img class="dgrid-img" src="https://images.unsplash.com/photo-1534430480872-3498386e7856?w=700&q=80" alt="New York — Manhattan skyline at blue hour from Brooklyn Bridge" loading="lazy" />
+        <div class="dgrid-eco" aria-label="Eco score 63">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.9c1.9-1.38 4.3-2.09 6.68-1.8C14 12.5 17 8 17 8z"/><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          63
+        </div>
+      </div>
+      <div class="dgrid-body">
+        <p class="dgrid-region">USA · Americas</p>
+        <h2 class="dgrid-name">New York</h2>
+        <p class="dgrid-desc">The city that never stops — but rewards those who slow down. AVA recommends carbon offsets for transatlantic flights and local transit passes on arrival.</p>
+        <div class="dgrid-tags">
+          <span class="dgrid-tag">Culture</span>
+          <span class="dgrid-tag">Food</span>
+          <span class="dgrid-tag">Arts</span>
+          <span class="dgrid-tag">Iconic</span>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ── CTA ───────────────────────────────────────────────────── -->
+  <section class="section cta-section" aria-label="Plan your trip">
+    <div class="section-inner" style="text-align:center;">
+      <p class="section-label" style="text-align:center;">Can't decide?</p>
+      <h2 class="cta-title">Let AVA<br><em>choose for you.</em></h2>
+      <p class="cta-sub">Tell AVA what matters — adventure, culture, carbon footprint, budget — and it'll match you to the perfect destination.</p>
+      <div class="btn-group">
+        <a class="btn-primary" href="/planner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          Ask AVA
+        </a>
+        <a class="btn-ghost" href="/">View featured flights</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="vst-footer" aria-label="Site footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-mark">VST</div>
+        <p class="footer-tagline">Travel with intention. AI-powered planning, transparent eco scores, seamless booking.</p>
+        <div class="footer-socials" aria-label="Social media">
+          <a class="footer-social" href="https://twitter.com" aria-label="Twitter" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a class="footer-social" href="https://instagram.com" aria-label="Instagram" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a class="footer-social" href="https://linkedin.com" aria-label="LinkedIn" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zm2-3a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-head">Explore</p>
+        <a class="footer-lnk" href="/destinations">Destinations</a>
+        <a class="footer-lnk" href="/planner">AVA Planner</a>
+        <a class="footer-lnk" href="/">Flights</a>
+        <a class="footer-lnk" href="/">Hotels</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Company</p>
+        <a class="footer-lnk" href="/about">About</a>
+        <a class="footer-lnk" href="/about#values">Values</a>
+        <a class="footer-lnk" href="/">Careers</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Legal</p>
+        <a class="footer-lnk" href="/">Privacy</a>
+        <a class="footer-lnk" href="/">Terms</a>
+        <a class="footer-lnk" href="/">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Voyage Smart Travel Ltd.</span>
+      <span>Registered in England &amp; Wales · 14829301</span>
+    </div>
+  </footer>
+
+  <script src="js/premium.js"></script>
+</body>
+</html>
