@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <title>Sign In — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 40px) 24px 60px;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(201,168,76,0.08) 0%, transparent 60%);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      animation: blur-slide-up 0.7s var(--ease-out) both;
+    }
+    .auth-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auth-eyebrow::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .auth-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--cream);
+      margin-bottom: 32px;
+    }
+    .auth-title em { color: var(--gold); font-style: italic; }
+    .form-field { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 15px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+    .form-input::placeholder { color: var(--text-subtle); }
+    .form-row-between {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .form-row-between a { color: var(--gold); }
+    .form-row-between a:hover { text-decoration: underline; }
+    .btn-auth {
+      width: 100%;
+      padding: 15px;
+      background: var(--gold);
+      color: #0a0f1a;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-auth:hover { background: var(--gold-bright); transform: translateY(-1px); }
+    .btn-auth:active { transform: translateY(0); }
+    .btn-auth:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: var(--text-subtle);
+      font-size: 12px;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .auth-footer a { color: var(--gold); }
+    .auth-footer a:hover { text-decoration: underline; }
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .alert-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .alert-success { background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.25); color: #5eead4; }
+    .alert.visible { display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(10,15,26,0.3);
+      border-top-color: #0a0f1a;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-cta" href="/register.html">Create Account</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link nav-mobile-cta" href="/register.html">Create Account</a>
+  </div>
+
+  <!-- ── Auth Form ───────────────────────────────────────────────── -->
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <p class="auth-eyebrow">Welcome back</p>
+      <h1 class="auth-title">Sign in to<br><em>Voyage Smart</em></h1>
+
+      <div class="alert alert-error" id="alert-error" role="alert"></div>
+      <div class="alert alert-success" id="alert-success" role="status"></div>
+
+      <form id="login-form" novalidate>
+        <div class="form-field">
+          <label class="form-label" for="email">Email address</label>
+          <input class="form-input" id="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" id="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+        </div>
+
+        <div class="form-row-between">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="remember" style="accent-color:var(--gold);" />
+            <span>Remember me</span>
+          </label>
+          <a href="#" id="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-auth" id="submit-btn">Sign In</button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="/register.html">Create one free</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var form   = document.getElementById('login-form');
+      var errEl  = document.getElementById('alert-error');
+      var okEl   = document.getElementById('alert-success');
+      var btn    = document.getElementById('submit-btn');
+      var burger = document.getElementById('nav-burger');
+      var mob    = document.getElementById('nav-mobile');
+
+      /* Mobile nav */
+      if (burger && mob) {
+        burger.addEventListener('click', function () {
+          var open = mob.classList.toggle('open');
+          burger.setAttribute('aria-expanded', open);
+          mob.setAttribute('aria-hidden', !open);
+        });
+      }
+
+      /* Redirect if already logged in */
+      window.VSTSupaAuth.getSession().then(function (res) {
+        if (res.data && res.data.session) {
+          var next = new URLSearchParams(location.search).get('next') || '/dashboard.html';
+          location.replace(next);
+        }
+      });
+
+      function showErr(msg) {
+        errEl.textContent = msg;
+        errEl.classList.add('visible');
+        okEl.classList.remove('visible');
+      }
+      function showOk(msg) {
+        okEl.textContent = msg;
+        okEl.classList.add('visible');
+        errEl.classList.remove('visible');
+      }
+      function setLoading(on) {
+        btn.disabled = on;
+        btn.innerHTML = on ? '<span class="spinner"></span>Signing in…' : 'Sign In';
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        errEl.classList.remove('visible');
+        var email    = document.getElementById('email').value.trim();
+        var password = document.getElementById('password').value;
+        if (!email || !password) { showErr('Please enter your email and password.'); return; }
+
+        setLoading(true);
+        try {
+          var { error } = await window.VSTSupaAuth.signIn(email, password);
+          if (error) throw error;
+          var next = new URLSearchParams(location.search).get('next') || '/dashboard.html';
+          location.replace(next);
+        } catch (err) {
+          setLoading(false);
+          showErr(err.message || 'Sign-in failed. Please try again.');
+        }
+      });
+
+      /* Forgot password */
+      document.getElementById('forgot-link').addEventListener('click', async function (e) {
+        e.preventDefault();
+        var email = document.getElementById('email').value.trim();
+        if (!email) { showErr('Enter your email address first, then click Forgot password.'); return; }
+        try {
+          var { error } = await window.VSTSupaAuth.resetPassword(email);
+          if (error) throw error;
+          showOk('Password reset email sent — check your inbox.');
+        } catch (err) {
+          showErr(err.message || 'Could not send reset email.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <title>Create Account — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 40px) 24px 60px;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,212,170,0.06) 0%, transparent 60%);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      animation: blur-slide-up 0.7s var(--ease-out) both;
+    }
+    .auth-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auth-eyebrow::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--teal);
+    }
+    .auth-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--cream);
+      margin-bottom: 32px;
+    }
+    .auth-title em { color: var(--gold); font-style: italic; }
+    .form-field { margin-bottom: 18px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 15px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--teal);
+      background: rgba(0,212,170,0.04);
+    }
+    .form-input::placeholder { color: var(--text-subtle); }
+    .form-hint { font-size: 12px; color: var(--text-subtle); margin-top: 5px; }
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 22px 0 26px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .terms-row input { margin-top: 3px; accent-color: var(--teal); flex-shrink: 0; }
+    .terms-row a { color: var(--gold); }
+    .terms-row a:hover { text-decoration: underline; }
+    .btn-auth {
+      width: 100%;
+      padding: 15px;
+      background: var(--teal);
+      color: #0a0f1a;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-auth:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-auth:active { transform: translateY(0); }
+    .btn-auth:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .auth-footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .auth-footer a { color: var(--gold); }
+    .auth-footer a:hover { text-decoration: underline; }
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .alert-error   { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .alert-success { background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.25); color: #5eead4; }
+    .alert.visible { display: block; }
+    .strength-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s, background 0.3s;
+      width: 0;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(10,15,26,0.3);
+      border-top-color: #0a0f1a;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .password-field { position: relative; }
+    .pw-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 13px;
+    }
+    .pw-toggle:hover { color: var(--text); }
+    @media (max-width: 480px) {
+      .auth-card { padding: 36px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-link" href="/login.html">Sign In</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link" href="/login.html">Sign In</a>
+  </div>
+
+  <!-- ── Register Form ───────────────────────────────────────────── -->
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <p class="auth-eyebrow">Join for free</p>
+      <h1 class="auth-title">Start your<br><em>journey</em> with VST</h1>
+
+      <div class="alert alert-error"   id="alert-error"   role="alert"></div>
+      <div class="alert alert-success" id="alert-success" role="status"></div>
+
+      <form id="register-form" novalidate>
+        <div class="form-field">
+          <label class="form-label" for="fullname">Full name</label>
+          <input class="form-input" id="fullname" type="text" autocomplete="name" placeholder="Jane Doe" required />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="email">Email address</label>
+          <input class="form-input" id="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="password">Password</label>
+            <div class="password-field">
+              <input class="form-input" id="password" type="password" autocomplete="new-password" placeholder="Min. 8 characters" required />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Toggle password visibility">Show</button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+            <p class="form-hint" id="strength-label"></p>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="confirm">Confirm password</label>
+            <input class="form-input" id="confirm" type="password" autocomplete="new-password" placeholder="Repeat password" required />
+          </div>
+        </div>
+
+        <label class="terms-row">
+          <input type="checkbox" id="terms" required />
+          <span>I agree to the <a href="/about">Terms of Service</a> and <a href="/about">Privacy Policy</a>, including eco-data processing to calculate trip carbon scores.</span>
+        </label>
+
+        <button type="submit" class="btn-auth" id="submit-btn">Create Account</button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="/login.html">Sign in</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var form    = document.getElementById('register-form');
+      var errEl   = document.getElementById('alert-error');
+      var okEl    = document.getElementById('alert-success');
+      var btn     = document.getElementById('submit-btn');
+      var pwInput = document.getElementById('password');
+      var toggle  = document.getElementById('pw-toggle');
+      var fill    = document.getElementById('strength-fill');
+      var label   = document.getElementById('strength-label');
+      var burger  = document.getElementById('nav-burger');
+      var mob     = document.getElementById('nav-mobile');
+
+      if (burger && mob) {
+        burger.addEventListener('click', function () {
+          var open = mob.classList.toggle('open');
+          burger.setAttribute('aria-expanded', open);
+          mob.setAttribute('aria-hidden', !open);
+        });
+      }
+
+      /* Redirect if already logged in */
+      window.VSTSupaAuth.getSession().then(function (res) {
+        if (res.data && res.data.session) location.replace('/dashboard.html');
+      });
+
+      /* Password visibility toggle */
+      toggle.addEventListener('click', function () {
+        var isText = pwInput.type === 'text';
+        pwInput.type = isText ? 'password' : 'text';
+        toggle.textContent = isText ? 'Show' : 'Hide';
+      });
+
+      /* Password strength meter */
+      pwInput.addEventListener('input', function () {
+        var pw = pwInput.value;
+        var score = 0;
+        if (pw.length >= 8)  score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+        var pct = (score / 4) * 100;
+        var colors = ['#ef4444','#f59e0b','#c9a84c','#00d4aa'];
+        var labels = ['Weak','Fair','Good','Strong'];
+        fill.style.width  = pct + '%';
+        fill.style.background = colors[score - 1] || 'transparent';
+        label.textContent = pw.length ? labels[score - 1] || '' : '';
+        label.style.color = colors[score - 1] || 'transparent';
+      });
+
+      function showErr(msg) {
+        errEl.textContent = msg;
+        errEl.classList.add('visible');
+        okEl.classList.remove('visible');
+      }
+      function showOk(msg) {
+        okEl.textContent = msg;
+        okEl.classList.add('visible');
+        errEl.classList.remove('visible');
+      }
+      function setLoading(on) {
+        btn.disabled = on;
+        btn.innerHTML = on ? '<span class="spinner"></span>Creating account…' : 'Create Account';
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        errEl.classList.remove('visible');
+
+        var name    = document.getElementById('fullname').value.trim();
+        var email   = document.getElementById('email').value.trim();
+        var pw      = document.getElementById('password').value;
+        var confirm = document.getElementById('confirm').value;
+        var terms   = document.getElementById('terms').checked;
+
+        if (!name)             { showErr('Please enter your full name.'); return; }
+        if (!email)            { showErr('Please enter your email address.'); return; }
+        if (pw.length < 8)     { showErr('Password must be at least 8 characters.'); return; }
+        if (pw !== confirm)    { showErr('Passwords do not match.'); return; }
+        if (!terms)            { showErr('Please accept the Terms of Service to continue.'); return; }
+
+        setLoading(true);
+        try {
+          var { error } = await window.VSTSupaAuth.signUp(email, pw, name);
+          if (error) throw error;
+          showOk('Account created! Check your email to confirm, then sign in.');
+          form.reset();
+          fill.style.width = '0';
+          label.textContent = '';
+          setTimeout(function () { location.href = '/login.html'; }, 3000);
+        } catch (err) {
+          setLoading(false);
+          showErr(err.message || 'Registration failed. Please try again.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

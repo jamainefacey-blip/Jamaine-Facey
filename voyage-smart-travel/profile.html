@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <title>Profile — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    /* ── Dashboard layout ─────────────────────────────────────── */
+    .dash-wrap {
+      display: flex;
+      min-height: 100vh;
+      padding-top: var(--nav-h);
+    }
+    .dash-sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: var(--nav-h);
+      height: calc(100vh - var(--nav-h));
+      overflow-y: auto;
+    }
+    .sidebar-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 0 24px;
+      margin: 24px 0 8px;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      font-size: 14px;
+      color: var(--text-muted);
+      border-left: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      cursor: pointer;
+    }
+    .sidebar-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .sidebar-link.active { color: var(--gold); border-left-color: var(--gold); background: var(--gold-dim); }
+    .sidebar-icon { width: 16px; text-align: center; opacity: 0.7; }
+    .sidebar-sign-out {
+      margin-top: auto;
+      padding: 0 24px;
+      margin-top: 40px;
+    }
+    .btn-sign-out {
+      width: 100%;
+      padding: 10px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius);
+      color: #fca5a5;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-sign-out:hover { background: rgba(239,68,68,0.18); }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    .dash-main {
+      flex: 1;
+      padding: 40px 48px;
+      max-width: 900px;
+    }
+    .dash-section { display: none; }
+    .dash-section.active { display: block; }
+
+    /* ── User header ──────────────────────────────────────────── */
+    .profile-header {
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      animation: blur-slide-up 0.6s var(--ease-out) both;
+    }
+    .avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border-gold);
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      color: var(--gold);
+    }
+    .avatar-upload-btn {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 28px; height: 28px;
+      background: var(--gold);
+      border: 2px solid var(--bg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+    .avatar-upload-btn:hover { background: var(--gold-bright); }
+    .avatar-upload-input { display: none; }
+    .profile-meta { flex: 1; }
+    .profile-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .profile-email { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+    .profile-since { font-size: 12px; color: var(--text-subtle); }
+    .profile-tier {
+      display: inline-block;
+      padding: 3px 10px;
+      background: var(--gold-dim);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    /* ── Stats cards ──────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+      animation: blur-slide-up 0.6s var(--ease-out) both;
+    }
+    .stat-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 11px; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-eco { color: var(--teal); }
+
+    /* ── Section titles ───────────────────────────────────────── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-head-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--cream);
+    }
+    .section-head-action {
+      font-size: 13px;
+      color: var(--gold);
+      cursor: pointer;
+    }
+    .section-head-action:hover { text-decoration: underline; }
+
+    /* ── Trip cards ───────────────────────────────────────────── */
+    .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .trip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .trip-card:hover { border-color: var(--border-gold); transform: translateY(-3px); }
+    .trip-card-img {
+      height: 110px;
+      background: var(--surface-2);
+      object-fit: cover;
+      width: 100%;
+    }
+    .trip-card-img-placeholder {
+      height: 110px;
+      background: linear-gradient(135deg, var(--surface-2) 0%, #1a2540 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .trip-card-body { padding: 14px; }
+    .trip-card-dest {
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    .trip-card-dates { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+    .trip-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .eco-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: rgba(0,212,170,0.1);
+      color: var(--teal);
+      border: 1px solid rgba(0,212,170,0.2);
+    }
+    .trip-card-del {
+      font-size: 12px;
+      color: var(--text-subtle);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: none;
+      border: none;
+    }
+    .trip-card-del:hover { color: #fca5a5; background: rgba(239,68,68,0.1); }
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 40px;
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; }
+    .empty-link { color: var(--gold); cursor: pointer; }
+    .empty-link:hover { text-decoration: underline; }
+
+    /* ── Booking history ──────────────────────────────────────── */
+    .booking-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+    .booking-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 0 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .booking-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .booking-table td:first-child { color: var(--text); font-weight: 500; }
+    .booking-table tr:last-child td { border-bottom: none; }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-confirmed  { background: rgba(0,212,170,0.1);  color: var(--teal);     border: 1px solid rgba(0,212,170,0.2); }
+    .status-pending    { background: rgba(245,158,11,0.1); color: var(--eco-amber); border: 1px solid rgba(245,158,11,0.2); }
+    .status-cancelled  { background: rgba(239,68,68,0.1);  color: #fca5a5;         border: 1px solid rgba(239,68,68,0.2); }
+    .status-completed  { background: rgba(201,168,76,0.1); color: var(--gold);     border: 1px solid var(--border-gold); }
+
+    /* ── Preferences form ─────────────────────────────────────── */
+    .prefs-form { margin-bottom: 40px; }
+    .prefs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .form-field { margin-bottom: 0; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 14px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.04);
+    }
+    .form-select option { background: var(--surface); color: var(--text); }
+    .form-input::placeholder { color: var(--text-subtle); }
+    .btn-save {
+      padding: 12px 28px;
+      background: var(--gold);
+      color: #0a0f1a;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-save:hover { background: var(--gold-bright); transform: translateY(-1px); }
+    .btn-save:active { transform: translateY(0); }
+
+    /* ── Account settings ─────────────────────────────────────── */
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .settings-card-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .danger-zone {
+      border-color: rgba(239,68,68,0.2);
+      background: rgba(239,68,68,0.04);
+    }
+    .danger-zone .settings-card-title { color: #fca5a5; }
+    .btn-danger {
+      padding: 10px 20px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius);
+      color: #fca5a5;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.22); }
+
+    /* ── Alerts ───────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      z-index: 9999;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.3s var(--ease-out), opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-success { background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.3); color: #5eead4; }
+    .toast-error   { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .dash-sidebar { display: none; }
+      .dash-main { padding: 24px 20px; max-width: 100%; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .prefs-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .profile-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+
+    /* ── Loading state ────────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.04) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500;
+      transition: opacity 0.4s;
+    }
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .loading-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-logo">VST ·  ·  ·</div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/dashboard.html">Dashboard</a>
+        <a class="nav-link active" href="/profile.html">Profile</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/dashboard.html">Dashboard</a>
+    <a class="nav-mobile-link active" href="/profile.html">Profile</a>
+  </div>
+
+  <!-- ── Dashboard layout ────────────────────────────────────────── -->
+  <div class="dash-wrap">
+
+    <!-- Sidebar -->
+    <aside class="dash-sidebar" aria-label="Profile navigation">
+      <p class="sidebar-section-label">Account</p>
+      <a class="sidebar-link active" data-section="overview" role="button" tabindex="0">
+        <span class="sidebar-icon">◈</span> Overview
+      </a>
+      <a class="sidebar-link" data-section="trips" role="button" tabindex="0">
+        <span class="sidebar-icon">✦</span> Saved Trips
+      </a>
+      <a class="sidebar-link" data-section="bookings" role="button" tabindex="0">
+        <span class="sidebar-icon">≡</span> Bookings
+      </a>
+
+      <p class="sidebar-section-label">Personalise</p>
+      <a class="sidebar-link" data-section="preferences" role="button" tabindex="0">
+        <span class="sidebar-icon">◎</span> Preferences
+      </a>
+      <a class="sidebar-link" data-section="settings" role="button" tabindex="0">
+        <span class="sidebar-icon">⚙</span> Settings
+      </a>
+
+      <div class="sidebar-sign-out">
+        <button type="button" class="btn-sign-out" id="sign-out-btn">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="dash-main">
+
+      <!-- ── Overview ──────────────────────────────────────────── -->
+      <section class="dash-section active" id="section-overview">
+
+        <!-- User header -->
+        <div class="profile-header">
+          <div class="avatar-wrap">
+            <div class="avatar" id="avatar-display">
+              <span id="avatar-initials">—</span>
+            </div>
+            <label class="avatar-upload-btn" title="Upload photo" for="avatar-input">✎</label>
+            <input type="file" class="avatar-upload-input" id="avatar-input" accept="image/jpeg,image/png,image/webp" />
+          </div>
+          <div class="profile-meta">
+            <h1 class="profile-name" id="profile-name">Loading…</h1>
+            <p class="profile-email" id="profile-email"></p>
+            <p class="profile-since" id="profile-since"></p>
+            <span class="profile-tier" id="profile-tier">Traveller</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card" style="animation-delay:0ms">
+            <div class="stat-value" id="stat-trips">0</div>
+            <div class="stat-label">Total Trips</div>
+          </div>
+          <div class="stat-card" style="animation-delay:60ms">
+            <div class="stat-value" id="stat-countries">0</div>
+            <div class="stat-label">Countries</div>
+          </div>
+          <div class="stat-card" style="animation-delay:120ms">
+            <div class="stat-value stat-eco" id="stat-co2">0</div>
+            <div class="stat-label">kg CO₂ Saved</div>
+          </div>
+          <div class="stat-card" style="animation-delay:180ms">
+            <div class="stat-value" id="stat-grade">—</div>
+            <div class="stat-label">Eco Grade</div>
+          </div>
+        </div>
+
+        <!-- Recent saved trips preview -->
+        <div class="section-head">
+          <h2 class="section-head-title">Saved Trips</h2>
+          <a class="section-head-action" data-section="trips">View all →</a>
+        </div>
+        <div id="trips-preview"></div>
+
+      </section>
+
+      <!-- ── Saved trips ────────────────────────────────────────── -->
+      <section class="dash-section" id="section-trips">
+        <div class="section-head">
+          <h2 class="section-head-title">Saved Trips</h2>
+          <a class="section-head-action" href="/planner">+ Plan new trip</a>
+        </div>
+        <div class="trips-grid" id="trips-full"></div>
+      </section>
+
+      <!-- ── Bookings ───────────────────────────────────────────── -->
+      <section class="dash-section" id="section-bookings">
+        <div class="section-head">
+          <h2 class="section-head-title">Booking History</h2>
+        </div>
+        <table class="booking-table">
+          <thead>
+            <tr>
+              <th>Destination</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Cost</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-tbody">
+            <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-subtle);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ── Preferences ────────────────────────────────────────── -->
+      <section class="dash-section" id="section-preferences">
+        <div class="section-head">
+          <h2 class="section-head-title">Travel Preferences</h2>
+        </div>
+        <form class="prefs-form" id="prefs-form">
+          <div class="prefs-grid">
+            <div class="form-field">
+              <label class="form-label" for="pref-style">Travel style</label>
+              <select class="form-select" id="pref-style">
+                <option value="">Select…</option>
+                <option value="adventure">Adventure</option>
+                <option value="luxury">Luxury</option>
+                <option value="budget">Budget</option>
+                <option value="eco">Eco-conscious</option>
+                <option value="cultural">Cultural immersion</option>
+                <option value="family">Family friendly</option>
+                <option value="solo">Solo explorer</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="pref-budget">Budget range</label>
+              <select class="form-select" id="pref-budget">
+                <option value="">Select…</option>
+                <option value="budget">Under $1,000</option>
+                <option value="mid">$1,000–$3,000</option>
+                <option value="premium">$3,000–$8,000</option>
+                <option value="luxury">$8,000+</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="pref-destinations">Favourite regions</label>
+              <input class="form-input" id="pref-destinations" type="text" placeholder="e.g. Southeast Asia, Mediterranean" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="pref-climate">Preferred climate</label>
+              <select class="form-select" id="pref-climate">
+                <option value="">Any</option>
+                <option value="tropical">Tropical</option>
+                <option value="temperate">Temperate</option>
+                <option value="arid">Arid / Desert</option>
+                <option value="polar">Cold / Polar</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field" style="margin-bottom:24px;">
+            <label class="form-label" for="pref-accessibility">Accessibility needs</label>
+            <input class="form-input" id="pref-accessibility" type="text" placeholder="e.g. Wheelchair access, dietary requirements" />
+          </div>
+
+          <div class="form-field" style="margin-bottom:24px;">
+            <label class="form-label" for="pref-bio">Bio / Travel goals</label>
+            <textarea class="form-input" id="pref-bio" rows="3" placeholder="Tell AVA what kind of traveller you are…" style="resize:vertical;"></textarea>
+          </div>
+
+          <button type="submit" class="btn-save">Save Preferences</button>
+        </form>
+      </section>
+
+      <!-- ── Settings ───────────────────────────────────────────── -->
+      <section class="dash-section" id="section-settings">
+        <div class="section-head">
+          <h2 class="section-head-title">Account Settings</h2>
+        </div>
+
+        <!-- Display name -->
+        <div class="settings-card">
+          <p class="settings-card-title">Display name</p>
+          <div style="display:flex;gap:12px;align-items:center;">
+            <input class="form-input" id="settings-name" type="text" placeholder="Your name" style="flex:1;max-width:320px;" />
+            <button type="button" class="btn-save" id="save-name-btn">Update</button>
+          </div>
+        </div>
+
+        <!-- Change password -->
+        <div class="settings-card">
+          <p class="settings-card-title">Change password</p>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <input class="form-input" id="settings-pw" type="password" placeholder="New password (min. 8 characters)" style="flex:1;max-width:320px;" />
+            <button type="button" class="btn-save" id="save-pw-btn">Update Password</button>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-card">
+          <p class="settings-card-title">Notifications</p>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--text-muted);margin-bottom:10px;">
+            <input type="checkbox" id="notif-deals" style="accent-color:var(--gold);" checked />
+            Eco travel deals and alerts
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--text-muted);">
+            <input type="checkbox" id="notif-tips" style="accent-color:var(--gold);" />
+            Weekly sustainable travel tips
+          </label>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-card danger-zone">
+          <p class="settings-card-title">Delete account</p>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Permanently delete your account and all data. This cannot be undone.</p>
+          <button type="button" class="btn-danger" id="delete-account-btn">Delete My Account</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/profile.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var P       = window.VSTProfile;
+    var Auth    = window.VSTSupaAuth;
+    var overlay = document.getElementById('loading-overlay');
+    var toast   = document.getElementById('toast');
+    var toastTimer;
+
+    /* ── Toast ─────────────────────────────────────────────────── */
+    function showToast(msg, type) {
+      clearTimeout(toastTimer);
+      toast.textContent = msg;
+      toast.className   = 'toast toast-' + (type || 'success') + ' show';
+      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 3500);
+    }
+
+    /* ── Mobile nav ────────────────────────────────────────────── */
+    var burger = document.getElementById('nav-burger');
+    var mob    = document.getElementById('nav-mobile');
+    if (burger && mob) {
+      burger.addEventListener('click', function () {
+        var open = mob.classList.toggle('open');
+        burger.setAttribute('aria-expanded', open);
+        mob.setAttribute('aria-hidden', !open);
+      });
+    }
+
+    /* ── Auth guard ────────────────────────────────────────────── */
+    Auth.getSession().then(function (res) {
+      if (!res.data || !res.data.session) {
+        location.replace('/login.html?next=/profile.html');
+      }
+    });
+
+    /* ── Sidebar navigation ────────────────────────────────────── */
+    function activateSection(name) {
+      document.querySelectorAll('.dash-section').forEach(function (el) { el.classList.remove('active'); });
+      document.querySelectorAll('.sidebar-link').forEach(function (el) { el.classList.remove('active'); });
+      var sec = document.getElementById('section-' + name);
+      var lnk = document.querySelector('[data-section="' + name + '"]');
+      if (sec) sec.classList.add('active');
+      if (lnk) lnk.classList.add('active');
+      if (name === 'trips') renderFullTrips();
+      if (name === 'bookings') renderBookings();
+    }
+
+    document.querySelectorAll('[data-section]').forEach(function (el) {
+      el.addEventListener('click', function () { activateSection(el.dataset.section); });
+      el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') activateSection(el.dataset.section); });
+    });
+
+    /* ── Render helpers ────────────────────────────────────────── */
+    function renderTripCard(trip, withDelete) {
+      var dest  = trip.destination || 'Unknown';
+      var dates = trip.start_date ? P.fmtDate(trip.start_date) + (trip.end_date ? ' – ' + P.fmtDate(trip.end_date) : '') : 'Dates TBD';
+      var emoji = { Japan:'🗾', France:'🗼', Italy:'🍕', Spain:'🌞', Thailand:'🏖️', Morocco:'🕌', Iceland:'🌋', Peru:'🦙', Kenya:'🦁' };
+      var icon  = Object.keys(emoji).find(function (k) { return dest.indexOf(k) > -1; });
+      var placeholder = '<div class="trip-card-img-placeholder">' + (emoji[icon] || '✈️') + '</div>';
+
+      return '<div class="trip-card">'
+        + placeholder
+        + '<div class="trip-card-body">'
+        + '<p class="trip-card-dest">' + dest + '</p>'
+        + '<p class="trip-card-dates">' + dates + '</p>'
+        + '<div class="trip-card-footer">'
+        + '<span class="eco-badge">Eco ' + (trip.eco_score || 0) + '</span>'
+        + (withDelete ? '<button class="trip-card-del" data-id="' + trip.id + '">Remove</button>' : '')
+        + '</div></div></div>';
+    }
+
+    function renderFullTrips() {
+      var grid = document.getElementById('trips-full');
+      grid.innerHTML = '<div style="color:var(--text-muted);font-size:14px;">Loading…</div>';
+      P.loadSavedTrips().then(function (trips) {
+        if (!trips.length) {
+          grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">'
+            + '<div class="empty-icon">✦</div>'
+            + '<p class="empty-text">No saved trips yet.<br><a class="empty-link" href="/planner">Plan your first adventure →</a></p>'
+            + '</div>';
+          return;
+        }
+        grid.innerHTML = trips.map(function (t) { return renderTripCard(t, true); }).join('');
+        grid.querySelectorAll('.trip-card-del').forEach(function (btn) {
+          btn.addEventListener('click', function () { deleteTrip(btn.dataset.id, grid); });
+        });
+      });
+    }
+
+    async function deleteTrip(id, grid) {
+      if (!confirm('Remove this saved trip?')) return;
+      try {
+        await P.deleteTrip(id);
+        showToast('Trip removed.');
+        renderFullTrips();
+      } catch (err) { showToast(err.message || 'Could not remove trip.', 'error'); }
+    }
+
+    function renderBookings() {
+      var tbody = document.getElementById('bookings-tbody');
+      P.loadBookingHistory(20).then(function (bookings) {
+        if (!bookings.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-subtle);">No bookings yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = bookings.map(function (b) {
+          var dest  = b.destination || (b.saved_trips && b.saved_trips.destination) || '—';
+          var date  = P.fmtDate(b.booked_at);
+          var cost  = b.total_cost ? b.currency + ' ' + Number(b.total_cost).toLocaleString() : '—';
+          var cls   = 'status-' + (b.status || 'confirmed');
+          return '<tr>'
+            + '<td>' + dest + '</td>'
+            + '<td>' + date + '</td>'
+            + '<td><span class="status-badge ' + cls + '">' + (b.status || 'confirmed') + '</span></td>'
+            + '<td>' + cost + '</td>'
+            + '</tr>';
+        }).join('');
+      });
+    }
+
+    /* ── Load profile data ─────────────────────────────────────── */
+    async function loadAll() {
+      try {
+        var [profile, stats, trips] = await Promise.all([
+          P.loadProfile(),
+          P.loadTravelStats(),
+          P.loadSavedTrips(3)
+        ]);
+
+        var user = await Auth.getUser();
+
+        /* Header */
+        var name = (profile && profile.display_name) || (user && user.email.split('@')[0]) || 'Traveller';
+        document.getElementById('profile-name').textContent    = name;
+        document.getElementById('profile-email').textContent   = user ? user.email : '';
+        document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('profile-since').textContent   = 'Member since ' + P.fmtDate(user && user.created_at);
+
+        if (profile && profile.avatar_url) {
+          var img = document.createElement('img');
+          img.className = 'avatar';
+          img.src = profile.avatar_url;
+          img.alt = name + ' avatar';
+          var wrap = document.getElementById('avatar-display');
+          wrap.parentNode.replaceChild(img, wrap);
+        }
+
+        /* Stats */
+        document.getElementById('stat-trips').textContent     = stats ? stats.total_trips : 0;
+        document.getElementById('stat-countries').textContent = stats ? stats.countries_visited : 0;
+        document.getElementById('stat-co2').textContent       = stats ? Math.round(stats.co2_saved_kg) : 0;
+        var gradeEl = document.getElementById('stat-grade');
+        gradeEl.textContent   = stats ? stats.eco_grade : 'C';
+        if (stats) gradeEl.style.color = P.ecoGradeColor(stats.eco_grade);
+
+        /* Trip preview */
+        var preview = document.getElementById('trips-preview');
+        if (!trips.length) {
+          preview.innerHTML = '<div class="empty-state">'
+            + '<div class="empty-icon">✦</div>'
+            + '<p class="empty-text">No saved trips yet. <a class="empty-link" href="/planner">Plan your first →</a></p>'
+            + '</div>';
+        } else {
+          preview.innerHTML = '<div class="trips-grid">' + trips.map(function (t) { return renderTripCard(t, false); }).join('') + '</div>';
+        }
+
+        /* Preferences */
+        var prefs = (profile && profile.travel_preferences) || {};
+        if (prefs.style)          document.getElementById('pref-style').value          = prefs.style;
+        if (prefs.budget)         document.getElementById('pref-budget').value         = prefs.budget;
+        if (prefs.destinations)   document.getElementById('pref-destinations').value   = prefs.destinations;
+        if (prefs.climate)        document.getElementById('pref-climate').value        = prefs.climate;
+        if (prefs.accessibility)  document.getElementById('pref-accessibility').value  = prefs.accessibility;
+        if (profile && profile.bio) document.getElementById('pref-bio').value          = profile.bio;
+
+        /* Settings */
+        document.getElementById('settings-name').value = name;
+
+      } catch (err) {
+        console.error('[VST] loadAll:', err);
+      } finally {
+        overlay.classList.add('hidden');
+        setTimeout(function () { overlay.style.display = 'none'; }, 500);
+      }
+    }
+
+    /* ── Avatar upload ─────────────────────────────────────────── */
+    document.getElementById('avatar-input').addEventListener('change', async function (e) {
+      var file = e.target.files[0];
+      if (!file || file.size > 5 * 1024 * 1024) { showToast('Image must be under 5 MB.', 'error'); return; }
+      try {
+        showToast('Uploading…');
+        var url = await P.uploadAvatar(file);
+        showToast('Avatar updated!');
+        var newImg = document.createElement('img');
+        newImg.className = 'avatar';
+        newImg.src = url;
+        var old = document.getElementById('avatar-display') || document.querySelector('.avatar');
+        if (old) old.src = url;
+      } catch (err) { showToast(err.message || 'Upload failed.', 'error'); }
+    });
+
+    /* ── Preferences form ──────────────────────────────────────── */
+    document.getElementById('prefs-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var prefs = {
+        style:         document.getElementById('pref-style').value,
+        budget:        document.getElementById('pref-budget').value,
+        destinations:  document.getElementById('pref-destinations').value,
+        climate:       document.getElementById('pref-climate').value,
+        accessibility: document.getElementById('pref-accessibility').value
+      };
+      var bio = document.getElementById('pref-bio').value;
+      try {
+        await P.updateProfile({ travel_preferences: prefs, bio: bio });
+        showToast('Preferences saved!');
+      } catch (err) { showToast(err.message || 'Save failed.', 'error'); }
+    });
+
+    /* ── Settings ──────────────────────────────────────────────── */
+    document.getElementById('save-name-btn').addEventListener('click', async function () {
+      var name = document.getElementById('settings-name').value.trim();
+      if (!name) { showToast('Please enter a name.', 'error'); return; }
+      try {
+        await P.updateProfile({ display_name: name });
+        document.getElementById('profile-name').textContent = name;
+        showToast('Name updated!');
+      } catch (err) { showToast(err.message || 'Update failed.', 'error'); }
+    });
+
+    document.getElementById('save-pw-btn').addEventListener('click', async function () {
+      var pw = document.getElementById('settings-pw').value;
+      if (pw.length < 8) { showToast('Password must be at least 8 characters.', 'error'); return; }
+      try {
+        var { error } = await Auth.updatePassword(pw);
+        if (error) throw error;
+        showToast('Password updated!');
+        document.getElementById('settings-pw').value = '';
+      } catch (err) { showToast(err.message || 'Update failed.', 'error'); }
+    });
+
+    document.getElementById('delete-account-btn').addEventListener('click', function () {
+      if (!confirm('Delete your account permanently? This cannot be undone.')) return;
+      showToast('Please contact support to delete your account.', 'error');
+    });
+
+    /* ── Sign out ──────────────────────────────────────────────── */
+    document.getElementById('sign-out-btn').addEventListener('click', async function () {
+      await Auth.signOut();
+      location.replace('/');
+    });
+
+    /* ── Boot ──────────────────────────────────────────────────── */
+    loadAll();
+  })();
+  </script>
+</body>
+</html>

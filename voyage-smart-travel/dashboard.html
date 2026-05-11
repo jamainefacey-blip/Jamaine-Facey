@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <title>Dashboard — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    .dash-page {
+      min-height: 100vh;
+      padding-top: var(--nav-h);
+      background: radial-gradient(ellipse 100% 50% at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 55%);
+    }
+
+    /* ── Hero greeting ────────────────────────────────────────── */
+    .dash-hero {
+      padding: 48px var(--max-w) 0;
+      max-width: calc(var(--max-w) + 96px);
+      margin: 0 auto;
+      padding-left: 48px;
+      padding-right: 48px;
+      animation: blur-slide-up 0.6s var(--ease-out) both;
+    }
+    .dash-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dash-eyebrow::before {
+      content: '';
+      width: 20px; height: 1px;
+      background: var(--gold);
+      display: block;
+    }
+    .dash-greeting {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .dash-greeting em { color: var(--gold); font-style: italic; }
+    .dash-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 40px; }
+
+    /* ── Main grid ────────────────────────────────────────────── */
+    .dash-grid {
+      max-width: calc(var(--max-w) + 96px);
+      margin: 0 auto;
+      padding: 0 48px 80px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+    }
+    .dash-col-main { min-width: 0; }
+    .dash-col-side { min-width: 0; }
+
+    /* ── Overview cards ───────────────────────────────────────── */
+    .overview-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .ov-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      transition: border-color 0.2s, transform 0.2s;
+      animation: blur-slide-up 0.6s var(--ease-out) both;
+    }
+    .ov-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+    .ov-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 12px;
+    }
+    .ov-card-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .ov-card-sub { font-size: 12px; color: var(--text-muted); }
+    .ov-card-teal .ov-card-value { color: var(--teal); }
+    .ov-card-gold .ov-card-value { color: var(--gold); }
+
+    /* ── Quick actions ────────────────────────────────────────── */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .qa-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .qa-btn:hover { border-color: var(--border-gold); color: var(--gold); background: var(--gold-dim); transform: translateY(-2px); }
+    .qa-icon { font-size: 1.4rem; }
+
+    /* ── Section card ─────────────────────────────────────────── */
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      overflow: hidden;
+      animation: blur-slide-up 0.6s var(--ease-out) both;
+    }
+    .dash-card-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dash-card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .dash-card-action {
+      font-size: 12px;
+      color: var(--gold);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .dash-card-action:hover { text-decoration: underline; }
+    .dash-card-body { padding: 20px; }
+
+    /* ── Activity feed ────────────────────────────────────────── */
+    .activity-list { list-style: none; }
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+    .activity-dot-gold  { background: var(--gold); }
+    .activity-dot-teal  { background: var(--teal); }
+    .activity-dot-amber { background: var(--eco-amber); }
+    .activity-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .activity-time { font-size: 11px; color: var(--text-subtle); margin-top: 2px; }
+
+    /* ── Upcoming trip card ───────────────────────────────────── */
+    .upcoming-trip {
+      background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, rgba(0,212,170,0.04) 100%);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .upcoming-dest {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 6px;
+    }
+    .upcoming-dates { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+    .upcoming-eco {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--teal);
+    }
+    .eco-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+
+    /* ── Eco trend ────────────────────────────────────────────── */
+    .eco-grade-big {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      font-weight: 300;
+      text-align: center;
+      line-height: 1;
+      margin: 16px 0 8px;
+    }
+    .eco-grade-label { text-align: center; font-size: 12px; color: var(--text-subtle); margin-bottom: 16px; }
+    .eco-bar-wrap { margin-bottom: 10px; }
+    .eco-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-subtle); margin-bottom: 4px; }
+    .eco-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .eco-bar-fill { height: 100%; border-radius: 3px; transition: width 1s var(--ease-out); }
+
+    /* ── Notifications ────────────────────────────────────────── */
+    .notif-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .notif-text { color: var(--text-muted); line-height: 1.5; }
+    .notif-text strong { color: var(--text); font-weight: 500; }
+
+    /* ── Empty state ──────────────────────────────────────────── */
+    .dash-empty {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-subtle);
+      font-size: 13px;
+    }
+
+    /* ── Loading skeleton ─────────────────────────────────────── */
+    .skel {
+      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.04) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .dash-grid { grid-template-columns: 1fr; }
+      .dash-col-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    }
+    @media (max-width: 700px) {
+      .dash-hero { padding-left: 20px; padding-right: 20px; }
+      .dash-grid { padding: 0 20px 60px; }
+      .overview-cards { grid-template-columns: repeat(2, 1fr); }
+      .quick-actions { grid-template-columns: repeat(3, 1fr); }
+      .dash-col-side { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px) {
+      .overview-cards { grid-template-columns: 1fr 1fr; }
+      .quick-actions { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link active" href="/dashboard.html">Dashboard</a>
+        <a class="nav-link" href="/profile.html">Profile</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link active" href="/dashboard.html">Dashboard</a>
+    <a class="nav-mobile-link" href="/profile.html">Profile</a>
+  </div>
+
+  <div class="dash-page">
+
+    <!-- ── Hero greeting ──────────────────────────────────────── -->
+    <header class="dash-hero">
+      <p class="dash-eyebrow">Your travel hub</p>
+      <h1 class="dash-greeting">Good <em id="time-of-day">day</em>, <span id="greeting-name">Traveller</span>.</h1>
+      <p class="dash-sub" id="dash-sub">Here's your travel overview for today.</p>
+    </header>
+
+    <!-- ── Dashboard grid ─────────────────────────────────────── -->
+    <div class="dash-grid">
+
+      <!-- Left column -->
+      <div class="dash-col-main">
+
+        <!-- Overview stats -->
+        <div class="overview-cards">
+          <div class="ov-card ov-card-gold" style="animation-delay:0ms">
+            <p class="ov-card-label">Saved Trips</p>
+            <p class="ov-card-value" id="ov-trips">—</p>
+            <p class="ov-card-sub">itineraries saved</p>
+          </div>
+          <div class="ov-card" style="animation-delay:60ms">
+            <p class="ov-card-label">Countries</p>
+            <p class="ov-card-value" id="ov-countries">—</p>
+            <p class="ov-card-sub">visited or planned</p>
+          </div>
+          <div class="ov-card ov-card-teal" style="animation-delay:120ms">
+            <p class="ov-card-label">CO₂ Saved</p>
+            <p class="ov-card-value" id="ov-co2">—</p>
+            <p class="ov-card-sub">kg this year</p>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="quick-actions">
+          <a class="qa-btn" href="/planner">
+            <span class="qa-icon">✦</span>
+            Plan New Trip
+          </a>
+          <a class="qa-btn" href="/profile.html" data-goto="trips">
+            <span class="qa-icon">◈</span>
+            Saved Trips
+          </a>
+          <a class="qa-btn" href="/profile.html" data-goto="bookings">
+            <span class="qa-icon">≡</span>
+            My Bookings
+          </a>
+        </div>
+
+        <!-- Recent trips -->
+        <div class="dash-card" style="animation-delay:180ms">
+          <div class="dash-card-head">
+            <span class="dash-card-title">Recent Saved Trips</span>
+            <a class="dash-card-action" href="/profile.html">View all</a>
+          </div>
+          <div class="dash-card-body" id="recent-trips-body">
+            <div class="dash-empty">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="dash-card" style="animation-delay:240ms">
+          <div class="dash-card-head">
+            <span class="dash-card-title">Recent Activity</span>
+          </div>
+          <div class="dash-card-body">
+            <ul class="activity-list" id="activity-list">
+              <li class="activity-item">
+                <span class="activity-dot activity-dot-gold"></span>
+                <div>
+                  <p class="activity-text">Account created — welcome to Voyage Smart Travel!</p>
+                  <p class="activity-time">Just now</p>
+                </div>
+              </li>
+              <li class="activity-item">
+                <span class="activity-dot activity-dot-teal"></span>
+                <div>
+                  <p class="activity-text">Try the <strong>AVA Planner</strong> to build your first eco-scored itinerary.</p>
+                  <p class="activity-time">Tip</p>
+                </div>
+              </li>
+              <li class="activity-item">
+                <span class="activity-dot activity-dot-amber"></span>
+                <div>
+                  <p class="activity-text">Complete your <strong>travel preferences</strong> so AVA can make better recommendations.</p>
+                  <p class="activity-time"><a href="/profile.html" style="color:var(--gold);">Go to Profile →</a></p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right column -->
+      <div class="dash-col-side">
+
+        <!-- Upcoming trip highlight -->
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <span class="dash-card-title">Next Trip</span>
+            <a class="dash-card-action" href="/planner">+ Plan</a>
+          </div>
+          <div class="dash-card-body" id="next-trip-body">
+            <div class="dash-empty">
+              No upcoming trips saved.<br>
+              <a href="/planner" style="color:var(--gold);font-size:13px;">Start planning →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eco grade -->
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <span class="dash-card-title">Eco Score</span>
+          </div>
+          <div class="dash-card-body">
+            <div class="eco-grade-big" id="eco-grade-big" style="color:var(--teal);">—</div>
+            <p class="eco-grade-label" id="eco-grade-label">Your current eco grade</p>
+
+            <div class="eco-bar-wrap">
+              <div class="eco-bar-label"><span>Carbon saved</span><span id="eco-co2-label">0 kg</span></div>
+              <div class="eco-bar"><div class="eco-bar-fill" id="eco-co2-bar" style="background:var(--teal);width:0%"></div></div>
+            </div>
+            <div class="eco-bar-wrap">
+              <div class="eco-bar-label"><span>Eco trips</span><span id="eco-trips-label">0</span></div>
+              <div class="eco-bar"><div class="eco-bar-fill" id="eco-trips-bar" style="background:var(--gold);width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications panel -->
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <span class="dash-card-title">Notifications</span>
+          </div>
+          <div class="dash-card-body">
+            <div class="notif-item">
+              <span class="notif-icon">🌿</span>
+              <p class="notif-text"><strong>Eco tip:</strong> Choosing trains over short-haul flights can reduce your carbon footprint by up to 90%.</p>
+            </div>
+            <div class="notif-item">
+              <span class="notif-icon">✦</span>
+              <p class="notif-text"><strong>AVA is ready</strong> — ask about any destination for an instant eco-scored itinerary.</p>
+            </div>
+            <div class="notif-item">
+              <span class="notif-icon">🎯</span>
+              <p class="notif-text">Complete your <strong>travel preferences</strong> to unlock personalised trip suggestions.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/profile.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var P    = window.VSTProfile;
+    var Auth = window.VSTSupaAuth;
+
+    /* ── Mobile nav ──────────────────────────────────────────── */
+    var burger = document.getElementById('nav-burger');
+    var mob    = document.getElementById('nav-mobile');
+    if (burger && mob) {
+      burger.addEventListener('click', function () {
+        var open = mob.classList.toggle('open');
+        burger.setAttribute('aria-expanded', open);
+        mob.setAttribute('aria-hidden', !open);
+      });
+    }
+
+    /* ── Auth guard ──────────────────────────────────────────── */
+    Auth.getSession().then(function (res) {
+      if (!res.data || !res.data.session) {
+        location.replace('/login.html?next=/dashboard.html');
+      }
+    });
+
+    /* ── Time of day greeting ────────────────────────────────── */
+    var hour = new Date().getHours();
+    var tod  = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+    document.getElementById('time-of-day').textContent = tod;
+
+    /* ── Render recent trips ─────────────────────────────────── */
+    function renderRecentTrips(trips) {
+      var body = document.getElementById('recent-trips-body');
+      if (!trips.length) {
+        body.innerHTML = '<div class="dash-empty">No saved trips yet.<br><a href="/planner" style="color:var(--gold);font-size:13px;">Plan your first trip →</a></div>';
+        return;
+      }
+      body.innerHTML = trips.map(function (t) {
+        var dest  = t.destination || 'Unknown';
+        var dates = t.start_date ? P.fmtDate(t.start_date) : 'Dates TBD';
+        var score = t.eco_score || 0;
+        var color = score >= 70 ? '#00d4aa' : score >= 40 ? '#c9a84c' : '#ef4444';
+        return '<div class="upcoming-trip">'
+          + '<p class="upcoming-dest">' + dest + '</p>'
+          + '<p class="upcoming-dates">' + dates + '</p>'
+          + '<div class="upcoming-eco"><span class="eco-dot"></span>Eco score ' + score + '/100</div>'
+          + '<div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:10px;overflow:hidden;">'
+          + '<div style="height:100%;width:' + score + '%;background:' + color + ';border-radius:2px;transition:width 1s;"></div>'
+          + '</div></div>';
+      }).join('');
+    }
+
+    /* ── Render next trip ────────────────────────────────────── */
+    function renderNextTrip(trips) {
+      var body  = document.getElementById('next-trip-body');
+      var upcoming = trips.filter(function (t) { return t.start_date && new Date(t.start_date) >= new Date(); });
+      if (!upcoming.length) return;
+      var trip  = upcoming[0];
+      var days  = Math.ceil((new Date(trip.start_date) - new Date()) / 86400000);
+      body.innerHTML = '<div class="upcoming-trip">'
+        + '<p class="upcoming-dest">' + trip.destination + '</p>'
+        + '<p class="upcoming-dates">' + P.fmtDate(trip.start_date) + (trip.end_date ? ' – ' + P.fmtDate(trip.end_date) : '') + '</p>'
+        + '<p style="font-size:12px;color:var(--gold);margin-top:8px;">In ' + days + ' day' + (days !== 1 ? 's' : '') + '</p>'
+        + '<div class="upcoming-eco" style="margin-top:10px;"><span class="eco-dot"></span>Eco score ' + (trip.eco_score || 0) + '/100</div>'
+        + '</div>';
+    }
+
+    /* ── Load data ───────────────────────────────────────────── */
+    async function boot() {
+      try {
+        var [profile, stats, trips] = await Promise.all([
+          P.loadProfile(),
+          P.loadTravelStats(),
+          P.loadSavedTrips(6)
+        ]);
+
+        var user = await Auth.getUser();
+        var name = (profile && profile.display_name)
+          || (user && user.email ? user.email.split('@')[0] : 'Traveller');
+
+        document.getElementById('greeting-name').textContent = name;
+        document.getElementById('dash-sub').textContent =
+          'Here\'s your travel overview, ' + name + '.';
+
+        /* Overview cards */
+        document.getElementById('ov-trips').textContent     = trips.length;
+        document.getElementById('ov-countries').textContent = stats ? stats.countries_visited : 0;
+        document.getElementById('ov-co2').textContent       = stats ? Math.round(stats.co2_saved_kg) : 0;
+
+        /* Eco grade */
+        var grade = stats ? stats.eco_grade : 'C';
+        document.getElementById('eco-grade-big').textContent   = grade;
+        document.getElementById('eco-grade-big').style.color   = P.ecoGradeColor(grade);
+        document.getElementById('eco-grade-label').textContent = 'Grade ' + grade + ' — keep it up!';
+
+        var co2 = stats ? Math.min(100, (stats.co2_saved_kg / 1000) * 100) : 0;
+        document.getElementById('eco-co2-label').textContent = (stats ? Math.round(stats.co2_saved_kg) : 0) + ' kg';
+        document.getElementById('eco-trips-label').textContent = trips.length;
+        setTimeout(function () {
+          document.getElementById('eco-co2-bar').style.width   = co2 + '%';
+          document.getElementById('eco-trips-bar').style.width = Math.min(100, trips.length * 10) + '%';
+        }, 200);
+
+        /* Trips */
+        renderRecentTrips(trips.slice(0, 3));
+        renderNextTrip(trips);
+
+      } catch (err) {
+        console.error('[VST] dashboard boot:', err);
+      }
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
