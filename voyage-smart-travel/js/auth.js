@@ -1,105 +1,161 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    VST — Auth Module (window.VSTAuth)
-   Manages JWT token, current user state, and API calls for auth endpoints.
-   Token stored in sessionStorage — cleared when browser tab closes.
+   Supabase-backed auth. Maintains the existing VSTAuth API surface.
+   Requires: supabase CDN + js/supabase-client.js loaded first.
    ───────────────────────────────────────────────────────────────────────────── */
 
 window.VSTAuth = (function () {
   'use strict';
 
-  var TOKEN_KEY = 'vst_auth_token';
-  var USER_KEY  = 'vst_auth_user';
-  var BASE      = '';   /* same origin — routes handled by server/Vercel */
+  var sb = window.VSTSupabase;
 
-  /* ── Token storage ───────────────────────────────────────────────────────── */
-  function getToken() {
-    try { return sessionStorage.getItem(TOKEN_KEY); } catch (e) { return null; }
+  /* ── Internal state ──────────────────────────────────────────────── */
+  var _cachedUser    = null;
+  var _cachedSession = null;
+  var _initialized   = false;
+  var _initQueue     = [];
+  var _listeners     = [];
+
+  /* ── Bootstrap: load session from storage, then listen ──────────── */
+  if (sb) {
+    sb.auth.getSession().then(function (res) {
+      var session    = res.data && res.data.session;
+      _cachedSession = session || null;
+      _cachedUser    = session ? session.user : null;
+      _initialized   = true;
+      _initQueue.forEach(function (fn) { try { fn(_cachedUser); } catch (e) {} });
+      _initQueue = [];
+    });
+
+    sb.auth.onAuthStateChange(function (event, session) {
+      _cachedSession = session || null;
+      _cachedUser    = session ? session.user : null;
+      if (_initialized) { _notifyListeners(_cachedUser); }
+    });
+  } else {
+    _initialized = true;
   }
 
-  function setSession(token, user) {
-    try {
-      sessionStorage.setItem(TOKEN_KEY, token);
-      sessionStorage.setItem(USER_KEY, JSON.stringify(user));
-    } catch (e) { /* storage unavailable */ }
+  function _notifyListeners(user) {
+    _listeners.forEach(function (fn) { try { fn(user); } catch (e) {} });
   }
 
-  function clearSession() {
-    try {
-      sessionStorage.removeItem(TOKEN_KEY);
-      sessionStorage.removeItem(USER_KEY);
-    } catch (e) {}
+  /* ── whenReady: run fn after initial session hydration ──────────── */
+  function whenReady(fn) {
+    if (_initialized) { fn(_cachedUser); }
+    else { _initQueue.push(fn); }
   }
 
-  function getCachedUser() {
-    try {
-      var raw = sessionStorage.getItem(USER_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
-  }
+  /* ── Sync accessors (populated after first hydration tick) ──────── */
+  function getCachedUser()  { return _cachedUser; }
+  function isLoggedIn()     { return !!_cachedUser; }
+  function getToken()       { return _cachedSession ? _cachedSession.access_token : null; }
 
-  function isLoggedIn() { return !!getToken(); }
-
-  /* ── Fetch helper ────────────────────────────────────────────────────────── */
-  function apiFetch(method, path, body) {
-    var opts = { method: method, headers: { 'Content-Type': 'application/json' } };
-    var token = getToken();
-    if (token) opts.headers['Authorization'] = 'Bearer ' + token;
-    if (body)  opts.body = JSON.stringify(body);
-    return fetch(BASE + path, opts).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok) throw Object.assign(new Error(data.message || 'Request failed'), { code: data.error, status: res.status });
-        return data;
-      });
+  /* ── Async session ───────────────────────────────────────────────── */
+  function getSession() {
+    if (!sb) return Promise.resolve(null);
+    return sb.auth.getSession().then(function (res) {
+      return res.data.session || null;
     });
   }
 
-  /* ── Auth actions ────────────────────────────────────────────────────────── */
-  function register(email, password, fullName, termsAccepted) {
-    return apiFetch('POST', '/v1/users/register', {
-      email: email, password: password,
-      full_name: fullName, terms_accepted: termsAccepted,
-    }).then(function (data) {
-      setSession(data.token, data.user);
-      _notifyChange();
-      return data.user;
+  /* ── Sign up ─────────────────────────────────────────────────────── */
+  function signUp(email, password, name) {
+    if (!sb) return Promise.reject(new Error('Auth not available'));
+    return sb.auth.signUp({
+      email:    email,
+      password: password,
+      options:  { data: { full_name: name, display_name: name } },
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      return res.data.user;
     });
   }
 
-  function login(email, password) {
-    return apiFetch('POST', '/v1/users/login', { email: email, password: password })
-      .then(function (data) {
-        setSession(data.token, data.user);
-        _notifyChange();
-        return data.user;
+  /* Alias for backward compat */
+  function register(email, password, fullName) {
+    return signUp(email, password, fullName);
+  }
+
+  /* ── Sign in ─────────────────────────────────────────────────────── */
+  function signIn(email, password) {
+    if (!sb) return Promise.reject(new Error('Auth not available'));
+    return sb.auth.signInWithPassword({ email: email, password: password })
+      .then(function (res) {
+        if (res.error) throw res.error;
+        return res.data.user;
       });
   }
 
-  function logout() {
-    clearSession();
-    _notifyChange();
+  /* Alias for backward compat */
+  function login(email, password) { return signIn(email, password); }
+
+  /* ── Google OAuth ────────────────────────────────────────────────── */
+  function signInWithGoogle() {
+    if (!sb) return Promise.reject(new Error('Auth not available'));
+    return sb.auth.signInWithOAuth({
+      provider: 'google',
+      options:  { redirectTo: window.location.origin + '/profile' },
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      return res;
+    });
   }
 
+  /* ── Sign out ────────────────────────────────────────────────────── */
+  function signOut() {
+    if (!sb) return Promise.resolve();
+    return sb.auth.signOut().then(function () {
+      _cachedUser    = null;
+      _cachedSession = null;
+      _notifyListeners(null);
+    });
+  }
+
+  /* Alias for backward compat */
+  function logout() { return signOut(); }
+
+  /* ── Get remote user ─────────────────────────────────────────────── */
   function getMe() {
-    return apiFetch('GET', '/v1/users/me').then(function (user) {
-      try { sessionStorage.setItem(USER_KEY, JSON.stringify(user)); } catch (e) {}
-      return user;
+    if (!sb) return Promise.reject(new Error('Auth not available'));
+    return sb.auth.getUser().then(function (res) {
+      if (res.error) throw res.error;
+      return res.data.user;
     });
   }
 
+  /* ── Patch user metadata ─────────────────────────────────────────── */
   function patchMe(patch) {
-    return apiFetch('PATCH', '/v1/users/me', patch).then(function (user) {
-      try { sessionStorage.setItem(USER_KEY, JSON.stringify(user)); } catch (e) {}
-      _notifyChange();
-      return user;
+    if (!sb) return Promise.reject(new Error('Auth not available'));
+    return sb.auth.updateUser({ data: patch }).then(function (res) {
+      if (res.error) throw res.error;
+      _cachedUser = res.data.user;
+      _notifyListeners(_cachedUser);
+      return res.data.user;
     });
   }
 
-  /* ── Change listeners (for nav updates) ─────────────────────────────────── */
-  var _listeners = [];
-  function onAuthChange(fn) { _listeners.push(fn); }
-  function _notifyChange() { _listeners.forEach(function (fn) { try { fn(getCachedUser()); } catch (e) {} }); }
+  /* ── Protected route helper ──────────────────────────────────────── */
+  function requireAuth(redirectTo) {
+    redirectTo = redirectTo || '/login';
+    return new Promise(function (resolve) {
+      whenReady(function (user) {
+        if (!user) {
+          var returnTo = encodeURIComponent(window.location.pathname);
+          window.location.href = redirectTo + '?return=' + returnTo;
+        } else {
+          resolve(user);
+        }
+      });
+    });
+  }
 
-  /* ── Tier helpers ────────────────────────────────────────────────────────── */
+  /* ── Auth state listener ─────────────────────────────────────────── */
+  function onAuthChange(fn) {
+    _listeners.push(fn);
+  }
+
+  /* ── Tier helpers (kept for backward compat) ─────────────────────── */
   var TIER_ORDER = { GUEST: 0, PREMIUM: 1, VOYAGE_ELITE: 2 };
 
   function tierAtLeast(user, tier) {
@@ -116,18 +172,25 @@ window.VSTAuth = (function () {
   }
 
   return {
-    isLoggedIn:       isLoggedIn,
-    getToken:         getToken,
-    getCachedUser:    getCachedUser,
-    register:         register,
-    login:            login,
-    logout:           logout,
-    getMe:            getMe,
-    patchMe:          patchMe,
-    onAuthChange:     onAuthChange,
-    tierAtLeast:      tierAtLeast,
-    tierLabel:        tierLabel,
-    tierBadgeClass:   tierBadgeClass,
+    whenReady:       whenReady,
+    getSession:      getSession,
+    getCachedUser:   getCachedUser,
+    isLoggedIn:      isLoggedIn,
+    getToken:        getToken,
+    signUp:          signUp,
+    register:        register,
+    signIn:          signIn,
+    login:           login,
+    signInWithGoogle: signInWithGoogle,
+    signOut:         signOut,
+    logout:          logout,
+    getMe:           getMe,
+    patchMe:         patchMe,
+    requireAuth:     requireAuth,
+    onAuthChange:    onAuthChange,
+    tierAtLeast:     tierAtLeast,
+    tierLabel:       tierLabel,
+    tierBadgeClass:  tierBadgeClass,
   };
 
 })();

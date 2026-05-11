@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Your Voyage Smart Travel profile — manage preferences, track eco score, and view your trips." />
+  <title>My Profile — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    .profile-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: calc(var(--nav-h) + 3.5rem) clamp(1.25rem,4vw,2.5rem) 6rem;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      margin-bottom: 3rem;
+      animation: blur-slide-up 0.65s var(--ease-out) both;
+    }
+
+    .profile-avatar-lg {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 2px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .profile-header-text { flex: 1; }
+
+    .profile-greeting {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.3rem;
+    }
+
+    .profile-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1.1;
+    }
+
+    .profile-email {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 640px) {
+      .profile-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      animation: blur-slide-up 0.65s var(--ease-out) both;
+    }
+    .profile-card:nth-child(2) { animation-delay: 60ms; }
+    .profile-card:nth-child(3) { animation-delay: 120ms; }
+    .profile-card:nth-child(4) { animation-delay: 180ms; }
+
+    .profile-card-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 1rem;
+    }
+
+    .eco-ring-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .eco-ring {
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+    }
+    .eco-ring-track { fill: none; stroke: var(--border); stroke-width: 6; }
+    .eco-ring-fill  {
+      fill: none;
+      stroke: var(--teal);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 188;
+      stroke-dashoffset: 188;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1s var(--ease-out);
+    }
+    .eco-ring-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      fill: var(--cream);
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    .eco-ring-info p:first-child {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--teal);
+      line-height: 1;
+    }
+    .eco-ring-info p:last-child {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .auth-field { margin-bottom: 1rem; }
+    .auth-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.4rem;
+    }
+    .auth-input {
+      width: 100%;
+      background: rgba(10,15,26,0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .auth-input::placeholder { color: var(--text-subtle); }
+    .auth-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+
+    .auth-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .profile-save-btn {
+      padding: 0.65rem 1.5rem;
+      border-radius: 100px;
+      background: var(--gold);
+      color: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      margin-top: 0.5rem;
+    }
+    .profile-save-btn:hover {
+      background: var(--gold-bright);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px var(--gold-glow);
+    }
+    .profile-save-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .save-msg {
+      display: none;
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+      color: var(--teal);
+    }
+    .save-msg.visible { display: block; }
+    .save-msg.error { color: #fca5a5; }
+
+    .profile-signout {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .profile-signout p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .profile-signout-btn {
+      padding: 0.55rem 1.25rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .profile-signout-btn:hover { border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      margin: 0.25rem 0.2rem 0.25rem 0;
+    }
+    .stat-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/about">About</a>
+        <div id="nav-auth" class="nav-auth-slot"></div>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <div id="nav-mobile-auth"></div>
+  </div>
+
+  <!-- ── Profile content ────────────────────────────────────────── -->
+  <main class="profile-wrap" id="profile-content" aria-label="Your profile" aria-hidden="true">
+
+    <!-- Header -->
+    <div class="profile-header">
+      <div class="profile-avatar-lg" id="profile-avatar" aria-hidden="true">?</div>
+      <div class="profile-header-text">
+        <p class="profile-greeting">Your account</p>
+        <h1 class="profile-name" id="profile-name">Loading…</h1>
+        <p class="profile-email" id="profile-email"></p>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- Eco score card -->
+      <div class="profile-card">
+        <p class="profile-card-label">Eco score</p>
+        <div class="eco-ring-wrap">
+          <svg class="eco-ring" viewBox="0 0 72 72" aria-hidden="true">
+            <circle class="eco-ring-track" cx="36" cy="36" r="30"/>
+            <circle class="eco-ring-fill" id="eco-ring-fill" cx="36" cy="36" r="30"/>
+            <text class="eco-ring-num" x="36" y="36" id="eco-ring-num">0</text>
+          </svg>
+          <div class="eco-ring-info">
+            <p id="eco-score-val">0</p>
+            <p>Your sustainability score<br>grows with eco-friendly trips</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account stats -->
+      <div class="profile-card">
+        <p class="profile-card-label">Account</p>
+        <div>
+          <div class="stat-pill"><span class="stat-pill-dot"></span>Free plan</div>
+          <div class="stat-pill"><span class="stat-pill-dot"></span>0 trips planned</div>
+          <div class="stat-pill"><span class="stat-pill-dot"></span>0 bookings</div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-subtle);margin-top:1rem;line-height:1.5;">
+          Plan your first trip with AVA to start building your eco score.
+        </p>
+        <a href="/planner" style="display:inline-block;margin-top:0.75rem;font-size:0.85rem;color:var(--gold);font-weight:500;">
+          Start planning →
+        </a>
+      </div>
+
+      <!-- Edit profile (spans full width on larger screens) -->
+      <div class="profile-card" style="grid-column:1/-1;">
+        <p class="profile-card-label">Edit profile</p>
+        <form id="profile-form" novalidate>
+          <div class="auth-field">
+            <label class="auth-label" for="display-name">Display name</label>
+            <input class="auth-input" type="text" id="display-name" name="display_name" placeholder="Your name" autocomplete="name" />
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="bio">Bio</label>
+            <textarea class="auth-input auth-textarea" id="bio" name="bio" placeholder="A few words about your travel style…"></textarea>
+          </div>
+          <button type="submit" class="profile-save-btn" id="save-btn">Save changes</button>
+          <p class="save-msg" id="save-msg"></p>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Sign out -->
+    <div class="profile-signout">
+      <p>Signed in as <span id="profile-email-footer">—</span></p>
+      <button type="button" class="profile-signout-btn" id="signout-btn">Sign out</button>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/premium.js"></script>
+  <script src="js/nav-auth.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      /* Auth guard — redirect to /login if not logged in */
+      VSTAuth.requireAuth('/login').then(function (user) {
+        populateProfile(user);
+        document.getElementById('profile-content').removeAttribute('aria-hidden');
+      });
+
+      function populateProfile(user) {
+        var name  = (user.user_metadata && user.user_metadata.full_name) ||
+                    (user.user_metadata && user.user_metadata.display_name) ||
+                    user.email.split('@')[0] || '—';
+        var email = user.email || '';
+        var initial = name.charAt(0).toUpperCase();
+
+        document.getElementById('profile-avatar').textContent   = initial;
+        document.getElementById('profile-name').textContent     = name;
+        document.getElementById('profile-email').textContent    = email;
+        document.getElementById('profile-email-footer').textContent = email;
+        document.getElementById('display-name').value = name;
+
+        /* Animate eco ring to 0 (placeholder until real data) */
+        animateEcoRing(0);
+      }
+
+      function animateEcoRing(score) {
+        var fill = document.getElementById('eco-ring-fill');
+        var num  = document.getElementById('eco-ring-num');
+        var val  = document.getElementById('eco-score-val');
+        var circ = 2 * Math.PI * 30;
+        var offset = circ - (circ * score / 100);
+
+        fill.style.strokeDasharray  = circ;
+        fill.style.strokeDashoffset = offset;
+        num.textContent             = score;
+        val.textContent             = score;
+      }
+
+      /* Profile form save */
+      var form    = document.getElementById('profile-form');
+      var saveBtn = document.getElementById('save-btn');
+      var saveMsg = document.getElementById('save-msg');
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var displayName = document.getElementById('display-name').value.trim();
+        var bio         = document.getElementById('bio').value.trim();
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving…';
+
+        VSTAuth.patchMe({ full_name: displayName, bio: bio })
+          .then(function () {
+            saveMsg.textContent = 'Profile saved.';
+            saveMsg.className   = 'save-msg visible';
+            saveBtn.disabled    = false;
+            saveBtn.textContent = 'Save changes';
+            setTimeout(function () { saveMsg.className = 'save-msg'; }, 2500);
+          })
+          .catch(function (err) {
+            saveMsg.textContent = err.message || 'Save failed.';
+            saveMsg.className   = 'save-msg visible error';
+            saveBtn.disabled    = false;
+            saveBtn.textContent = 'Save changes';
+          });
+      });
+
+      /* Sign out */
+      document.getElementById('signout-btn').addEventListener('click', function () {
+        VSTAuth.signOut().then(function () {
+          window.location.href = '/';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

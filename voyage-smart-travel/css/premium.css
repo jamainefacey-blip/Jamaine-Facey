@@ -283,6 +283,87 @@ body::after {
 }
 .nav-mobile-cta:hover { background: var(--gold-bright); color: var(--bg); }
 
+/* ── Nav auth slot ──────────────────────────────────────────────── */
+.nav-auth-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: 0.25rem;
+}
+
+.nav-auth-signin {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.nav-auth-signin:hover {
+  color: var(--text);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 1px solid var(--border-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gold);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.nav-user-avatar:hover { background: rgba(201,168,76,0.22); box-shadow: 0 0 0 2px var(--border-gold); }
+.nav-user-name {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.nav-user-name:hover { color: var(--text); }
+.nav-sign-out {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+.nav-sign-out:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+.nav-mobile-signout {
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  color: var(--text-subtle);
+}
+
 /* ══════════════════════════════════════════════════════════════════
    HERO
    ══════════════════════════════════════════════════════════════════ */
