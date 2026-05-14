@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Search and book flights, hotels, and experiences — eco-scored and curated by AVA." />
+  <title>Book — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    /* ── Bookings page styles ──────────────────────────────────────── */
+    .bookings-hero {
+      padding: calc(var(--nav-h) + 3.5rem) 1.5rem 2.5rem;
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+
+    /* Tab bar */
+    .booking-tabs {
+      display: flex;
+      gap: .5rem;
+      margin: 2rem auto 0;
+      max-width: var(--max-w);
+      padding: 0 1.5rem;
+    }
+    .booking-tab {
+      flex: 1;
+      max-width: 200px;
+      padding: .85rem 1.5rem;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .25s var(--ease-out);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      justify-content: center;
+    }
+    .booking-tab:hover { color: var(--text); background: var(--surface); }
+    .booking-tab.active {
+      background: var(--surface);
+      color: var(--gold);
+      border-color: var(--border-gold);
+    }
+    .booking-tab svg { width: 18px; height: 18px; }
+
+    /* Panels */
+    .booking-panels {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .booking-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 2rem;
+    }
+    .booking-panel.active { display: block; }
+
+    /* Search forms */
+    .search-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      align-items: end;
+    }
+    .form-group { display: flex; flex-direction: column; gap: .35rem; }
+    .form-group label {
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .form-group input,
+    .form-group select {
+      padding: .75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: .95rem;
+      transition: border-color .2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-dim);
+    }
+    .form-group input::placeholder { color: var(--text-subtle); }
+
+    .search-btn {
+      padding: .75rem 2rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+      color: var(--bg);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .2s;
+      white-space: nowrap;
+    }
+    .search-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--gold-glow);
+    }
+
+    /* Results */
+    .results-container {
+      max-width: var(--max-w);
+      margin: 2rem auto 4rem;
+      padding: 0 1.5rem;
+    }
+    .results-header { margin-bottom: 1.5rem; }
+    .results-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+    .results-sub { font-size: .85rem; color: var(--text-muted); margin-top: .25rem; }
+    .results-grid { display: flex; flex-direction: column; gap: 1rem; }
+
+    /* Result card */
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color .25s, transform .2s;
+    }
+    .result-card:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-2px);
+    }
+
+    .rc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .rc-airline { display: flex; align-items: center; gap: .6rem; }
+    .rc-airline-code {
+      background: var(--surface-2);
+      padding: .25rem .55rem;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: .8rem;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: .04em;
+    }
+    .rc-airline-name { font-size: .9rem; color: var(--text); font-weight: 500; }
+
+    /* Eco badge */
+    .rc-eco-badge {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .25rem .65rem;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .eco-leaf { width: 14px; height: 14px; }
+    .eco-a { background: rgba(0,212,170,0.15); color: var(--teal); }
+    .eco-b { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .eco-c { background: rgba(245,158,11,0.15); color: var(--eco-amber); }
+    .eco-d { background: rgba(239,68,68,0.12); color: var(--eco-red); }
+
+    /* Route display */
+    .rc-route { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .rc-time-block { text-align: center; min-width: 60px; }
+    .rc-time { font-size: 1.25rem; font-weight: 600; color: var(--text); display: block; }
+    .rc-code { font-size: .75rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+    .rc-duration { flex: 1; text-align: center; }
+    .rc-dur-label { font-size: .75rem; color: var(--text-muted); display: block; margin-bottom: .35rem; }
+    .rc-dur-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      margin: 0 .5rem;
+    }
+    .rc-dur-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    .rc-dur-stop { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--eco-amber); background: var(--surface); flex-shrink: 0; }
+    .rc-stops-label { font-size: .7rem; color: var(--text-subtle); display: block; margin-top: .3rem; }
+
+    /* Bottom row */
+    .rc-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+    .rc-meta { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .rc-co2 { font-size: .8rem; color: var(--text-muted); }
+    .rc-seats { font-size: .8rem; color: var(--text-muted); }
+    .rc-seats.seats-low { color: var(--eco-red); font-weight: 500; }
+    .rc-price-block { text-align: right; }
+    .rc-price { font-size: 1.4rem; font-weight: 600; color: var(--gold); display: block; }
+    .rc-cabin { font-size: .75rem; color: var(--text-subtle); text-transform: capitalize; }
+
+    /* Hotel card extras */
+    .rc-hotel-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; color: var(--text); }
+    .rc-stars { display: flex; gap: 2px; margin-top: .25rem; }
+    .star-icon { width: 14px; height: 14px; fill: var(--text-subtle); }
+    .star-icon.filled { fill: var(--gold); }
+    .rc-hotel-details { display: flex; align-items: center; gap: 1rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .rc-rating { display: flex; align-items: center; gap: .4rem; }
+    .rc-rating-score {
+      background: var(--gold-dim);
+      color: var(--gold);
+      padding: .15rem .45rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: .85rem;
+    }
+    .rc-rating-count { font-size: .8rem; color: var(--text-muted); }
+    .rc-distance { font-size: .8rem; color: var(--text-subtle); }
+    .rc-amenities { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+    .ht-amen {
+      font-size: .72rem;
+      padding: .2rem .55rem;
+      background: var(--surface-2);
+      border-radius: 6px;
+      color: var(--text-muted);
+    }
+    .ht-eco-cert {
+      font-size: .72rem;
+      padding: .2rem .55rem;
+      background: rgba(0,212,170,0.1);
+      border-radius: 6px;
+      color: var(--teal);
+      font-weight: 500;
+    }
+    .rc-access {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .78rem;
+      color: var(--text-subtle);
+      margin-bottom: .75rem;
+    }
+    .rc-access svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
+
+    /* Skeleton */
+    .result-card.skeleton { min-height: 120px; position: relative; overflow: hidden; }
+    .skel-line { background: var(--surface-2); border-radius: 6px; margin-bottom: .6rem; }
+    .skel-title { width: 60%; height: 18px; }
+    .skel-sub { width: 80%; height: 14px; }
+    .skel-price { width: 30%; height: 22px; margin-left: auto; }
+    .result-card.skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+    /* Error & empty */
+    .booking-error, .no-results {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .booking-error { border-color: rgba(239,68,68,0.3); }
+    .booking-error svg { width: 32px; height: 32px; color: var(--eco-red); margin-bottom: .5rem; }
+    .booking-error p { font-size: .9rem; margin: .15rem 0; }
+
+    /* Coming soon */
+    .coming-soon {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .coming-soon svg { width: 56px; height: 56px; color: var(--gold-dim); margin-bottom: 1rem; }
+    .coming-soon h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: .5rem;
+    }
+    .coming-soon p { color: var(--text-muted); font-size: .9rem; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .booking-tabs { gap: .25rem; }
+      .booking-tab { padding: .65rem .75rem; font-size: .82rem; }
+      .booking-panel { padding: 1.25rem; }
+      .search-grid { grid-template-columns: 1fr; }
+      .rc-route { flex-wrap: wrap; justify-content: center; }
+      .rc-bottom { flex-direction: column; align-items: flex-start; gap: .75rem; }
+      .rc-price-block { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link active" href="/bookings">Book</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-cta" href="/planner">Start Planning</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/bookings">Book</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link nav-mobile-cta" href="/planner">Start Planning</a>
+  </div>
+
+  <!-- ── Hero ───────────────────────────────────────────────────── -->
+  <header class="bookings-hero page-enter" aria-label="Bookings header">
+    <p class="section-label">Search · Compare · Book</p>
+    <h1 class="section-title" style="font-size:clamp(2.25rem,6vw,4.5rem);">
+      Find your next<br><em style="color:var(--gold);">journey.</em>
+    </h1>
+    <p class="section-sub" style="margin-top:1rem;">Flights, hotels, and experiences — each one eco-scored so you travel with intention.</p>
+  </header>
+
+  <!-- ── Tab bar ────────────────────────────────────────────────── -->
+  <div class="booking-tabs" role="tablist">
+    <button class="booking-tab active" data-tab="flights" role="tab" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5 0 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.3.8.5 1.3.3l.5-.3c.4-.2.6-.7.5-1.1z"/></svg>
+      Flights
+    </button>
+    <button class="booking-tab" data-tab="hotels" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7M5 21V10.7M19 21V10.7M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/></svg>
+      Hotels
+    </button>
+    <button class="booking-tab" data-tab="experiences" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      Experiences
+    </button>
+  </div>
+
+  <!-- ── Search panels ──────────────────────────────────────────── -->
+  <div class="booking-panels">
+
+    <!-- Flights panel -->
+    <div class="booking-panel active" data-panel="flights">
+      <form id="flight-search-form" autocomplete="off">
+        <div class="search-grid">
+          <div class="form-group">
+            <label for="fl-origin">From</label>
+            <input type="text" id="fl-origin" placeholder="LHR" maxlength="4" value="LHR" />
+          </div>
+          <div class="form-group">
+            <label for="fl-destination">To</label>
+            <input type="text" id="fl-destination" placeholder="JFK" maxlength="4" />
+          </div>
+          <div class="form-group">
+            <label for="fl-depart">Depart</label>
+            <input type="date" id="fl-depart" />
+          </div>
+          <div class="form-group">
+            <label for="fl-return">Return</label>
+            <input type="date" id="fl-return" />
+          </div>
+          <div class="form-group">
+            <label for="fl-passengers">Passengers</label>
+            <select id="fl-passengers">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fl-cabin">Cabin</label>
+            <select id="fl-cabin">
+              <option value="economy">Economy</option>
+              <option value="premium_economy">Premium Economy</option>
+              <option value="business">Business</option>
+              <option value="first">First</option>
+            </select>
+          </div>
+          <div class="form-group" style="justify-content:flex-end;">
+            <button type="submit" class="search-btn">Search flights</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Hotels panel -->
+    <div class="booking-panel" data-panel="hotels">
+      <form id="hotel-search-form" autocomplete="off">
+        <div class="search-grid">
+          <div class="form-group">
+            <label for="ht-destination">Destination</label>
+            <input type="text" id="ht-destination" placeholder="Paris" />
+          </div>
+          <div class="form-group">
+            <label for="ht-checkin">Check-in</label>
+            <input type="date" id="ht-checkin" />
+          </div>
+          <div class="form-group">
+            <label for="ht-checkout">Check-out</label>
+            <input type="date" id="ht-checkout" />
+          </div>
+          <div class="form-group">
+            <label for="ht-guests">Guests</label>
+            <select id="ht-guests">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ht-rooms">Rooms</label>
+            <select id="ht-rooms">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div class="form-group" style="justify-content:flex-end;">
+            <button type="submit" class="search-btn">Search hotels</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Experiences panel -->
+    <div class="booking-panel" data-panel="experiences">
+      <div class="coming-soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+          <path d="M2 12h20"/>
+        </svg>
+        <h3>Experiences — coming soon</h3>
+        <p>Curated tours, activities, and local experiences — all eco-scored. AVA is learning the best options for every destination.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Results container ──────────────────────────────────────── -->
+  <div class="results-container" id="booking-results"></div>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="vst-footer" aria-label="Site footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-mark">VST</div>
+        <p class="footer-tagline">Travel with intention. AI-powered planning, transparent eco scores, seamless booking.</p>
+        <div class="footer-socials" aria-label="Social media">
+          <a class="footer-social" href="https://twitter.com" aria-label="Twitter" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a class="footer-social" href="https://instagram.com" aria-label="Instagram" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a class="footer-social" href="https://linkedin.com" aria-label="LinkedIn" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zm2-3a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-head">Explore</p>
+        <a class="footer-lnk" href="/destinations">Destinations</a>
+        <a class="footer-lnk" href="/planner">AVA Planner</a>
+        <a class="footer-lnk" href="/bookings">Flights</a>
+        <a class="footer-lnk" href="/bookings">Hotels</a>
+        <a class="footer-lnk" href="/">Trains</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Company</p>
+        <a class="footer-lnk" href="/about">About</a>
+        <a class="footer-lnk" href="/about#values">Values</a>
+        <a class="footer-lnk" href="/about#mission">Mission</a>
+        <a class="footer-lnk" href="/">Press</a>
+        <a class="footer-lnk" href="/">Careers</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Legal</p>
+        <a class="footer-lnk" href="/">Privacy</a>
+        <a class="footer-lnk" href="/">Terms</a>
+        <a class="footer-lnk" href="/">Cookie Policy</a>
+        <a class="footer-lnk" href="/">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Voyage Smart Travel Ltd. All rights reserved.</span>
+      <span>Registered in England &amp; Wales &middot; 14829301</span>
+    </div>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script src="js/bookings.js"></script>
+  <script src="js/premium.js"></script>
+</body>
+</html>
