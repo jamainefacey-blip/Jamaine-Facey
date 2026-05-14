@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Voyage Smart Travel Safety Hub — embassy finder, travel risk advisories, SOS button, women traveller safety, scam alerts, and vaccination requirements." />
+  <title>Safety Hub — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+
+  <style>
+    /* ── Safety Hub Styles ────────────────────────────────────────── */
+    #safety-hub { --section-gap: clamp(4rem, 8vw, 7rem); }
+
+    /* Hero */
+    .safety-hero {
+      padding: calc(var(--nav-h, 72px) + clamp(3rem, 8vw, 6rem)) var(--side) clamp(3rem, 6vw, 5rem);
+      text-align: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,.12) 0%, transparent 70%),
+                  linear-gradient(180deg, #0a0f1a 0%, #0d1420 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .safety-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9a84c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .safety-hero-shield {
+      width: 80px; height: 80px;
+      margin: 0 auto 1.5rem;
+      background: rgba(201,168,76,.1);
+      border: 1px solid rgba(201,168,76,.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .safety-hero-shield svg { width: 40px; height: 40px; color: var(--gold); }
+    .safety-hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1rem;
+    }
+    .safety-hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 7vw, 5rem); font-weight: 300; line-height: 1.1;
+      color: var(--text); margin-bottom: 1.25rem;
+    }
+    .safety-hero h1 em { color: var(--gold); font-style: italic; }
+    .safety-hero-sub {
+      font-size: 1.05rem; color: var(--text-muted);
+      max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7;
+    }
+    .safety-hero-features {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem;
+      max-width: 700px; margin: 0 auto;
+    }
+    .safety-hero-feat {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .5rem 1rem;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 2rem; font-size: .8rem; color: var(--text-muted);
+    }
+    .safety-hero-feat svg { width: 14px; height: 14px; color: var(--teal); flex-shrink: 0; }
+
+    /* Section shell */
+    .safety-section {
+      padding: var(--section-gap) var(--side);
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .safety-section.reveal-visible { opacity: 1; transform: none; }
+    .safety-section-alt { background: var(--surface); }
+
+    .safety-section-header { margin-bottom: 2.5rem; }
+    .safety-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: .6rem;
+    }
+    .safety-section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 300; color: var(--text);
+      line-height: 1.2; margin-bottom: .75rem;
+    }
+    .safety-section-sub { font-size: .95rem; color: var(--text-muted); max-width: 600px; line-height: 1.7; }
+
+    /* Select component */
+    .safety-select-wrap { position: relative; max-width: 440px; margin-bottom: 2rem; }
+    .safety-select {
+      width: 100%; padding: .85rem 2.5rem .85rem 1.1rem;
+      background: var(--surface-2, #182030); border: 1px solid rgba(255,255,255,.1);
+      border-radius: .75rem; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: .95rem; appearance: none; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .safety-select:focus { outline: none; border-color: var(--gold); }
+    .safety-select-wrap::after {
+      content: ''; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+      border: 5px solid transparent; border-top-color: var(--text-muted);
+      border-bottom: none; pointer-events: none;
+    }
+
+    /* Embassy card */
+    .embassy-card {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(201,168,76,.2); border-radius: 1rem;
+      padding: 1.5rem; max-width: 680px;
+      animation: fadeUp .3s ease;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+    .embassy-card-flag { font-size: 2.5rem; flex-shrink: 0; line-height: 1; }
+    .embassy-card-body { flex: 1; min-width: 0; }
+    .embassy-card-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--text); margin-bottom: .75rem; }
+    .embassy-card-address { display: flex; gap: .4rem; font-size: .85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: .75rem; }
+    .embassy-card-contacts { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
+    .embassy-contact {
+      display: flex; align-items: center; gap: .4rem;
+      padding: .4rem .75rem; background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08); border-radius: .5rem;
+      font-size: .82rem; color: var(--text-muted); text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+    .embassy-contact:hover { border-color: var(--gold); color: var(--gold); }
+    .embassy-card-row { display: flex; align-items: center; gap: 1rem; margin-bottom: .5rem; }
+    .embassy-card-hours { display: flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--text-muted); }
+    .embassy-emergency {
+      display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+      padding: .6rem .75rem; background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.2); border-radius: .5rem;
+      font-size: .82rem; color: var(--text-muted); margin-top: .5rem;
+    }
+    .embassy-emergency strong { color: #ef4444; }
+
+    /* Advisory */
+    .advisory-card {
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(255,255,255,.08); border-radius: 1rem;
+      overflow: hidden; max-width: 740px;
+      animation: fadeUp .3s ease;
+    }
+    .advisory-card-header {
+      display: flex; align-items: center; gap: 1.5rem;
+      padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .advisory-risk-badge {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem;
+      background: rgba(var(--risk-color-rgb, 0,212,170), .1);
+      border: 1px solid color-mix(in srgb, var(--risk-color, #00d4aa) 40%, transparent);
+      border-radius: .75rem; flex-shrink: 0;
+    }
+    .advisory-risk-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem; font-weight: 600; line-height: 1;
+      color: var(--risk-color, #00d4aa);
+    }
+    .advisory-risk-label { font-size: .8rem; font-weight: 500; color: var(--risk-color, #00d4aa); }
+    .advisory-risk-sublabel { font-size: .7rem; color: var(--text-muted); }
+    .advisory-country-meta { display: flex; align-items: center; gap: .75rem; }
+    .advisory-country-flag { font-size: 2rem; }
+    .advisory-country-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; color: var(--text); }
+    .advisory-categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0; }
+    .advisory-cat {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      border-right: 1px solid rgba(255,255,255,.05);
+    }
+    .advisory-cat:nth-child(even) { border-right: none; }
+    .advisory-cat-label { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin-bottom: .5rem; font-family: 'DM Mono', monospace; }
+    .advisory-cat-text { font-size: .88rem; color: var(--text-muted); line-height: 1.65; }
+    .advisory-vax {
+      padding: 1.25rem 1.5rem;
+      background: rgba(0,212,170,.05); border-top: 1px solid rgba(0,212,170,.15);
+    }
+    .advisory-vax-title { display: flex; align-items: center; gap: .4rem; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin-bottom: .6rem; font-family: 'DM Mono', monospace; }
+    .advisory-vax-required, .advisory-vax-recommended, .advisory-vax-notes {
+      font-size: .85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: .3rem;
+    }
+    .advisory-vax-required strong { color: #ef4444; }
+
+    /* Risk Grid */
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: .75rem;
+    }
+    .risk-card {
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(255,255,255,.07); border-radius: .75rem;
+      padding: 1rem; cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+    .risk-card:hover { border-color: var(--risk-color, #00d4aa); transform: translateY(-2px); }
+    .risk-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .risk-card-flag { font-size: 1.4rem; margin-bottom: .4rem; }
+    .risk-card-body { margin-bottom: .6rem; }
+    .risk-card-country { font-size: .9rem; color: var(--text); margin-bottom: .2rem; }
+    .risk-card-level { font-size: .75rem; font-family: 'DM Mono', monospace; }
+    .risk-card-bar { height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden; }
+    .risk-card-fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+
+    /* Solo Mode */
+    .solo-toggle-row {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .solo-toggle-label { font-size: .95rem; color: var(--text); }
+    .solo-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .solo-switch input { opacity: 0; width: 0; height: 0; }
+    .solo-switch-track {
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.1); border-radius: 13px; cursor: pointer;
+      transition: background .2s;
+    }
+    .solo-switch-track::after {
+      content: ''; position: absolute;
+      width: 20px; height: 20px; left: 3px; top: 3px;
+      background: var(--text-muted); border-radius: 50%;
+      transition: transform .2s, background .2s;
+    }
+    .solo-switch input:checked + .solo-switch-track { background: var(--teal); }
+    .solo-switch input:checked + .solo-switch-track::after { transform: translateX(22px); background: #fff; }
+    .solo-switch input:focus-visible + .solo-switch-track { outline: 2px solid var(--gold); }
+
+    #solo-content {
+      display: none; padding: 1.5rem;
+      background: rgba(0,212,170,.05); border: 1px solid rgba(0,212,170,.15);
+      border-radius: 1rem;
+    }
+    #solo-content.solo-active { display: block; animation: fadeUp .3s ease; }
+    .solo-tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .solo-tip-card {
+      padding: 1rem 1.25rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+      border-radius: .75rem;
+    }
+    .solo-tip-icon { margin-bottom: .6rem; }
+    .solo-tip-icon svg { width: 20px; height: 20px; color: var(--teal); }
+    .solo-tip-title { font-size: .88rem; font-weight: 500; color: var(--text); margin-bottom: .35rem; }
+    .solo-tip-text { font-size: .82rem; color: var(--text-muted); line-height: 1.6; }
+    .solo-checkin {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      padding: 1rem 1.25rem;
+      background: rgba(201,168,76,.05); border: 1px solid rgba(201,168,76,.2);
+      border-radius: .75rem;
+    }
+    .solo-checkin-text { flex: 1; }
+    .solo-checkin-title { font-size: .88rem; color: var(--text); font-weight: 500; margin-bottom: .2rem; }
+    .solo-checkin-status { font-size: .78rem; color: var(--text-muted); }
+    .solo-checkin-btn {
+      padding: .55rem 1.1rem; background: var(--gold);
+      color: #0a0f1a; font-size: .82rem; font-weight: 600;
+      border: none; border-radius: .5rem; cursor: pointer;
+      transition: opacity .2s; white-space: nowrap;
+    }
+    .solo-checkin-btn:hover { opacity: .85; }
+
+    /* Women Safety */
+    .women-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .women-card {
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(255,255,255,.07); border-radius: 1rem;
+      padding: 1.25rem; transition: border-color .2s;
+    }
+    .women-card:hover { border-color: rgba(201,168,76,.3); }
+    .women-card-top { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+    .women-card-flag { font-size: 1.6rem; flex-shrink: 0; }
+    .women-card-country { font-size: .95rem; color: var(--text); font-weight: 500; }
+    .women-card-score { font-size: .78rem; font-family: 'DM Mono', monospace; margin-top: .15rem; }
+    .women-card-bar { height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; }
+    .women-card-fill { height: 100%; border-radius: 2px; }
+    .women-card-tips { list-style: none; padding: 0; margin: 0 0 .75rem; }
+    .women-card-tips li {
+      font-size: .8rem; color: var(--text-muted); line-height: 1.55;
+      padding-left: 1rem; position: relative; margin-bottom: .3rem;
+    }
+    .women-card-tips li::before { content: '·'; position: absolute; left: 0; color: var(--teal); }
+    .women-card-dress {
+      display: flex; align-items: flex-start; gap: .4rem;
+      font-size: .78rem; color: var(--text-muted); line-height: 1.5;
+      padding: .5rem .75rem; background: rgba(201,168,76,.06);
+      border-radius: .5rem; border: 1px solid rgba(201,168,76,.15);
+    }
+    .women-card-dress svg { color: var(--gold); margin-top: 1px; flex-shrink: 0; }
+
+    /* Scam Alerts */
+    .scam-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+    .scam-card {
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(255,255,255,.07); border-radius: 1rem;
+      padding: 1.25rem; transition: border-color .2s;
+    }
+    .scam-card-header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .scam-dest { font-size: .82rem; color: var(--text-muted); }
+    .scam-badge {
+      display: inline-flex; padding: .2rem .6rem;
+      border: 1px solid; border-radius: .4rem;
+      font-size: .7rem; font-family: 'DM Mono', monospace; letter-spacing: .05em;
+    }
+    .scam-severity { font-size: .72rem; font-family: 'DM Mono', monospace; font-weight: 600; }
+    .scam-name { font-size: .95rem; color: var(--text); margin-bottom: .5rem; }
+    .scam-desc { font-size: .83rem; color: var(--text-muted); line-height: 1.6; margin-bottom: .75rem; }
+    .scam-avoid {
+      display: flex; align-items: flex-start; gap: .5rem;
+      padding: .6rem .75rem; background: rgba(0,212,170,.05);
+      border: 1px solid rgba(0,212,170,.15); border-radius: .5rem;
+      font-size: .8rem; color: var(--text-muted); line-height: 1.55;
+    }
+
+    /* Medical */
+    .medical-card {
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(255,255,255,.08); border-radius: 1rem;
+      padding: 1.5rem; max-width: 580px;
+      animation: fadeUp .3s ease;
+    }
+    .medical-card-top { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem; }
+    .medical-flag { font-size: 1.8rem; }
+    .medical-country { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--text); }
+    .medical-section { margin-bottom: 1rem; }
+    .medical-section-label { display: flex; align-items: center; gap: .35rem; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: .5rem; }
+    .medical-list { list-style: none; padding: 0; margin: 0; }
+    .medical-list li { font-size: .85rem; color: var(--text-muted); padding-left: 1rem; position: relative; margin-bottom: .3rem; line-height: 1.5; }
+    .medical-list li::before { content: '→'; position: absolute; left: 0; color: var(--teal); font-size: .7rem; top: .2em; }
+    .medical-notes { font-size: .82rem; color: var(--text-muted); line-height: 1.6; margin-top: .75rem; padding: .6rem .75rem; background: rgba(255,255,255,.03); border-radius: .5rem; }
+    .medical-disclaimer {
+      margin-top: 1rem; padding: .75rem 1rem;
+      background: rgba(201,168,76,.06); border: 1px solid rgba(201,168,76,.15);
+      border-radius: .5rem; font-size: .78rem; color: var(--text-muted); line-height: 1.6;
+    }
+
+    /* Medical Quick Links */
+    .medical-quick-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: .75rem; margin-bottom: 2.5rem;
+    }
+    .medical-quick-card {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: 1rem 1.1rem;
+      background: var(--surface-2, #182030);
+      border: 1px solid rgba(255,255,255,.07); border-radius: .75rem;
+    }
+    .medical-quick-icon { width: 36px; height: 36px; border-radius: .5rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .medical-quick-title { font-size: .85rem; color: var(--text); font-weight: 500; margin-bottom: .2rem; }
+    .medical-quick-text { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* SOS Floating Button — injected by safety.js */
+    .sos-fab {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 450;
+    }
+    .sos-trigger {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      gap: .25rem; flex-direction: column;
+      box-shadow: 0 4px 20px rgba(239,68,68,.4), 0 2px 8px rgba(0,0,0,.4);
+      transition: transform .2s, box-shadow .2s;
+      color: #fff;
+    }
+    .sos-trigger svg { width: 22px; height: 22px; }
+    .sos-trigger:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(239,68,68,.55), 0 2px 10px rgba(0,0,0,.4); }
+    .sos-label { font-size: .55rem; font-family: 'DM Mono', monospace; letter-spacing: .1em; font-weight: 600; line-height: 1; }
+    .sos-panel {
+      position: absolute; bottom: 68px; right: 0;
+      width: 300px;
+      background: var(--surface, #111827);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: 1rem;
+      box-shadow: 0 8px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(239,68,68,.1);
+      overflow: hidden;
+      transform-origin: bottom right;
+      transform: scale(.9) translateY(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .sos-fab.sos-open .sos-panel {
+      opacity: 1; transform: none; pointer-events: auto;
+    }
+    [aria-hidden="true"].sos-panel { display: block; } /* keep in DOM */
+    .sos-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .85rem 1rem;
+      background: rgba(239,68,68,.1); border-bottom: 1px solid rgba(239,68,68,.15);
+    }
+    .sos-panel-title { display: flex; align-items: center; gap: .5rem; font-size: .82rem; font-weight: 600; color: #ef4444; }
+    .sos-close { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: .2rem; line-height: 0; }
+    .sos-close:hover { color: var(--text); }
+    .sos-emergency-row {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .sos-call-btn {
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+      width: 100%; padding: .85rem;
+      background: #ef4444; color: #fff;
+      border: none; border-radius: .6rem; text-decoration: none;
+      font-weight: 600; font-size: .95rem; cursor: pointer;
+      transition: background .2s;
+      margin-bottom: .5rem;
+    }
+    .sos-call-btn:hover { background: #dc2626; }
+    .sos-local { font-size: .72rem; color: var(--text-muted); text-align: center; }
+    .sos-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; padding: .75rem 1rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .sos-action-btn {
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+      padding: .6rem .75rem;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: .5rem; font-size: .78rem; color: var(--text-muted);
+      cursor: pointer; text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+    .sos-action-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .sos-location-output {
+      padding: 0 1rem;
+      font-size: .78rem; color: var(--text-muted); line-height: 1.5;
+      min-height: 0; transition: min-height .2s;
+    }
+    .sos-location-output:not(:empty) { padding: .75rem 1rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .sos-footer-note {
+      padding: .75rem 1rem;
+      font-size: .72rem; color: var(--text-muted);
+      line-height: 1.55; text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .sos-panel { width: calc(100vw - 2rem); right: 0; }
+      .advisory-categories { grid-template-columns: 1fr; }
+      .advisory-cat:nth-child(even) { border-right: 1px solid rgba(255,255,255,.05); }
+    }
+  </style>
+</head>
+<body id="safety-hub">
+
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/bookings">Book</a>
+        <a class="nav-link active" href="/safety">Safety</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-cta" href="/planner">Start Planning</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/bookings">Book</a>
+    <a class="nav-mobile-link active" href="/safety">Safety</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link nav-mobile-cta" href="/planner">Start Planning</a>
+  </div>
+
+  <!-- ── Hero ───────────────────────────────────────────────────── -->
+  <header class="safety-hero page-enter" aria-label="Safety Hub hero">
+    <div class="safety-hero-shield" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+    </div>
+    <p class="safety-hero-eyebrow">Travel Safety · Phase 2</p>
+    <h1>Travel with<br><em>confidence.</em></h1>
+    <p class="safety-hero-sub">
+      Embassy contacts, risk advisories, scam alerts, and women traveller safety scores —
+      everything you need to travel smarter and safer.
+    </p>
+    <div class="safety-hero-features" aria-label="Safety features">
+      <span class="safety-hero-feat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+        UK Embassy Finder
+      </span>
+      <span class="safety-hero-feat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Risk Advisories
+      </span>
+      <span class="safety-hero-feat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="11" r="3"/><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+        SOS Emergency Button
+      </span>
+      <span class="safety-hero-feat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Women Safety Scores
+      </span>
+      <span class="safety-hero-feat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        Scam Alerts
+      </span>
+      <span class="safety-hero-feat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
+        Vaccination Guide
+      </span>
+    </div>
+  </header>
+
+  <!-- ── Embassy Finder ─────────────────────────────────────────── -->
+  <section class="safety-section" id="embassies" aria-label="Embassy finder">
+    <div class="safety-section-header">
+      <p class="safety-section-label">In an emergency</p>
+      <h2 class="safety-section-title">UK Embassy Finder</h2>
+      <p class="safety-section-sub">Find your nearest British Embassy or High Commission with phone numbers, email, and opening hours for 50 destinations.</p>
+    </div>
+    <div class="safety-select-wrap">
+      <label class="sr-only" for="embassy-country-select">Select destination country</label>
+      <select class="safety-select" id="embassy-country-select" aria-label="Select destination to find UK embassy">
+        <option value="">— Select a destination —</option>
+      </select>
+    </div>
+    <div id="embassy-result" aria-live="polite"></div>
+  </section>
+
+  <!-- ── Travel Advisories ──────────────────────────────────────── -->
+  <section class="safety-section safety-section-alt" id="advisory" aria-label="Travel advisories">
+    <div class="safety-section-header">
+      <p class="safety-section-label">Before you go</p>
+      <h2 class="safety-section-title">Travel Advisories</h2>
+      <p class="safety-section-sub">FCO-style risk assessments covering safety, health, entry requirements, and local laws — scored 1–10.</p>
+    </div>
+    <div class="safety-select-wrap">
+      <label class="sr-only" for="advisory-country-select">Select destination for advisory</label>
+      <select class="safety-select" id="advisory-country-select" aria-label="Select destination for travel advisory">
+        <option value="">— Select a destination —</option>
+      </select>
+    </div>
+    <div id="advisory-result" aria-live="polite"></div>
+  </section>
+
+  <!-- ── Risk Overview ──────────────────────────────────────────── -->
+  <section class="safety-section" id="risk-overview" aria-label="Risk overview">
+    <div class="safety-section-header">
+      <p class="safety-section-label">At a glance</p>
+      <h2 class="safety-section-title">Risk Overview</h2>
+      <p class="safety-section-sub">All 50 destinations ranked by overall safety risk. Click any card to jump to its full advisory.</p>
+    </div>
+    <div class="risk-grid" id="risk-grid" role="list" aria-label="Destination risk scores"></div>
+  </section>
+
+  <!-- ── Solo Traveller Mode ────────────────────────────────────── -->
+  <section class="safety-section safety-section-alt" id="solo" aria-label="Solo traveller mode">
+    <div class="safety-section-header">
+      <p class="safety-section-label">Travelling alone</p>
+      <h2 class="safety-section-title">Solo Traveller Mode</h2>
+      <p class="safety-section-sub">Enable solo mode for check-in reminders, emergency contact prompts, and safety tips tailored to travelling alone.</p>
+    </div>
+
+    <div class="solo-toggle-row">
+      <label class="solo-switch" aria-label="Enable solo traveller mode">
+        <input type="checkbox" id="solo-toggle" />
+        <span class="solo-switch-track" aria-hidden="true"></span>
+      </label>
+      <span class="solo-toggle-label">Solo Traveller Mode</span>
+    </div>
+
+    <div id="solo-content">
+      <div class="solo-tips-grid">
+        <div class="solo-tip-card">
+          <div class="solo-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.28-1.28a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+          </div>
+          <div class="solo-tip-title">Share your itinerary</div>
+          <div class="solo-tip-text">Always leave a copy of your full itinerary (hotels, dates, flights) with someone at home. Update them on any changes.</div>
+        </div>
+        <div class="solo-tip-card">
+          <div class="solo-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="11" r="3"/><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+          </div>
+          <div class="solo-tip-title">Enable location sharing</div>
+          <div class="solo-tip-text">Share your phone's live location with a trusted contact. Google Maps, Apple Find My, or WhatsApp location sharing are easy options.</div>
+        </div>
+        <div class="solo-tip-card">
+          <div class="solo-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="solo-tip-title">Secure your documents</div>
+          <div class="solo-tip-text">Keep digital copies of passport, visa, and insurance in encrypted cloud storage. Email copies to yourself and your emergency contact.</div>
+        </div>
+        <div class="solo-tip-card">
+          <div class="solo-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="solo-tip-title">Stay socially connected</div>
+          <div class="solo-tip-text">Join hostel activities or tours to meet other travellers. Solo doesn't mean isolated — communities make travel safer and richer.</div>
+        </div>
+        <div class="solo-tip-card">
+          <div class="solo-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="solo-tip-title">Know your exit</div>
+          <div class="solo-tip-text">In every new location, identify the nearest exit, note your hotel address in the local language, and know how to reach your embassy.</div>
+        </div>
+        <div class="solo-tip-card">
+          <div class="solo-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </div>
+          <div class="solo-tip-title">Trust your instincts</div>
+          <div class="solo-tip-text">If a situation, person, or place feels wrong — leave. Your instinct is a survival tool. Never feel you have to explain yourself.</div>
+        </div>
+      </div>
+
+      <div class="solo-checkin" role="group" aria-label="Check-in reminder">
+        <div class="solo-checkin-text">
+          <div class="solo-checkin-title">Daily Check-In Reminder</div>
+          <div class="solo-checkin-status" id="solo-checkin-status">No check-in recorded yet</div>
+        </div>
+        <button class="solo-checkin-btn" id="solo-checkin-btn" type="button">Check In Now</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Women Traveller Safety ─────────────────────────────────── -->
+  <section class="safety-section" id="women-safety" aria-label="Women traveller safety">
+    <div class="safety-section-header">
+      <p class="safety-section-label">For women travelling solo or in groups</p>
+      <h2 class="safety-section-title">Women Traveller Safety</h2>
+      <p class="safety-section-sub">Safety scores, practical tips, and dress code guidance for 30 destinations — researched specifically for women travellers.</p>
+    </div>
+    <div class="women-grid" id="women-grid" aria-label="Women safety scores by destination"></div>
+  </section>
+
+  <!-- ── Scam Alerts ────────────────────────────────────────────── -->
+  <section class="safety-section safety-section-alt" id="scams" aria-label="Tourist scam alerts">
+    <div class="safety-section-header">
+      <p class="safety-section-label">Stay one step ahead</p>
+      <h2 class="safety-section-title">Fraud &amp; Scam Alerts</h2>
+      <p class="safety-section-sub">The most common tourist scams by destination — what they look like, where they happen, and exactly how to avoid them.</p>
+    </div>
+    <div class="safety-select-wrap">
+      <label class="sr-only" for="scam-country-select">Filter scams by country</label>
+      <select class="safety-select" id="scam-country-select" aria-label="Filter scam alerts by destination">
+        <option value="">— All destinations —</option>
+      </select>
+    </div>
+    <div class="scam-grid" id="scam-grid" aria-label="Scam alerts"></div>
+  </section>
+
+  <!-- ── Medical Assistance ─────────────────────────────────────── -->
+  <section class="safety-section" id="medical" aria-label="Medical and vaccination guidance">
+    <div class="safety-section-header">
+      <p class="safety-section-label">Health &amp; wellbeing</p>
+      <h2 class="safety-section-title">Medical Assistance</h2>
+      <p class="safety-section-sub">Vaccination requirements and recommendations for every destination, plus essential reminders about travel insurance and health precautions.</p>
+    </div>
+
+    <div class="medical-quick-grid">
+      <div class="medical-quick-card">
+        <div class="medical-quick-icon" style="background:rgba(239,68,68,.1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" aria-hidden="true" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div>
+          <div class="medical-quick-title">Travel Insurance</div>
+          <div class="medical-quick-text">Always get comprehensive cover including medical evacuation. Check it covers your planned activities (skiing, diving, etc.).</div>
+        </div>
+      </div>
+      <div class="medical-quick-card">
+        <div class="medical-quick-icon" style="background:rgba(0,212,170,.1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2" aria-hidden="true" style="width:18px;height:18px"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </div>
+        <div>
+          <div class="medical-quick-title">Travel Clinic Visit</div>
+          <div class="medical-quick-text">Book a travel health consultation at least 6–8 weeks before departure to allow time for vaccinations to take effect.</div>
+        </div>
+      </div>
+      <div class="medical-quick-card">
+        <div class="medical-quick-icon" style="background:rgba(201,168,76,.1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" aria-hidden="true" style="width:18px;height:18px"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
+        </div>
+        <div>
+          <div class="medical-quick-title">NHS Fit for Travel</div>
+          <div class="medical-quick-text">The NHS Fit for Travel website provides authoritative vaccination advice for all countries. Use it alongside this guide.</div>
+        </div>
+      </div>
+      <div class="medical-quick-card">
+        <div class="medical-quick-icon" style="background:rgba(56,189,248,.1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" aria-hidden="true" style="width:18px;height:18px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="medical-quick-title">GHIC / EHIC Card</div>
+          <div class="medical-quick-text">Your Global Health Insurance Card covers emergency NHS-equivalent care in EU countries and some others. Always carry it.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="safety-section-header" style="margin-bottom:1.5rem">
+      <h3 class="safety-section-title" style="font-size:1.3rem">Vaccination Requirements by Destination</h3>
+    </div>
+    <div class="safety-select-wrap">
+      <label class="sr-only" for="medical-country-select">Select destination for vaccination information</label>
+      <select class="safety-select" id="medical-country-select" aria-label="Select destination for vaccination requirements">
+        <option value="">— Select a destination —</option>
+      </select>
+    </div>
+    <div id="medical-result" aria-live="polite"></div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="vst-footer" aria-label="Site footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-mark">VST</div>
+        <p class="footer-tagline">Travel with intention. AI-powered planning, transparent eco scores, seamless booking.</p>
+        <div class="footer-socials" aria-label="Social media">
+          <a class="footer-social" href="https://twitter.com" aria-label="Twitter" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a class="footer-social" href="https://instagram.com" aria-label="Instagram" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a class="footer-social" href="https://linkedin.com" aria-label="LinkedIn" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zm2-3a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-head">Explore</p>
+        <a class="footer-lnk" href="/destinations">Destinations</a>
+        <a class="footer-lnk" href="/planner">AVA Planner</a>
+        <a class="footer-lnk" href="/safety">Safety Hub</a>
+        <a class="footer-lnk" href="/">Flights</a>
+        <a class="footer-lnk" href="/">Hotels</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Company</p>
+        <a class="footer-lnk" href="/about">About</a>
+        <a class="footer-lnk" href="/about#values">Values</a>
+        <a class="footer-lnk" href="/about#mission">Mission</a>
+        <a class="footer-lnk" href="/">Press</a>
+        <a class="footer-lnk" href="/">Careers</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Legal</p>
+        <a class="footer-lnk" href="/">Privacy</a>
+        <a class="footer-lnk" href="/">Terms</a>
+        <a class="footer-lnk" href="/">Cookie Policy</a>
+        <a class="footer-lnk" href="/">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Voyage Smart Travel Ltd. All rights reserved.</span>
+      <span>Registered in England &amp; Wales · 14829301</span>
+    </div>
+  </footer>
+
+  <script src="js/premium.js"></script>
+  <script src="js/safety-data.js"></script>
+  <script src="js/safety.js"></script>
+</body>
+</html>
