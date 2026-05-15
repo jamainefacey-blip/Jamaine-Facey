@@ -33,6 +33,7 @@
     { "source": "/api/flights-search",                "destination": "/api/flights-search" },
     { "source": "/api/hotels-search",                 "destination": "/api/hotels-search" },
     { "source": "/api/eco-calculate",                 "destination": "/api/eco-calculate" },
+    { "source": "/accessibility",                     "destination": "/accessibility.html" },
     { "source": "/bookings",                          "destination": "/bookings.html" },
     { "source": "/planner",                           "destination": "/planner.html" },
     { "source": "/destinations",                      "destination": "/destinations.html" },

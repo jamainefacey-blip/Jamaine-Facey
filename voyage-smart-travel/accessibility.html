@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Accessibility Intelligence — accessible travel planning for every need. Wheelchair routing, sensory-friendly venues, neurodivergent modes, and medical accommodation." />
+  <title>Accessibility — Voyage Smart Travel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
+  <link rel="stylesheet" href="css/premium.css" />
+  <style>
+    /* ── Accessibility page styles ──────────────────────────────── */
+
+    /* Sensory / neurodivergent mode overrides */
+    .reduce-motion * { animation: none !important; transition: none !important; }
+    .sensory-mode .film-grain, .sensory-mode body::after { display: none !important; }
+    .sensory-mode .a11y-hero-bg { opacity: 0.04 !important; }
+    .neurodivergent-mode .nav-links .nav-link:not(.nav-cta) { display: none; }
+    .neurodivergent-mode .nav-links .nav-cta { margin-left: 0; }
+    .large-text body, .large-text { font-size: 1.15rem !important; line-height: 1.9 !important; }
+    .dyslexia-font, .dyslexia-font * { font-family: 'DM Sans', Arial, sans-serif !important; letter-spacing: 0.04em !important; word-spacing: 0.1em !important; }
+
+    /* Toast */
+    #a11y-toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(1rem);
+      background: var(--surface-2); border: 1px solid var(--border-gold); color: var(--gold);
+      padding: .6rem 1.4rem; border-radius: 100px; font-size: .9rem; font-weight: 500;
+      opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none;
+      z-index: 9999; white-space: nowrap;
+    }
+    #a11y-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .a11y-hero {
+      padding: calc(var(--nav-h) + 4rem) 1.5rem 3rem;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+    .a11y-hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--teal-dim); border: 1px solid rgba(0,212,170,.25);
+      color: var(--teal); border-radius: 100px; padding: .35rem 1rem;
+      font-size: .8rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      animation: blur-slide-up .7s var(--ease-out) both;
+    }
+    .a11y-hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 6.5vw, 5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      max-width: 720px;
+      animation: blur-slide-up .7s .1s var(--ease-out) both;
+    }
+    .a11y-hero h1 em { color: var(--teal); font-style: italic; }
+    .a11y-hero-sub {
+      max-width: 560px;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-top: 1.25rem;
+      line-height: 1.75;
+      animation: blur-slide-up .7s .2s var(--ease-out) both;
+    }
+    .active-profile-bar {
+      margin-top: 1.5rem;
+      animation: blur-slide-up .7s .3s var(--ease-out) both;
+    }
+    #active-profile-indicator {
+      display: none;
+      align-items: center; gap: .5rem;
+      background: rgba(0,212,170,.1); border: 1px solid rgba(0,212,170,.3);
+      color: var(--teal); border-radius: 100px; padding: .4rem 1rem;
+      font-size: .85rem; font-weight: 500;
+    }
+    #active-profile-indicator::before { content: '✓ Mode: '; opacity: .7; }
+
+    /* ── Profile selector ─────────────────────────────────────── */
+    .profile-section {
+      max-width: var(--max-w);
+      margin: 0 auto 3.5rem;
+      padding: 0 1.5rem;
+      animation: blur-slide-up .7s .15s var(--ease-out) both;
+    }
+    .profile-section-head {
+      display: flex; align-items: baseline; gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .profile-section-head h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.75rem; font-weight: 400;
+    }
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .a11y-profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      cursor: pointer;
+      transition: border-color .25s, transform .25s var(--ease-out), box-shadow .25s;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .a11y-profile-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--teal-dim);
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .a11y-profile-card:hover { transform: translateY(-4px); border-color: rgba(0,212,170,.3); box-shadow: 0 8px 32px rgba(0,212,170,.08); }
+    .a11y-profile-card.selected { border-color: var(--teal); box-shadow: 0 0 0 2px rgba(0,212,170,.25); }
+    .a11y-profile-card.selected::before { opacity: 1; }
+    .a11y-profile-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+    .profile-card-label {
+      font-weight: 600; font-size: .95rem; margin-bottom: .5rem;
+      position: relative; z-index: 1;
+    }
+    .profile-card-desc {
+      font-size: .82rem; color: var(--text-muted); line-height: 1.6;
+      position: relative; z-index: 1;
+    }
+    .profile-check {
+      position: absolute; top: .9rem; right: .9rem;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--teal); color: #000;
+      display: none; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700;
+    }
+    .a11y-profile-card.selected .profile-check { display: flex; }
+
+    /* ── Support toggles row ──────────────────────────────────── */
+    .support-row {
+      max-width: var(--max-w);
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      animation: blur-slide-up .7s .2s var(--ease-out) both;
+    }
+    .support-toggle-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      flex: 1; min-width: 200px;
+    }
+    .support-toggle-card .support-icon { font-size: 1.8rem; }
+    .support-toggle-card .support-text { flex: 1; }
+    .support-toggle-card .support-label { font-weight: 600; font-size: .95rem; }
+    .support-toggle-card .support-desc { font-size: .82rem; color: var(--text-muted); margin-top: .15rem; }
+    /* Toggle switch */
+    .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.1); border-radius: 100px;
+      cursor: pointer; transition: background .25s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; left: 3px; top: 3px;
+      background: white; border-radius: 50%;
+      transition: transform .25s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--teal); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .toggle-switch input:focus-visible + .toggle-slider { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 100px; }
+
+    /* ── Mobility filter chips ────────────────────────────────── */
+    .mobility-section {
+      max-width: var(--max-w);
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+      animation: blur-slide-up .7s .25s var(--ease-out) both;
+    }
+    .mobility-section h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.75rem; font-weight: 400; margin-bottom: 1rem;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .mobility-chip {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .5rem 1rem; border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted);
+      font-size: .85rem; font-weight: 500; cursor: pointer;
+      transition: all .2s;
+    }
+    .mobility-chip:hover { border-color: var(--gold); color: var(--text); }
+    .mobility-chip.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .mobility-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+    /* ── Tabbed content ───────────────────────────────────────── */
+    .a11y-tabs-bar {
+      max-width: var(--max-w);
+      margin: 0 auto 0;
+      padding: 0 1.5rem;
+      display: flex; gap: .5rem; flex-wrap: wrap;
+      animation: blur-slide-up .7s .3s var(--ease-out) both;
+    }
+    .a11y-tab {
+      padding: .75rem 1.4rem;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: transparent; color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 500;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .a11y-tab:hover { color: var(--text); background: var(--surface); }
+    .a11y-tab.active { background: var(--surface); color: var(--teal); border-color: rgba(0,212,170,.3); }
+    .a11y-tab:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+    .a11y-panels {
+      max-width: var(--max-w);
+      margin: 0 auto 5rem;
+      padding: 0 1.5rem;
+    }
+    .a11y-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid rgba(0,212,170,.18);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 2rem;
+      min-height: 300px;
+    }
+    .a11y-panel.active { display: block; }
+
+    /* ── Hotel search bar ─────────────────────────────────────── */
+    .hotel-search-bar {
+      display: flex; gap: 1rem; align-items: flex-end;
+      flex-wrap: wrap; margin-bottom: 1.75rem;
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-field { display: flex; flex-direction: column; gap: .35rem; }
+    .search-field label { font-size: .8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+    .search-field input[type=text], .search-field input[type=date] {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); padding: .65rem 1rem;
+      font-family: 'DM Sans', sans-serif; font-size: .95rem;
+      transition: border-color .2s; min-width: 160px;
+    }
+    .search-field input:focus { border-color: var(--teal); outline: none; }
+    .score-range { display: flex; flex-direction: column; gap: .35rem; }
+    .score-range label { font-size: .8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+    .score-range-inner { display: flex; align-items: center; gap: .75rem; }
+    #hotel-score-filter { accent-color: var(--teal); width: 120px; }
+    #score-display { font-family: 'DM Mono', monospace; font-size: .9rem; color: var(--teal); min-width: 35px; }
+    .search-btn-sm {
+      padding: .7rem 1.6rem; border-radius: 8px;
+      background: var(--teal); color: #0a0f1a;
+      font-weight: 600; font-size: .9rem; cursor: pointer;
+      border: none; font-family: 'DM Sans', sans-serif;
+      transition: opacity .2s;
+    }
+    .search-btn-sm:hover { opacity: .88; }
+
+    /* ── Hotel grid / cards ───────────────────────────────────── */
+    .hotel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+    .hotel-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .3s var(--ease-out), box-shadow .3s, border-color .3s;
+    }
+    .hotel-card:hover { transform: translateY(-7px) scale(1.018); box-shadow: 0 20px 48px rgba(0,0,0,.35); border-color: rgba(0,212,170,.2); }
+    .hotel-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+    .hotel-img-wrap { height: 175px; overflow: hidden; }
+    .hotel-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
+    .hotel-card:hover .hotel-img-wrap img { transform: scale(1.05); }
+    .hotel-card-body { padding: 1.25rem; }
+    .hotel-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: .85rem; }
+    .hotel-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; }
+    .hotel-loc { font-size: .8rem; color: var(--text-muted); margin-top: .2rem; }
+    .access-score {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 52px; height: 52px; border-radius: 10px;
+      border: 1px solid; flex-shrink: 0;
+    }
+    .score-num { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 400; line-height: 1; }
+    .score-label { font-size: .6rem; font-weight: 600; letter-spacing: .08em; opacity: .75; }
+    .feat-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+    .feat-tag {
+      font-size: .75rem; padding: .25rem .65rem;
+      background: rgba(255,255,255,.05); border: 1px solid var(--border);
+      border-radius: 100px; color: var(--text-muted);
+    }
+    .cert-badges { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .85rem; }
+    .cert-badge {
+      font-size: .72rem; padding: .2rem .6rem;
+      background: var(--gold-dim); border: 1px solid rgba(201,168,76,.25);
+      border-radius: 4px; color: var(--gold); font-weight: 500;
+    }
+    .hotel-footer {
+      display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+      padding-top: .85rem; border-top: 1px solid var(--border);
+    }
+    .hotel-price { font-size: .9rem; color: var(--text-muted); }
+    .hotel-price strong { color: var(--text); }
+    .hotel-rooms { font-size: .8rem; color: var(--text-muted); flex: 1; }
+    .hotel-cta {
+      padding: .45rem 1rem; border-radius: 6px;
+      background: var(--teal); color: #0a0f1a;
+      font-weight: 600; font-size: .82rem;
+      transition: opacity .2s;
+    }
+    .hotel-cta:hover { opacity: .85; }
+
+    /* ── Transport cards ──────────────────────────────────────── */
+    .transport-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      margin-bottom: 1rem;
+      transition: transform .3s var(--ease-out), box-shadow .3s;
+    }
+    .transport-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.25); }
+    .transport-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+    .transport-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: .75rem; }
+    .transport-mode { font-size: .8rem; color: var(--text-muted); margin-bottom: .25rem; text-transform: capitalize; }
+    .transport-route { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 400; }
+    .transport-note { font-size: .82rem; color: var(--text-muted); margin-top: .75rem; line-height: 1.6; border-top: 1px solid var(--border); padding-top: .75rem; }
+
+    /* ── Venue cards ──────────────────────────────────────────── */
+    .venue-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .venue-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: transform .3s var(--ease-out), border-color .3s;
+    }
+    .venue-card:hover { transform: translateY(-7px) scale(1.018); border-color: rgba(0,212,170,.25); }
+    .venue-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+    .venue-type { font-size: .75rem; color: var(--text-muted); text-transform: capitalize; margin-bottom: .5rem; }
+    .venue-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; margin-bottom: .85rem; }
+    .venue-ratings { display: flex; gap: 1rem; margin-bottom: .85rem; flex-wrap: wrap; }
+    .venue-rating { display: flex; flex-direction: column; gap: .15rem; }
+    .rating-label { font-size: .72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .rating-stars { font-size: .85rem; color: var(--teal); letter-spacing: 1px; }
+    .access-score-sm { font-family: 'DM Mono', monospace; font-size: .85rem; margin-top: .75rem; opacity: .8; }
+
+    /* ── Medical needs ────────────────────────────────────────── */
+    .medical-chips-wrap { margin-bottom: 1.75rem; }
+    .medical-chips-wrap > p { font-size: .9rem; color: var(--text-muted); margin-bottom: 1rem; }
+    #medical-needs-container { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .medical-chip {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .55rem 1.1rem; border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted);
+      font-size: .88rem; font-weight: 500; cursor: pointer;
+      transition: all .2s; font-family: 'DM Sans', sans-serif;
+    }
+    .medical-chip:hover { border-color: var(--teal); color: var(--text); }
+    .medical-chip.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+    .medical-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    .chip-icon { font-size: 1rem; }
+    .medical-need-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); margin-bottom: .75rem; }
+    .medical-need-item .need-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .medical-need-item strong { font-size: .95rem; }
+    .medical-need-item p { font-size: .85rem; color: var(--text-muted); margin-top: .2rem; line-height: 1.55; }
+    .medical-needs-summary { margin-bottom: 1.75rem; }
+    .a11y-section-sub { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 400; margin-bottom: 1rem; }
+
+    /* ── Destination search ───────────────────────────────────── */
+    .dest-search-bar { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.75rem; flex-wrap: wrap; }
+    .dest-search-bar input[type=text] {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); padding: .7rem 1.1rem;
+      font-family: 'DM Sans', sans-serif; font-size: .95rem;
+      transition: border-color .2s; min-width: 220px;
+    }
+    .dest-search-bar input:focus { border-color: var(--teal); outline: none; }
+    .dest-hint { font-size: .8rem; color: var(--text-muted); padding-top: .4rem; }
+
+    /* ── Empty state ──────────────────────────────────────────── */
+    .a11y-empty {
+      color: var(--text-muted); font-size: .95rem;
+      padding: 2rem; text-align: center;
+      border: 1px dashed var(--border); border-radius: var(--radius);
+    }
+
+    /* ── Panel section header ─────────────────────────────────── */
+    .panel-head { margin-bottom: 1.5rem; }
+    .panel-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 400; margin-bottom: .35rem; }
+    .panel-head p { font-size: .9rem; color: var(--text-muted); }
+
+    /* ── Stats bar ────────────────────────────────────────────── */
+    .a11y-stats {
+      max-width: var(--max-w);
+      margin: 0 auto 4rem;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      animation: blur-slide-up .7s .35s var(--ease-out) both;
+    }
+    .a11y-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      text-align: center;
+    }
+    .a11y-stat-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 2rem; color: var(--teal);
+      line-height: 1; margin-bottom: .35rem;
+    }
+    .a11y-stat-label { font-size: .82rem; color: var(--text-muted); }
+
+    @media (max-width: 640px) {
+      .a11y-tab { font-size: .8rem; padding: .6rem 1rem; }
+      .hotel-grid { grid-template-columns: 1fr; }
+      .venue-grid { grid-template-columns: 1fr; }
+      .hotel-search-bar { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ───────────────────────────────────────────────── -->
+  <nav class="vst-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <span class="nav-brand-mark">VST</span>
+        <span class="nav-brand-name">Voyage Smart</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/destinations">Destinations</a>
+        <a class="nav-link" href="/planner">AVA Planner</a>
+        <a class="nav-link" href="/bookings">Book</a>
+        <a class="nav-link active" href="/accessibility">Accessibility</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-cta" href="/planner">Start Planning</a>
+      </div>
+      <button type="button" class="nav-hamburger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <a class="nav-mobile-link" href="/">Home</a>
+    <a class="nav-mobile-link" href="/destinations">Destinations</a>
+    <a class="nav-mobile-link" href="/planner">AVA Planner</a>
+    <a class="nav-mobile-link" href="/bookings">Book</a>
+    <a class="nav-mobile-link active" href="/accessibility">Accessibility</a>
+    <a class="nav-mobile-link" href="/about">About</a>
+    <a class="nav-mobile-link nav-mobile-cta" href="/planner">Start Planning</a>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+
+  <!-- ── Hero ─────────────────────────────────────────────────────── -->
+  <header class="a11y-hero" aria-label="Accessibility Intelligence">
+    <div class="a11y-hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Accessibility Intelligence
+    </div>
+    <h1>Travel that works<br><em>for every mind and body.</em></h1>
+    <p class="a11y-hero-sub">
+      Wheelchair routing, autism-friendly venues, neurodivergent planning modes, accessible hotel scoring, and medical accommodation search — all in one place, all client-side and private.
+    </p>
+    <div class="active-profile-bar">
+      <span id="active-profile-indicator" role="status"></span>
+    </div>
+  </header>
+
+  <!-- ── Stats ─────────────────────────────────────────────────────── -->
+  <div class="a11y-stats" aria-label="Accessibility coverage stats">
+    <div class="a11y-stat">
+      <div class="a11y-stat-num">6</div>
+      <div class="a11y-stat-label">Accessibility dimensions scored</div>
+    </div>
+    <div class="a11y-stat">
+      <div class="a11y-stat-num">6</div>
+      <div class="a11y-stat-label">Hotels with full access data</div>
+    </div>
+    <div class="a11y-stat">
+      <div class="a11y-stat-num">5</div>
+      <div class="a11y-stat-label">Neurodivergent profiles</div>
+    </div>
+    <div class="a11y-stat">
+      <div class="a11y-stat-num">8</div>
+      <div class="a11y-stat-label">Medical need categories</div>
+    </div>
+    <div class="a11y-stat">
+      <div class="a11y-stat-num">100%</div>
+      <div class="a11y-stat-label">Data stays on your device</div>
+    </div>
+  </div>
+
+  <!-- ── Profile selector ──────────────────────────────────────────── -->
+  <section class="profile-section" aria-label="Accessibility profile selector">
+    <div class="profile-section-head">
+      <h2>Your accessibility profile</h2>
+      <p style="font-size:.85rem; color:var(--text-muted);">Select a mode — it adapts the UI and filters results</p>
+    </div>
+    <div class="profile-grid" role="list">
+
+      <button class="a11y-profile-card" data-profile="autism-low-support" role="listitem" aria-pressed="false">
+        <div class="profile-check" aria-hidden="true">✓</div>
+        <p class="profile-card-label">Autism-friendly<br><span style="font-weight:400;opacity:.7">Low support needs</span></p>
+        <p class="profile-card-desc">Reduced visual noise, muted animations, predictable layouts. Sensory-safe venue filter.</p>
+      </button>
+
+      <button class="a11y-profile-card" data-profile="autism-high-support" role="listitem" aria-pressed="false">
+        <div class="profile-check" aria-hidden="true">✓</div>
+        <p class="profile-card-label">Autism-friendly<br><span style="font-weight:400;opacity:.7">High support needs</span></p>
+        <p class="profile-card-desc">Minimal UI, single-focus layouts, no animations. Only fully sensory-safe venues shown.</p>
+      </button>
+
+      <button class="a11y-profile-card" data-profile="adhd" role="listitem" aria-pressed="false">
+        <div class="profile-check" aria-hidden="true">✓</div>
+        <p class="profile-card-label">ADHD &amp;<br><span style="font-weight:400;opacity:.7">Executive function</span></p>
+        <p class="profile-card-desc">Step-by-step planning. One decision at a time. Clear visual hierarchy. No clutter.</p>
+      </button>
+
+      <button class="a11y-profile-card" data-profile="anxiety" role="listitem" aria-pressed="false">
+        <div class="profile-check" aria-hidden="true">✓</div>
+        <p class="profile-card-label">Anxiety &amp;<br><span style="font-weight:400;opacity:.7">Sensory sensitivity</span></p>
+        <p class="profile-card-desc">Calm palette, reduced stimulation. Prioritises quiet, low-crowding venues.</p>
+      </button>
+
+      <button class="a11y-profile-card" data-profile="dyslexia" role="listitem" aria-pressed="false">
+        <div class="profile-check" aria-hidden="true">✓</div>
+        <p class="profile-card-label">Dyslexia-friendly</p>
+        <p class="profile-card-desc">Increased line spacing, icon-led navigation, shorter text blocks.</p>
+      </button>
+
+    </div>
+  </section>
+
+  <!-- ── Mobility filter chips ─────────────────────────────────────── -->
+  <section class="mobility-section" aria-label="Mobility requirement filters">
+    <h2>Mobility &amp; access requirements</h2>
+    <p style="font-size:.88rem; color:var(--text-muted); margin-bottom:1rem;">Select all that apply — hotels and transport are filtered live</p>
+    <div class="chip-row" role="group" aria-label="Mobility filters">
+      <button class="mobility-chip" data-tag="step-free-entry" aria-pressed="false">♿ Step-free entry</button>
+      <button class="mobility-chip" data-tag="roll-in-shower" aria-pressed="false">🚿 Roll-in shower</button>
+      <button class="mobility-chip" data-tag="lowered-bed" aria-pressed="false">🛏️ Lowered bed</button>
+      <button class="mobility-chip" data-tag="ceiling-hoist" aria-pressed="false">⬆️ Ceiling hoist</button>
+      <button class="mobility-chip" data-tag="wide-corridors" aria-pressed="false">↔️ Wide corridors</button>
+      <button class="mobility-chip" data-tag="elevator" aria-pressed="false">🛗 Elevator</button>
+      <button class="mobility-chip" data-tag="accessible-pool" aria-pressed="false">🏊 Accessible pool</button>
+      <button class="mobility-chip" data-tag="shower-chair" aria-pressed="false">🪑 Shower chair</button>
+      <button class="mobility-chip" data-tag="step-free-boarding" aria-pressed="false">🚆 Step-free boarding</button>
+      <button class="mobility-chip" data-tag="wheelchair-spaces" aria-pressed="false">♿ Wheelchair spaces</button>
+      <button class="mobility-chip" data-tag="priority-seating" aria-pressed="false">💺 Priority seating</button>
+    </div>
+  </section>
+
+  <!-- ── Vision / hearing toggles ──────────────────────────────────── -->
+  <div class="support-row" aria-label="Vision and hearing support">
+    <div class="support-toggle-card">
+      <span class="support-icon" aria-hidden="true">👁️</span>
+      <div class="support-text">
+        <p class="support-label">Vision support</p>
+        <p class="support-desc">Audio guides, large print, tactile exhibits, screen-reader kiosks</p>
+      </div>
+      <label class="toggle-switch" aria-label="Enable vision support filter">
+        <input type="checkbox" id="vision-toggle" role="switch" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="support-toggle-card">
+      <span class="support-icon" aria-hidden="true">🦻</span>
+      <div class="support-text">
+        <p class="support-label">Hearing support</p>
+        <p class="support-desc">Induction loops, BSL staff, visual alarms, captioned content</p>
+      </div>
+      <label class="toggle-switch" aria-label="Enable hearing support filter">
+        <input type="checkbox" id="hearing-toggle" role="switch" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="support-toggle-card">
+      <span class="support-icon" aria-hidden="true">🔒</span>
+      <div class="support-text">
+        <p class="support-label">Your data stays private</p>
+        <p class="support-desc">All preferences are stored locally on your device. Nothing is sent to our servers.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tabbed content ─────────────────────────────────────────────── -->
+  <div class="a11y-tabs-bar" role="tablist" aria-label="Accessibility content sections">
+    <button class="a11y-tab active" data-tab="hotels" role="tab" aria-selected="true" aria-controls="panel-hotels" id="tab-hotels">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Hotels
+    </button>
+    <button class="a11y-tab" data-tab="transport" role="tab" aria-selected="false" aria-controls="panel-transport" id="tab-transport">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Transport
+    </button>
+    <button class="a11y-tab" data-tab="venues" role="tab" aria-selected="false" aria-controls="panel-venues" id="tab-venues">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Venues
+    </button>
+    <button class="a11y-tab" data-tab="medical" role="tab" aria-selected="false" aria-controls="panel-medical" id="tab-medical">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Medical
+    </button>
+  </div>
+
+  <div class="a11y-panels">
+
+    <!-- Hotels panel -->
+    <div class="a11y-panel active" data-panel="hotels" id="panel-hotels" role="tabpanel" aria-labelledby="tab-hotels">
+      <div class="panel-head">
+        <h2>Accessible hotel scoring</h2>
+        <p>Scored across mobility, sensory, hearing, vision, and medical dimensions. Filters applied from your profile above.</p>
+      </div>
+      <form id="hotel-a11y-form" autocomplete="off">
+        <div class="hotel-search-bar">
+          <div class="score-range">
+            <label for="hotel-score-filter">Minimum access score</label>
+            <div class="score-range-inner">
+              <input type="range" id="hotel-score-filter" min="0" max="100" value="0" step="5" aria-valuemin="0" aria-valuemax="100" />
+              <span id="score-display">0+</span>
+            </div>
+          </div>
+          <button type="submit" class="search-btn-sm">Apply filters</button>
+        </div>
+      </form>
+      <div id="hotel-results" aria-live="polite" aria-label="Hotel results">
+        <p class="a11y-empty">Loading hotels…</p>
+      </div>
+    </div>
+
+    <!-- Transport panel -->
+    <div class="a11y-panel" data-panel="transport" id="panel-transport" role="tabpanel" aria-labelledby="tab-transport">
+      <div class="panel-head">
+        <h2>Accessible transport routes</h2>
+        <p>Step-free, wheelchair-equipped, and sensory-aware routes across rail, coach, and air. Filters applied from your mobility chips above.</p>
+      </div>
+      <div id="transport-results" aria-live="polite" aria-label="Transport results">
+        <p class="a11y-empty">Loading routes…</p>
+      </div>
+    </div>
+
+    <!-- Venues panel -->
+    <div class="a11y-panel" data-panel="venues" id="panel-venues" role="tabpanel" aria-labelledby="tab-venues">
+      <div class="panel-head">
+        <h2>Accessible venues</h2>
+        <p>Museums, landmarks, outdoor spaces, and theatres — rated for mobility and sensory friendliness. Select your profile above to filter.</p>
+      </div>
+      <div class="dest-search-bar">
+        <div>
+          <label for="a11y-destination" style="display:block; font-size:.8rem; color:var(--text-muted); font-weight:500; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.35rem;">Destination</label>
+          <input type="text" id="a11y-destination" placeholder="Paris, London, Barcelona…" autocomplete="off" aria-label="Search destination for accessible venues" />
+        </div>
+        <p class="dest-hint">Available: Paris · London · Barcelona · Tokyo · Amsterdam</p>
+      </div>
+      <div id="venue-results" aria-live="polite" aria-label="Venue results">
+        <p class="a11y-empty">Enter a destination above to see accessible venues.</p>
+      </div>
+    </div>
+
+    <!-- Medical panel -->
+    <div class="a11y-panel" data-panel="medical" id="panel-medical" role="tabpanel" aria-labelledby="tab-medical">
+      <div class="panel-head">
+        <h2>Medical travel accommodation</h2>
+        <p>Select your medical requirements to see hotels with matching facilities and services nearby.</p>
+      </div>
+      <div class="medical-chips-wrap">
+        <p>Select your medical needs:</p>
+        <div id="medical-needs-container" role="group" aria-label="Medical need filters"></div>
+      </div>
+      <div id="medical-results" aria-live="polite" aria-label="Medical accommodation results">
+        <p class="a11y-empty">Select your medical needs above to see accommodation recommendations.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────── -->
+  <footer class="vst-footer" aria-label="Site footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-mark">VST</div>
+        <p class="footer-tagline">Travel with intention. AI-powered planning, transparent eco scores, seamless booking.</p>
+        <div class="footer-socials" aria-label="Social media">
+          <a class="footer-social" href="https://twitter.com" aria-label="Twitter" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a class="footer-social" href="https://instagram.com" aria-label="Instagram" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a class="footer-social" href="https://linkedin.com" aria-label="LinkedIn" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zm2-3a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-head">Explore</p>
+        <a class="footer-lnk" href="/destinations">Destinations</a>
+        <a class="footer-lnk" href="/planner">AVA Planner</a>
+        <a class="footer-lnk" href="/accessibility">Accessibility</a>
+        <a class="footer-lnk" href="/bookings">Book</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Company</p>
+        <a class="footer-lnk" href="/about">About</a>
+        <a class="footer-lnk" href="/about#values">Values</a>
+        <a class="footer-lnk" href="/about#mission">Mission</a>
+        <a class="footer-lnk" href="/">Careers</a>
+      </div>
+      <div>
+        <p class="footer-col-head">Legal</p>
+        <a class="footer-lnk" href="/">Privacy</a>
+        <a class="footer-lnk" href="/">Terms</a>
+        <a class="footer-lnk" href="/accessibility">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Voyage Smart Travel Ltd. All rights reserved.</span>
+      <span>Registered in England &amp; Wales · 14829301</span>
+    </div>
+  </footer>
+
+  <script src="js/accessibility-data.js"></script>
+  <script src="js/accessibility.js"></script>
+  <script src="js/premium.js"></script>
+</body>
+</html>
