@@ -1,0 +1,493 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vst:specs:user-profile:v1",
+  "title": "VST User Profile Schema",
+  "version": "1.0.0",
+  "phase": "2.2",
+  "status": "SPEC — NOT DEPLOYED",
+  "governance": "Governance Before Build. No public deployment until approved.",
+
+  "route_prefix": "/v1/users",
+  "endpoints": {
+    "GET    /v1/users/{id}":                      "Fetch full profile (owner or admin only)",
+    "PATCH  /v1/users/{id}":                      "Partial update — non-GDPR fields",
+    "DELETE /v1/users/{id}":                      "Soft delete — triggers GDPR erasure flow",
+    "GET    /v1/users/{id}/travel-history":        "Paginated trip history",
+    "GET    /v1/users/{id}/sos-contacts":          "SOS contact list",
+    "PUT    /v1/users/{id}/sos-contacts":          "Replace SOS contact list",
+    "GET    /v1/users/{id}/notification-preferences": "Channel and domain opt-out state",
+    "PUT    /v1/users/{id}/notification-preferences": "Update opt-outs",
+    "POST   /v1/users/{id}/gdpr/export":           "Request data export (GDPR Art. 20)",
+    "POST   /v1/users/{id}/gdpr/erase":            "Request erasure (GDPR Art. 17)",
+    "GET    /v1/users/{id}/gdpr/status":           "Current GDPR request statuses"
+  },
+
+  "type": "object",
+  "required": ["id", "tier", "identity", "created_at", "gdpr"],
+  "additionalProperties": false,
+
+  "properties": {
+
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Immutable VST user ID. Never re-used after deletion."
+    },
+
+    "tier": {
+      "type": "string",
+      "enum": ["GUEST", "PREMIUM", "VOYAGE_ELITE"],
+      "description": "Membership tier. Controls feature access, notification channels, and Ava intelligence depth.",
+      "tier_capabilities": {
+        "GUEST": {
+          "ava_mode": "fallback_rules",
+          "notification_channels": ["push", "in_app"],
+          "fare_alerts": false,
+          "sos": false,
+          "pain_guard": false,
+          "community": "read-only"
+        },
+        "PREMIUM": {
+          "ava_mode": "live_claude",
+          "notification_channels": ["push", "in_app", "sms", "whatsapp"],
+          "fare_alerts": true,
+          "sos": true,
+          "pain_guard": true,
+          "community": "full"
+        },
+        "VOYAGE_ELITE": {
+          "ava_mode": "live_claude",
+          "notification_channels": ["push", "in_app", "sms", "whatsapp", "voice"],
+          "fare_alerts": true,
+          "sos": true,
+          "pain_guard": true,
+          "community": "full",
+          "concierge_access": true,
+          "carbon_dashboard": true
+        }
+      }
+    },
+
+    "identity": {
+      "type": "object",
+      "required": ["email"],
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Primary login identifier."
+        },
+        "email_verified": {
+          "type": "boolean",
+          "default": false
+        },
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$",
+          "description": "E.164 format. Required for SMS/SOS. Nullable for GUEST tier."
+        },
+        "phone_verified": {
+          "type": "boolean",
+          "default": false
+        },
+        "full_name": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "preferred_name": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "Display name and Ava salutation."
+        },
+        "avatar_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "CDN URL. Nullable."
+        },
+        "date_of_birth": {
+          "type": "string",
+          "format": "date",
+          "description": "Used for age verification and senior travel policies. Nullable."
+        },
+        "nationality": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2 country code."
+        },
+        "passport_number": {
+          "type": "string",
+          "description": "Stored encrypted. Required for international booking. Nullable.",
+          "sensitive": true
+        },
+        "passport_expiry": {
+          "type": "string",
+          "format": "date",
+          "sensitive": true
+        },
+        "kyc_status": {
+          "type": "string",
+          "enum": ["NOT_STARTED", "PENDING", "VERIFIED", "FAILED", "EXPIRED"],
+          "description": "Know Your Customer verification state. Required for VOYAGE_ELITE tier."
+        }
+      }
+    },
+
+    "preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2}-[A-Z]{2}$",
+          "default": "en-GB",
+          "description": "BCP 47 language tag."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone string e.g. Europe/London."
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "default": "GBP",
+          "description": "ISO 4217 preferred display currency."
+        },
+        "home_airport": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "IATA airport code. Used as default fare search origin."
+        },
+        "cabin_class": {
+          "type": "string",
+          "enum": ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"],
+          "default": "ECONOMY"
+        },
+        "seat_preference": {
+          "type": "string",
+          "enum": ["WINDOW", "AISLE", "MIDDLE", "NO_PREFERENCE"],
+          "default": "NO_PREFERENCE"
+        },
+        "meal_preference": {
+          "type": "string",
+          "enum": ["STANDARD", "VEGETARIAN", "VEGAN", "HALAL", "KOSHER", "GLUTEN_FREE", "DIABETIC", "NONE"],
+          "default": "STANDARD"
+        },
+        "loyalty_programs": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "required": ["airline_iata", "number"],
+            "properties": {
+              "airline_iata": { "type": "string", "pattern": "^[A-Z]{2}$" },
+              "number": { "type": "string" },
+              "tier": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "accessibility": {
+      "type": "object",
+      "description": "Self-declared accessibility needs. Used by Ava P6 for trip evaluation and flag generation.",
+      "additionalProperties": false,
+      "properties": {
+        "mobility": {
+          "type": "string",
+          "enum": ["NONE", "WHEELCHAIR_USER", "WALKING_AID", "LIMITED_MOBILITY"],
+          "default": "NONE"
+        },
+        "wheelchair_type": {
+          "type": "string",
+          "enum": ["MANUAL", "ELECTRIC", "NOT_APPLICABLE"],
+          "description": "Required if mobility=WHEELCHAIR_USER."
+        },
+        "vision": {
+          "type": "string",
+          "enum": ["NONE", "PARTIALLY_SIGHTED", "BLIND"],
+          "default": "NONE"
+        },
+        "hearing": {
+          "type": "string",
+          "enum": ["NONE", "PARTIALLY_DEAF", "DEAF"],
+          "default": "NONE"
+        },
+        "cognitive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Requests additional support and simplified communications."
+        },
+        "dietary_medical": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Free-form medical dietary requirements e.g. 'severe nut allergy', 'insulin-dependent diabetes'.",
+          "sensitive": true
+        },
+        "requires_carer": {
+          "type": "boolean",
+          "default": false
+        },
+        "additional_notes": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Free-text additional needs. Surfaced to Ava during evaluation.",
+          "sensitive": true
+        }
+      }
+    },
+
+    "sos_contacts": {
+      "type": "array",
+      "description": "Emergency contacts. Notified on SOS_TRIGGERED events. Ordered by priority (index 0 = primary).",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["name", "phone", "relationship"],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id":    { "type": "string", "format": "uuid" },
+          "name":          { "type": "string", "maxLength": 120 },
+          "phone":         { "type": "string", "pattern": "^\\+[1-9]\\d{7,14}$" },
+          "email":         { "type": "string", "format": "email" },
+          "relationship":  {
+            "type": "string",
+            "enum": ["SPOUSE", "PARTNER", "PARENT", "SIBLING", "CHILD", "FRIEND", "COLLEAGUE", "OTHER"]
+          },
+          "notify_on_departure": {
+            "type": "boolean",
+            "default": false,
+            "description": "Send itinerary to this contact when trip departs."
+          },
+          "consent_given": {
+            "type": "boolean",
+            "description": "Contact has consented to receive SOS alerts from VST.",
+            "default": false
+          },
+          "consent_given_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+
+    "travel_history": {
+      "type": "object",
+      "description": "Aggregated stats plus paginated reference to full trip records.",
+      "additionalProperties": false,
+      "properties": {
+        "total_trips": { "type": "integer", "minimum": 0, "default": 0 },
+        "total_nights": { "type": "integer", "minimum": 0, "default": 0 },
+        "countries_visited": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "uniqueItems": true
+        },
+        "total_spend_gbp": { "type": "number", "minimum": 0, "default": 0 },
+        "carbon_kg_total": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Cumulative CO2e kg across all VST-booked trips."
+        },
+        "carbon_kg_offset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "CO2e kg offset via VST eco partnerships."
+        },
+        "last_trip_at": { "type": "string", "format": "date-time" },
+        "trips_endpoint": {
+          "type": "string",
+          "const": "/v1/users/{id}/travel-history",
+          "description": "Paginated full trip records fetched separately."
+        }
+      }
+    },
+
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email_verified_at": { "type": "string", "format": "date-time" },
+        "phone_verified_at": { "type": "string", "format": "date-time" },
+        "kyc_verified_at":   { "type": "string", "format": "date-time" },
+        "kyc_provider":      { "type": "string", "description": "KYC vendor name e.g. Jumio, Onfido." },
+        "kyc_reference_id":  { "type": "string", "description": "Vendor's case reference.", "sensitive": true },
+        "two_factor_enabled": { "type": "boolean", "default": false },
+        "two_factor_method":  {
+          "type": "string",
+          "enum": ["TOTP", "SMS", "EMAIL", "NONE"],
+          "default": "NONE"
+        }
+      }
+    },
+
+    "notification_preferences": {
+      "type": "object",
+      "description": "User-controlled channel and domain opt-outs. P0_CRITICAL events override all opt-outs.",
+      "additionalProperties": false,
+      "properties": {
+        "channels": {
+          "type": "object",
+          "properties": {
+            "push":     { "type": "boolean", "default": true },
+            "in_app":   { "type": "boolean", "default": true },
+            "sms":      { "type": "boolean", "default": true },
+            "whatsapp": { "type": "boolean", "default": false },
+            "voice":    { "type": "boolean", "default": false }
+          }
+        },
+        "domains": {
+          "type": "object",
+          "description": "Opt-out per notification domain. Cannot opt out of sos or account.",
+          "properties": {
+            "booking":   { "type": "boolean", "default": true },
+            "eco":       { "type": "boolean", "default": true },
+            "community": { "type": "boolean", "default": true },
+            "pain_guard":{ "type": "boolean", "default": true }
+          }
+        },
+        "quiet_hours": {
+          "type": "object",
+          "description": "P2 and P3 notifications are held during quiet hours and delivered at window_start.",
+          "properties": {
+            "enabled":      { "type": "boolean", "default": false },
+            "window_start": { "type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "default": "22:00" },
+            "window_end":   { "type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "default": "08:00" }
+          }
+        }
+      }
+    },
+
+    "gdpr": {
+      "type": "object",
+      "description": "GDPR compliance fields. Required for all users in scope of UK/EU GDPR.",
+      "required": ["consent_record"],
+      "additionalProperties": false,
+      "properties": {
+        "consent_record": {
+          "type": "object",
+          "description": "Timestamped record of each consent action. Append-only.",
+          "properties": {
+            "terms_accepted":           { "type": "boolean" },
+            "terms_accepted_at":        { "type": "string", "format": "date-time" },
+            "terms_version":            { "type": "string", "description": "e.g. v2.3" },
+            "privacy_accepted":         { "type": "boolean" },
+            "privacy_accepted_at":      { "type": "string", "format": "date-time" },
+            "privacy_version":          { "type": "string" },
+            "consent_marketing_email":  { "type": "boolean", "default": false },
+            "consent_marketing_email_at": { "type": "string", "format": "date-time" },
+            "consent_marketing_sms":    { "type": "boolean", "default": false },
+            "consent_marketing_sms_at": { "type": "string", "format": "date-time" },
+            "consent_analytics":        { "type": "boolean", "default": false },
+            "consent_analytics_at":     { "type": "string", "format": "date-time" },
+            "consent_personalisation":  { "type": "boolean", "default": false },
+            "consent_personalisation_at": { "type": "string", "format": "date-time" }
+          }
+        },
+        "lawful_basis": {
+          "type": "object",
+          "description": "Legal basis per processing activity.",
+          "properties": {
+            "account_operation":    { "type": "string", "const": "CONTRACT" },
+            "sos_notifications":    { "type": "string", "const": "LEGITIMATE_INTEREST" },
+            "marketing":            { "type": "string", "const": "CONSENT" },
+            "analytics":            { "type": "string", "const": "CONSENT" },
+            "booking_records":      { "type": "string", "const": "LEGAL_OBLIGATION" }
+          }
+        },
+        "data_retention": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": ["ACTIVE", "DORMANT", "PENDING_ERASURE", "ERASED"],
+              "description": "ACTIVE: normal. DORMANT: no activity > 24 months. PENDING_ERASURE: erasure request submitted."
+            },
+            "dormant_since":          { "type": "string", "format": "date-time" },
+            "scheduled_erasure_date": { "type": "string", "format": "date" },
+            "retention_override":     { "type": "boolean", "description": "True if legal hold prevents erasure." },
+            "retention_override_reason": { "type": "string" }
+          }
+        },
+        "requests": {
+          "type": "array",
+          "description": "Log of GDPR requests. Append-only. Covered by GDPR Arts. 15-22.",
+          "items": {
+            "type": "object",
+            "required": ["request_id", "type", "status", "submitted_at"],
+            "properties": {
+              "request_id":     { "type": "string", "format": "uuid" },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ACCESS",
+                  "RECTIFICATION",
+                  "ERASURE",
+                  "RESTRICTION",
+                  "PORTABILITY",
+                  "OBJECTION"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["SUBMITTED", "IN_PROGRESS", "COMPLETED", "REJECTED"]
+              },
+              "submitted_at":   { "type": "string", "format": "date-time" },
+              "completed_at":   { "type": "string", "format": "date-time" },
+              "download_url":   { "type": "string", "description": "Signed URL for PORTABILITY exports. Expires in 72h." },
+              "rejection_reason": { "type": "string" }
+            }
+          }
+        },
+        "dpo_notes": {
+          "type": "string",
+          "description": "Internal DPO notes. Never returned in user-facing API responses.",
+          "sensitive": true
+        }
+      }
+    },
+
+    "pain_guard": {
+      "type": "object",
+      "description": "Pain Engine state associated with this user. Read-only from user profile perspective.",
+      "additionalProperties": false,
+      "properties": {
+        "enrolled":              { "type": "boolean", "default": false },
+        "enrolled_at":           { "type": "string", "format": "date-time" },
+        "assigned_operator_id":  { "type": "string", "description": "Concierge/manager assigned to this user." },
+        "last_engine_run_at":    { "type": "string", "format": "date-time" },
+        "active_task_count":     { "type": "integer", "minimum": 0, "default": 0 },
+        "handoff_required":      { "type": "boolean", "default": false }
+      }
+    },
+
+    "created_at":    { "type": "string", "format": "date-time" },
+    "updated_at":    { "type": "string", "format": "date-time" },
+    "last_login_at": { "type": "string", "format": "date-time" },
+    "deleted_at":    {
+      "type": "string",
+      "format": "date-time",
+      "description": "Soft delete timestamp. Profile retained for legal hold period then hard-deleted."
+    }
+  },
+
+  "sensitive_fields": {
+    "description": "Fields marked sensitive:true must be encrypted at rest and excluded from logs and error responses.",
+    "fields": [
+      "identity.passport_number",
+      "identity.passport_expiry",
+      "accessibility.dietary_medical",
+      "accessibility.additional_notes",
+      "verification.kyc_reference_id",
+      "gdpr.dpo_notes"
+    ]
+  },
+
+  "field_visibility_by_caller": {
+    "owner_read": "all fields except sensitive fields which require elevated scope",
+    "owner_write": "preferences, accessibility, sos_contacts, notification_preferences, identity (non-verified fields)",
+    "admin_read": "all fields including sensitive",
+    "admin_write": "tier, verification, pain_guard, gdpr.data_retention",
+    "service_account_read": "id, tier, identity.email, identity.phone, notification_preferences, sos_contacts",
+    "public": "none"
+  }
+}

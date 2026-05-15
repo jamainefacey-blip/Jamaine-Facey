@@ -1,0 +1,40 @@
+{
+  "framework": null,
+  "functions": {
+    "api/ava-evaluate.js":           { "maxDuration": 30 },
+    "api/planner-chat.js":           { "maxDuration": 40 },
+    "api/v1-users-register.js":      { "maxDuration": 10 },
+    "api/v1-users-login.js":         { "maxDuration": 10 },
+    "api/v1-users-me.js":            { "maxDuration": 10 },
+    "api/v1-notifications-send.js":  { "maxDuration": 30 },
+    "api/v1-bookings.js":            { "maxDuration": 10 },
+    "api/v1-bookings-id.js":         { "maxDuration": 10 },
+    "api/ava-itinerary.js":          { "maxDuration": 35 },
+    "api/flights-search.js":         { "maxDuration": 15 },
+    "api/hotels-search.js":          { "maxDuration": 15 },
+    "api/eco-calculate.js":          { "maxDuration": 10 }
+  },
+  "rewrites": [
+    { "source": "/api/ava-evaluate",                  "destination": "/api/ava-evaluate" },
+    { "source": "/api/planner-chat",                  "destination": "/api/planner-chat" },
+    { "source": "/api/ava-itinerary",                 "destination": "/api/ava-itinerary" },
+    { "source": "/api/fares/search",                  "destination": "/api/flights-search" },
+    { "source": "/v1/users/register",                 "destination": "/api/v1-users-register" },
+    { "source": "/v1/users/login",                    "destination": "/api/v1-users-login" },
+    { "source": "/v1/users/me",                       "destination": "/api/v1-users-me" },
+    { "source": "/v1/notifications/send",             "destination": "/api/v1-notifications-send" },
+    { "source": "/v1/notifications/delivery-records", "destination": "/api/v1-notifications-send" },
+    { "source": "/v1/bookings/:id/cancel",            "destination": "/api/v1-bookings-id?booking_id=:id&action=cancel" },
+    { "source": "/v1/bookings/:id",                   "destination": "/api/v1-bookings-id?booking_id=:id" },
+    { "source": "/v1/bookings",                       "destination": "/api/v1-bookings" },
+    { "source": "/v1/eco/calculate",                  "destination": "/api/eco-calculate" },
+    { "source": "/api/flights-search",                "destination": "/api/flights-search" },
+    { "source": "/api/hotels-search",                 "destination": "/api/hotels-search" },
+    { "source": "/api/eco-calculate",                 "destination": "/api/eco-calculate" },
+    { "source": "/bookings",                          "destination": "/bookings.html" },
+    { "source": "/planner",                           "destination": "/planner.html" },
+    { "source": "/destinations",                      "destination": "/destinations.html" },
+    { "source": "/about",                             "destination": "/about.html" },
+    { "source": "/(.*)",                              "destination": "/index.html" }
+  ]
+}
