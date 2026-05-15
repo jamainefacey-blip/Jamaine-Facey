@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Layout from '../components/vst/Layout';
+
+const HeroCarousel = dynamic(() => import('../components/vst/HeroCarousel'), { ssr: false });
 
 const BENEFITS = [
   {
@@ -29,45 +32,8 @@ const SECTORS = ['SMEs', 'Public Sector', 'Procurement Teams', 'Ops & Finance', 
 export default function Home() {
   return (
     <Layout>
-      {/* Hero */}
-      <section className="vst-hero">
-        <div className="vst-container">
-          <div className="vst-hero__content">
-            <div className="vst-hero__eyebrow">
-              ✦ Meet Ava — your AI travel assistant
-            </div>
-            <h1 className="vst-hero__title">
-              Business travel, <em>managed properly</em>
-            </h1>
-            <p className="vst-hero__sub">
-              Voyage Smart Travels gives UK SMEs and public sector teams a smarter way to book, manage, and report on business travel. Less admin, more oversight, full compliance.
-            </p>
-            <div className="vst-hero__ctas">
-              <Link href="/signup" className="vst-btn vst-btn--primary vst-btn--lg">
-                Start Free
-              </Link>
-              <Link href="/demo" className="vst-btn vst-btn--ghost-light vst-btn--lg">
-                Book a Demo
-              </Link>
-            </div>
-
-            <div className="vst-hero__stats">
-              <div>
-                <div className="vst-hero__stat-num">40%</div>
-                <div className="vst-hero__stat-label">avg time saved on booking</div>
-              </div>
-              <div>
-                <div className="vst-hero__stat-num">100%</div>
-                <div className="vst-hero__stat-label">policy-compliant by default</div>
-              </div>
-              <div>
-                <div className="vst-hero__stat-num">1 platform</div>
-                <div className="vst-hero__stat-label">for booking, approvals & reporting</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* Trust bar */}
       <div className="vst-trust">

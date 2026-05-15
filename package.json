@@ -39,8 +39,21 @@
   },
   "homepage": "https://github.com/netlify/edge-functions-examples#readme",
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.19",
+    "aos": "^2.3.4",
+    "framer-motion": "^12.38.0",
+    "gsap": "^3.15.0",
+    "lottie-web": "^5.13.0",
+    "lucide-react": "^1.16.0",
     "next": "14.2.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "swiper": "^12.1.4",
+    "three": "^0.184.0",
+    "typed.js": "^3.0.0"
   }
 }
