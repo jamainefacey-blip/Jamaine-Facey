@@ -2,9 +2,8 @@
 
 ## Repository
 - **Repo**: jamainefacey-blip/jamaine-facey
-- **Platform**: Netlify Edge Functions (Deno runtime)
+- **Platform**: Netlify Edge Functions (Deno runtime), site: pain-system-hub
 - **Deploy branch**: main
-- **Vercel project**: [FILL IN — add Vercel project name/ID if applicable]
 - **Supabase project ID**: [FILL IN — add Supabase project ref]
 
 ---
@@ -71,9 +70,9 @@
 ---
 
 ## Active Vercel Projects
-| Project | URL | Notes |
+| Project | ID | URL |
 |---|---|---|
-| [FILL IN] | [FILL IN] | Add Vercel project details |
+| voyage-smart-travel-live | prj_W6MPl8lPo2Qv7EJTQQcu4WvcziFC | smarttrips-projects/voyage-smart-travel-live |
 
 ---
 
