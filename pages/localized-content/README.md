@@ -1,6 +1,5 @@
-![Netlify examples](https://user-images.githubusercontent.com/5865/159468750-df1c2783-39b2-40da-9c0f-971f72a7ea3f.png)
 
-# Serve localized content with Netlify Edge Functions
+# Serve localized content with Vercel Edge Functions
 
 You can use geolocation data to serve localized content according to country code.
 
@@ -24,17 +23,11 @@ context: {
 }
 ```
 
-Edge Functions are files held in the `netlify/edge-functions` directory.
+Edge Functions are files held in the `api/` directory.
 
-- [Explore the code for this Edge Function](../../netlify/edge-functions/localized-content.js)
+- [Explore the code for this Edge Function](../../pages/localized-content.js)
 
 ## View this example on the web
 
-- https://edge-functions-examples.netlify.app/example/localized-content
+- /example/localized-content
 
-## Deploy to Netlify
-
-You can deploy this and all the other examples in this repo as a site of your own to explore and experiment with, by
-clicking this button.
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify/examples/&create_from_path=examples/edge-functions/&utm_campaign=dx-examples&utm_source=edge-functions-examples&utm_medium=web&utm_content=Deploy%20Edge%20Functions%20Examples%20to%20Netlify)

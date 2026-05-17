@@ -6,7 +6,7 @@ export default {
   page: function () {
     return /* html */`
     <section>
-      <h1>Long-running Netlify Edge Functions</h1>
+      <h1>Long-running Vercel Edge Functions</h1>
       <p>Edge Functions are limited to 50ms of CPU time, but this does not include time spent waiting or 
         making network calls. As long as a function returns headers within 40 seconds it can run indefinitely. 
       </p>
@@ -15,7 +15,7 @@ export default {
         from the function and write to it when you have the data.
       </p>
 
-      <pre><code>import type { Context } from "@netlify/edge-functions";
+      <pre><code>import type { Context } from "@vercel/edge";
 
 export default (request: Request, context: Context) => {
   const body = new ReadableStream({

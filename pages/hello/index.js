@@ -2,7 +2,7 @@ import repoLink from "../../components/repo-link.js";
 
 export default {
   title: "Hello world",
-  metaDescription: "Explore our library of edge function examples and deploy your own to Netlify.",
+  metaDescription: "Explore our library of edge function examples and deploy your own to Vercel.",
   page: function () {
     return `
     <section>

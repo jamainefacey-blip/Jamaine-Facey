@@ -1,12 +1,12 @@
-import type { Config } from "https://edge.netlify.com";
+import type { Config } from "https://edge.vercel.com";
 
 /**
  * Pain System — Rehab Client App Handler
  *
  * This edge function serves the rehab-client static web app.
- * In Netlify's edge runtime, static files under /tools/rehab-client/
- * are served automatically; this handler provides the entry-point redirect
- * and can be extended later to inject dynamic client data.
+ * Static files under /tools/rehab-client/ are served automatically;
+ * this handler provides the entry-point redirect and can be extended
+ * to inject dynamic client data.
  */
 export default async function handler(request: Request): Promise<Response> {
   return new Response(

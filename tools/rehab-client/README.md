@@ -1,7 +1,7 @@
 # Pain System — Rehab Client App
 
 **Version:** 1.2 (Deploy-ready)
-**Status:** Deploy-ready — `netlify.toml` configured, no build step required
+**Status:** Deploy-ready — `vercel.json` configured, no build step required
 
 A mobile-first, zero-dependency rehab coaching web app built as a reusable Pain System sandbox module.
 
@@ -26,8 +26,8 @@ npx serve .
 # Then open the URL shown in the terminal
 ```
 
-### Option 3 — Netlify (see full guide below)
-A `netlify.toml` is included. See the **Deployment** section for exact steps.
+### Option 3 — Vercel (see full guide below)
+A `vercel.json` is included. See the **Deployment** section for exact steps.
 
 ---
 
@@ -202,7 +202,7 @@ To pre-populate historical session data (for a demo): set `completed: true`, `pa
 ```
 tools/rehab-client/
 ├── index.html                  App shell (loads all scripts and styles)
-├── netlify.toml                Netlify deploy config (publish, redirects, headers)
+├── vercel.json                Vercel deploy config (publish, redirects, headers)
 ├── tool.config.json            Pain System module metadata
 ├── handler.ts                  Edge function stub (inactive until promoted)
 ├── README.md                   This file
@@ -224,9 +224,9 @@ tools/rehab-client/
 
 ### Overview
 
-- **No build step.** Pure static HTML, CSS, and JS — Netlify serves it as-is.
+- **No build step.** Pure static HTML, CSS, and JS — Vercel serves it as-is.
 - **Hash-based routing.** All navigation uses URL hashes (`#dashboard`, `#plan`, etc.). The browser handles these entirely client-side; the server never needs to resolve them.
-- **`netlify.toml` is included** at `tools/rehab-client/netlify.toml` with `publish = "."`, SPA fallback redirect, security headers, and asset caching pre-configured.
+- **`vercel.json` is included** at `tools/rehab-client/vercel.json` with `publish = "."`, SPA fallback redirect, security headers, and asset caching pre-configured.
 
 ---
 
@@ -236,17 +236,17 @@ tools/rehab-client/
    ```bash
    cd tools && zip -r rehab-client.zip rehab-client/
    ```
-2. Go to [app.netlify.com/drop](https://app.netlify.com/drop)
+2. Go to [vercel.com](https://vercel.com)
 3. Drag `rehab-client.zip` onto the page
-4. Netlify assigns a live URL instantly (e.g. `https://random-name-123.netlify.app`)
-5. To use a custom domain, go to **Domain settings** in the Netlify UI
+4. Vercel assigns a live URL instantly (e.g. `https://random-name-123.vercel.app`)
+5. To use a custom domain, go to **Domain settings** in the Vercel UI
 
 ---
 
 ### Option B — Connect Git repo (recommended for ongoing updates)
 
 1. Push this branch to your remote (already done)
-2. Log in to [app.netlify.com](https://app.netlify.com) → **Add new site** → **Import an existing project**
+2. Log in to [vercel.com](https://vercel.com) → **Add new site** → **Import an existing project**
 3. Connect to your Git provider and select this repository
 4. In the build settings, set:
 
@@ -257,25 +257,25 @@ tools/rehab-client/
    | **Publish directory** | `.` |
 
 5. Click **Deploy site**
-6. Netlify reads `netlify.toml` automatically from the base directory
+6. Vercel reads `vercel.json` automatically from the base directory
 
 Every push to the branch will trigger a new deploy automatically.
 
 ---
 
-### Option C — Full-repo deploy (if the whole repo is the Netlify site)
+### Option C — Full-repo deploy (if the whole repo is the Vercel site)
 
-1. Copy `tools/rehab-client/netlify.toml` to the **repository root**
+1. Copy `tools/rehab-client/vercel.json` to the **repository root**
 2. Change the publish line:
    ```toml
    [build]
      publish = "tools/rehab-client"
    ```
-3. Connect the repo to Netlify with no base directory set
+3. Connect the repo to Vercel with no base directory set
 
 ---
 
-### Netlify configuration summary
+### Vercel configuration summary
 
 ```toml
 [build]
@@ -295,39 +295,39 @@ Every push to the branch will trigger a new deploy automatically.
   ...
 ```
 
-Full config: [`netlify.toml`](./netlify.toml)
+Full config: [`vercel.json`](./vercel.json)
 
 ---
 
 ### How to preview the deployed URL
 
-After deploying via Option A or B, Netlify provides:
+After deploying via Option A or B, Vercel provides:
 
-- **Production URL:** `https://<your-site-name>.netlify.app`
-- **Branch preview URL:** `https://<branch-name>--<your-site-name>.netlify.app`
+- **Production URL:** `https://<your-site>.vercel.app`
+- **Branch preview URL:** `https://<branch-name>--<your-site-name>.vercel.app`
 
 All hash routes work on the live URL exactly as they do locally:
 
 | Live URL | Screen |
 |----------|--------|
-| `https://<site>.netlify.app/` | Welcome screen (first visit) |
-| `https://<site>.netlify.app/#dashboard` | Dashboard |
-| `https://<site>.netlify.app/#plan` | Weekly plan |
-| `https://<site>.netlify.app/#session/w3-s2` | Session view |
-| `https://<site>.netlify.app/#exercises` | Exercise library |
-| `https://<site>.netlify.app/#progress` | Progress tracker |
-| `https://<site>.netlify.app/#notes` | Coach notes |
+| `https://<your-site>.vercel.app/` | Welcome screen (first visit) |
+| `https://<your-site>.vercel.app/#dashboard` | Dashboard |
+| `https://<your-site>.vercel.app/#plan` | Weekly plan |
+| `https://<your-site>.vercel.app/#session/w3-s2` | Session view |
+| `https://<your-site>.vercel.app/#exercises` | Exercise library |
+| `https://<your-site>.vercel.app/#progress` | Progress tracker |
+| `https://<your-site>.vercel.app/#notes` | Coach notes |
 
 ---
 
 ### handler.ts and edge functions
 
-`handler.ts` is currently a **stub** — it does nothing in static hosting. It is not in a `netlify/edge-functions/` directory, so Netlify will not execute it. It is simply a text file in the publish directory that is never served to browsers.
+`handler.ts` is currently a **stub** — it does nothing in static hosting. It is not in a `api/` directory, so Vercel will not execute it. It is simply a text file in the publish directory that is never served to browsers.
 
-To activate it as a real Netlify Edge Function in Phase 2:
-1. Create `tools/rehab-client/netlify/edge-functions/rehab-api.ts`
+To activate it as a real Vercel Edge Function in Phase 2:
+1. Create `tools/rehab-client/api/rehab-api.ts`
 2. Move the handler logic there
-3. Add to `netlify.toml`:
+3. Add to `vercel.json`:
    ```toml
    [[edge_functions]]
      path     = "/api/rehab"

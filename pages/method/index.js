@@ -14,7 +14,7 @@ export default {
       In this example, we set up an Edge Function to execute for a <code>PUT</code> or <code>POST</code> request.
     </p>
 
-    <pre><code>import type { Config, Context } from "@netlify/edge-functions";
+    <pre><code>import type { Config, Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
   return new Response(\`This is a response to a \${request.method}\`)
@@ -30,8 +30,8 @@ export const config: Config = {
     <p>To validate that the Edge Function works, you can use cURL in your terminal:</p>
 
   <pre><code>
-  curl -X POST https://edge-functions-examples.netlify.app/example/method
-  curl -X PUT https://edge-functions-examples.netlify.app/example/method
+  curl -X POST https://pain-system.vercel.app/example/method
+  curl -X PUT https://pain-system.vercel.app/example/method
   </code></pre>
     
     <ul>

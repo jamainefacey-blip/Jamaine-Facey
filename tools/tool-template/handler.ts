@@ -1,4 +1,4 @@
-import type { Config } from "https://edge.netlify.com";
+import type { Config } from "https://edge.vercel.com";
 
 export default async function handler(): Promise<Response> {
   return new Response(

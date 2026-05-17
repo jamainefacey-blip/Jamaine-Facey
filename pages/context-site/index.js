@@ -7,8 +7,8 @@ export default {
     return `
     <section>
       <h1>Access Site Information from Edge Functions</h1>
-      <p>Netlify Edge Functions give access to site information via <code>context.site</code>.</p>
-      <pre><code>import type { Context } from "@netlify/edge-functions";
+      <p>Vercel Edge Functions give access to site information via <code>context.site</code>.</p>
+      <pre><code>import type { Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
   return new Response(\`Hello from \${context.site.name}!\`);

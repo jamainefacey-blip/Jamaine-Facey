@@ -13,7 +13,7 @@ export default {
       <p>This is a simple example, and for more complex transformations you may want to use <a href="/example/htmlrewriter">HTMLRewriter</a>.
       </p>
 
-      <pre><code>import { Context } from "@netlify/edge-functions";
+      <pre><code>import { Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
   const url = new URL(request.url);
