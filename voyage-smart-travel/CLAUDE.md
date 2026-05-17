@@ -29,7 +29,8 @@
 
 | Resource | Value |
 |---|---|
-| Vercel Project | `voyage-smart-travel` |
+| Vercel Project | `voyage-smart-travel` (ID: `prj_Oi4nDouiclT7oEQmaoYqbhGB6kU7`) |
+| Vercel Live Project | `voyage-smart-travel-live` (ID: `prj_W6MPl8lPo2Qv7EJTQQcu4WvcziFc`) |
 | Supabase Project ID | `[SET IN ENV — see Operator for credentials]` |
 | AI Model (Ava) | `claude-haiku-4-5-20251001` (override: AVA_MODEL env) |
 | Auth | JWT / HMAC-SHA256 (JWT_SECRET env) |
