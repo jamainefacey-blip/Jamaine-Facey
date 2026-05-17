@@ -8,7 +8,7 @@ export default {
     <section>
       <h1>Delete HTTP cookies</h1>
       <p>Use an Edge Function to delete cookies.</p>
-      <pre><code>import type { Context } from "@netlify/edge-functions";
+      <pre><code>import type { Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
   // Delete a cookie

@@ -9,7 +9,7 @@ When creating a new tool in this sandbox repository, copy this folder and follow
 | File | Purpose |
 |------|---------|
 | `tool.config.json` | Declares the tool name, endpoint path, version, and description |
-| `handler.ts` | Netlify Edge Function that handles requests to the tool's endpoint |
+| `handler.ts` | Vercel Edge Function that handles requests to the tool's endpoint |
 | `README.md` | Documents what the tool does, its endpoint, and expected response |
 
 ## Steps to Create a New Tool

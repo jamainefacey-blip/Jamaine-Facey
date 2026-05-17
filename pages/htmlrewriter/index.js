@@ -6,7 +6,7 @@ export default {
   page: function () {
     return /* html */ `
     <section>
-      <h1>Transform HTML responses with Netlify Edge Functions and HTMLRewriter</h1>
+      <h1>Transform HTML responses with Vercel Edge Functions and HTMLRewriter</h1>
       <p>
       You can use Edge Functions with the HTMLRewriter library to transform HTML
       responses. HTMLRewriter uses WebAssembly to parse a response stream, so is very
@@ -21,7 +21,7 @@ export default {
       shows how to do user personalization when the pages may be static.      
     </p>
 
-      <pre><code>import { Config, Context } from "@netlify/edge-functions";
+      <pre><code>import { Config, Context } from "@vercel/edge";
 import { HTMLRewriter } from "https://ghuc.cc/worker-tools/html-rewriter/index.ts";
 
 export default async function handler(request: Request, context: Context) {

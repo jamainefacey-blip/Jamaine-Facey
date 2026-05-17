@@ -1,6 +1,6 @@
 {
-  "name": "Netlify Edge Functions Examples",
-  "short_name": "Netlify Edge Functions",
+  "name": "Pain System Hub",
+  "short_name": "Pain System",
     "icons": [
       { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
       { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
