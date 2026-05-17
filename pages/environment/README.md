@@ -1,19 +1,18 @@
-![Netlify examples](https://user-images.githubusercontent.com/5865/159468750-df1c2783-39b2-40da-9c0f-971f72a7ea3f.png)
 
-# Use environment variables with Netlify Edge Functions
+# Use environment variables with Vercel Edge Functions
 
-Netlify Edge Functions support open-source Deno APIs. To access your Netlify environment variables in Edge Functions,
-use the `Netlify.env` API.
+Vercel Edge Functions support open-source Deno APIs. To access your Vercel environment variables in Edge Functions,
+use the `process.env` API.
 
 ## Code example
 
-Edge Functions are files held in the `netlify/edge-functions` directory.
+Edge Functions are files held in the `api/` directory.
 
 ```ts
-import type { Context } from "@netlify/edge-functions";
+import type { Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
-  const value = Netlify.env.get("MY_IMPORTANT_VARIABLE");
+  const value = process.env.get("MY_IMPORTANT_VARIABLE");
 
   return new Response(&grave;Value of MY_IMPORTANT_VARIABLE is "&dollar;{value}".&grave;, {
     headers: { "content-type": "text/html" },
@@ -21,15 +20,9 @@ export default async (request: Request, context: Context) => {
 };
 ```
 
-- [Explore the code for this Edge Function](../../netlify/edge-functions/environment.ts)
+- [Explore the code for this Edge Function](../../pages/environment.ts)
 
 ## View this example on the web
 
-- https://edge-functions-examples.netlify.app/example/environment
+- /example/environment
 
-## Deploy to Netlify
-
-You can deploy this and all the other examples in this repo as a site of your own to explore and experiment with, by
-clicking this button.
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify/examples/&create_from_path=examples/edge-functions/&utm_campaign=dx-examples&utm_source=edge-functions-examples&utm_medium=web&utm_content=Deploy%20Edge%20Functions%20Examples%20to%20Netlify)

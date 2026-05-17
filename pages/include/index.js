@@ -14,7 +14,7 @@ export default {
       In this example, we look for an <code>{{INCLUDE_PRICE_INFO}}</code> placeholder in our response, and replace it with some other content.
     </p>
 
-    <pre><code>import { Context } from "@netlify/edge-functions";
+    <pre><code>import { Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
   
@@ -42,7 +42,7 @@ export default async (request: Request, context: Context) => {
 
 </code></pre>
 
-  <p>This include Edge Function is set up to run using the <code>include=pricing</code> query parameter on any URL, using this entry in the netlify.toml file:</p>
+  <p>This include Edge Function is set up to run using the <code>include=pricing</code> query parameter on any URL, using this entry in the vercel.json file:</p>
 
   <pre><code>[[edge_functions]]
   function = "include"

@@ -1,6 +1,5 @@
-![Netlify examples](https://user-images.githubusercontent.com/5865/159468750-df1c2783-39b2-40da-9c0f-971f72a7ea3f.png)
 
-# Transform HTML responses with Netlify Edge Functions and HTMLRewriter
+# Transform HTML responses with Vercel Edge Functions and HTMLRewriter
 
 You can use Edge Functions with the HTMLRewriter library to transform HTML
 responses. HTMLRewriter uses WebAssembly to parse a response stream, so is very
@@ -15,10 +14,10 @@ shows how to do user personalization when the pages may be static.
 
 ## Code example
 
-Edge Functions are files held in the `netlify/edge-functions` directory.
+Edge Functions are files held in the `api/` directory.
 
 ```ts
-import { Config, Context } from "@netlify/edge-functions";
+import { Config, Context } from "@vercel/edge";
 import { HTMLRewriter } from "https://ghuc.cc/worker-tools/html-rewriter/index.ts";
 
 export default async function handler(request: Request, context: Context) {
@@ -52,15 +51,9 @@ export default async function handler(request: Request, context: Context) {
 }
 ```
 
-- [Explore the code for this Edge Function](../../netlify/edge-functions/htmlrewriter.ts)
+- [Explore the code for this Edge Function](../../pages/htmlrewriter.ts)
 
 ## View this example on the web
 
-- https://edge-functions-examples.netlify.app/example/htmlrewriter/
+- /example/htmlrewriter/
 
-## Deploy to Netlify
-
-You can deploy this and all the other examples in this repo as a site of your
-own to explore and experiment with, by clicking this button.
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify/examples/&create_from_path=examples/edge-functions/&utm_campaign=dx-examples&utm_source=edge-functions-examples&utm_medium=web&utm_content=Deploy%20Edge%20Functions%20Examples%20to%20Netlify)

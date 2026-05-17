@@ -1,12 +1,13 @@
-import type { Config } from "https://edge.netlify.com";
+// Vercel Edge Function — deploy via Vercel dashboard or vercel.json
+// Runtime: edge  |  Package: @vercel/edge (add to package.json before activating)
+
+export const config = { runtime: "edge" };
 
 /**
  * Pain System — Rehab Client App Handler
  *
- * This edge function serves the rehab-client static web app.
- * In Netlify's edge runtime, static files under /tools/rehab-client/
- * are served automatically; this handler provides the entry-point redirect
- * and can be extended later to inject dynamic client data.
+ * Serves the rehab-client static web app entry point.
+ * Can be extended to inject dynamic client data at the edge.
  */
 export default async function handler(request: Request): Promise<Response> {
   return new Response(
@@ -21,7 +22,3 @@ export default async function handler(request: Request): Promise<Response> {
     }
   );
 }
-
-export const config: Config = {
-  path: "/tools/rehab-client",
-};

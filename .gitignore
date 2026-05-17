@@ -1,5 +1,8 @@
-# Local Netlify folder
-.netlify
+# Environment variables — never commit
+.env
+.env.*
+.env.local
+.env.production
 
 node_modules
 

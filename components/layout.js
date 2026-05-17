@@ -7,14 +7,14 @@ const explainer = `
 <hr>
 <section>
   <h2>What are Edge Functions?</h2>
-  <p>Using JavaScript and TypeScript, <a href="https://www.netlify.com/products/?utm_campaign=devex&utm_source=edge-functions-examples&utm_medium=web&utm_content=Edge%20Functions%20Product%20Page#netlify-edge-functions" target="_blank" rel="noopener">Netlify Edge Functions</a> give you the power to modify network requests to localize content, serve relevant ads, authenticate visitors, A/B test content, and much more! 
+  <p>Using JavaScript and TypeScript, <a href="https://vercel.com/docs/functions/edge-functions" target="_blank" rel="noopener">Vercel Edge Functions</a> give you the power to modify network requests to localize content, serve relevant ads, authenticate visitors, A/B test content, and much more!
   <p>
   This all happens at the <strong>Edge</strong> — directly from the worldwide location closest to each user.</p>
   </p>
 
   <blockquote>
-  <p>To use Edge Functions on Netlify, add JavaScript or TypeScript files to a <code>/netlify/edge-functions</code> directory in your project.</p>
-  <p><a href="https://docs.netlify.com/edge-functions/overview/?utm_campaign=devex&utm_source=edge-functions-examples&utm_medium=web&utm_content=Edge%20Functions%20Docs" target="_blank" rel="noopener">Learn more in the docs</a>.</p>
+  <p>To use Edge Functions on Vercel, add TypeScript files to your project's <code>/api</code> directory with the edge runtime config.</p>
+  <p><a href="https://vercel.com/docs/functions/edge-functions" target="_blank" rel="noopener">Learn more in the Vercel docs</a>.</p>
   </blockquote>
   </section>
   `;
@@ -27,15 +27,14 @@ export default function layout(data) {
     title: data.title,
     metaDescription: data.metaDescription,
     url: data.url,
-    openGraphImageName: data.openGraphImageName,
   })}
   <body>
   ${header({ title: data.title })}
   <main>
-    
+
     ${data.url.pathname !== "/" ? "" : explainer}
 
-    <section>  
+    <section>
     ${data.content}
     <p>
     ${
@@ -47,9 +46,9 @@ export default function layout(data) {
     ${data.url.pathname !== "/" ? explainer : ""}
     <hr/>
     <section>
-      <h3>Deploy this site to Netlify</h3>
+      <h3>Deploy this site to Vercel</h3>
       <p>
-        Try out Edge Functions on Netlify today! Click the button below to deploy this site with all of its demos to your Netlify account.
+        Try out Edge Functions on Vercel today! Click the button below to deploy this site to your Vercel account.
       </p>
       <p>${deployButton()}</p>
     </section>

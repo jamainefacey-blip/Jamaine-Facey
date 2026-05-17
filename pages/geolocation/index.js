@@ -4,7 +4,7 @@ import geolocationInfo from "../../components/geolocation-info.js";
 export default {
   title: "Geolocation",
   metaDescription:
-    "Use Netlify Edge Functions to get information about a user's location to serve location-specific content.",
+    "Use Vercel Edge Functions to get information about a user's location to serve location-specific content.",
   page: function ({ geo }) {
     return `
     <section>
@@ -22,7 +22,7 @@ export default {
       
       <p>Geolocation information is available on the <code>Context.geo</code> object.</p>
 
-      <pre><code>import { Context } from "@netlify/edge-functions";
+      <pre><code>import { Context } from "@vercel/edge";
 
 export default async (request: Request, context: Context) => {
   // Here's what's available on context.geo

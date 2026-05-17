@@ -1,14 +1,14 @@
 export default {
   title: "Home",
   metaDescription:
-    "Explore our library of Edge Function examples and deploy your own to Netlify.",
+    "Explore our library of Edge Function examples and deploy your own to Vercel.",
   page: function () {
     return /* html */ `
     <hr>
     <section>
     <h2>Examples</h2>
     <p>
-      Explore the examples below, or over in the <a href="https://github.com/netlify/examples/tree/main/examples/edge-functions" target="_BLANK" rel="noopener">GitHub repository</a> for this site.
+      Explore the examples below, or over in the <a href="https://github.com/jamainefacey-blip/Jamaine-Facey" target="_BLANK" rel="noopener">GitHub repository</a> for this site.
     </p>
 
       <h3>Responses</h3>

@@ -8,7 +8,7 @@ export default {
     <section>
       <h1>WebAssembly</h1>
 
-      <p>Using WebAssembly, you can speed up key components of your server logic. Using Netlify Edge Functions, you can bring that to the edge. This allows developers to build more calculation intensive logic in languages such as C, C++, and Rust that gets pushed even closer to users.</p>
+      <p>Using WebAssembly, you can speed up key components of your server logic. Using Vercel Edge Functions, you can bring that to the edge. This allows developers to build more calculation intensive logic in languages such as C, C++, and Rust that gets pushed even closer to users.</p>
       <p>In this example, we return a wasm computed response <code>The answer is: 42</code>.</p>
 
 
