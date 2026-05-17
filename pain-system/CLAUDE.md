@@ -20,7 +20,7 @@
 
 | System | URL | Status |
 |---|---|---|
-| Pain System Sandbox | https://edge-functions-examples.netlify.app/ | Live |
+| Pain System Sandbox | https://edge-functions-examples.netlify.app/ | Live (Netlify: `pain-system-hub`) |
 | Pain System Endpoint | https://edge-functions-examples.netlify.app/pain-system | Live |
 | Voyage Smart Travel | See `/voyage-smart-travel/CLAUDE.md` | Phase 2 active |
 | Rehab Client | `/tools/rehab-client/` | MVP static |
