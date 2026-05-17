@@ -1,4 +1,7 @@
-import type { Config } from "https://edge.vercel.com";
+// Vercel Edge Function — deploy via Vercel dashboard or vercel.json
+// Runtime: edge  |  Package: @vercel/edge (add to package.json before activating)
+
+export const config = { runtime: "edge" };
 
 export default async function handler(): Promise<Response> {
   return new Response(
@@ -11,7 +14,3 @@ export default async function handler(): Promise<Response> {
     }
   );
 }
-
-export const config: Config = {
-  path: "/tools/hello-pain",
-};
