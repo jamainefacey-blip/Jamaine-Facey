@@ -10,27 +10,77 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
     env:
-      PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      # Supabase transaction pooler accepts service_role JWT as password
-      DB_URL: "postgresql://postgres.ovmlmregvcekbvoctywe@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PROJECT_REF: ovmlmregvcekbvoctywe
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check secret is configured
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY secret is not set."
+            echo "Add it at: repo Settings → Secrets and variables → Actions → New repository secret"
+            echo "Value: your Supabase service_role JWT (starts with eyJ...)"
+            exit 1
+          fi
+          echo "Secret is configured (length: ${#SUPABASE_SERVICE_ROLE_KEY})"
+
       - name: Install psql client
-        run: sudo apt-get install -y postgresql-client
+        run: sudo apt-get install -y -q postgresql-client
+
+      - name: Test connection
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          echo "Testing connection to Supabase pooler..."
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -c "SELECT current_database(), current_user, version();" || \
+          { echo "Pooler (us-east-1) failed, trying us-west-1..."; \
+            psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-west-1.pooler.supabase.com:6543/postgres" \
+            -c "SELECT current_database(), current_user, version();"; }
 
       - name: Run 001_user_profiles.sql
-        run: psql "$DB_URL" -f voyage-smart-travel/migrations/001_user_profiles.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 \
+            -f voyage-smart-travel/migrations/001_user_profiles.sql
 
       - name: Run 002_user_dashboard.sql
-        run: psql "$DB_URL" -f voyage-smart-travel/migrations/002_user_dashboard.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 \
+            -f voyage-smart-travel/migrations/002_user_dashboard.sql
 
       - name: Run 003_planner_memory.sql
-        run: psql "$DB_URL" -f voyage-smart-travel/migrations/003_planner_memory.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 \
+            -f voyage-smart-travel/migrations/003_planner_memory.sql
 
       - name: Run 004_bookings.sql
-        run: psql "$DB_URL" -f voyage-smart-travel/migrations/004_bookings.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 \
+            -f voyage-smart-travel/migrations/004_bookings.sql
 
       - name: Confirm tables created
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
         run: |
-          psql "$DB_URL" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
+          echo "=== Tables in public schema ==="
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
