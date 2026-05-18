@@ -1,0 +1,57 @@
+name: Run Supabase Migrations (Task 2)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/pain-system-setup-28Y4M
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Run 001_user_profiles.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          psql \
+            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
+            -f voyage-smart-travel/migrations/001_user_profiles.sql
+
+      - name: Run 002_user_dashboard.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          psql \
+            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
+            -f voyage-smart-travel/migrations/002_user_dashboard.sql
+
+      - name: Run 003_planner_memory.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          psql \
+            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
+            -f voyage-smart-travel/migrations/003_planner_memory.sql
+
+      - name: Run 004_bookings.sql
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          psql \
+            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
+            -f voyage-smart-travel/migrations/004_bookings.sql
+
+      - name: Confirm tables created
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          psql \
+            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
+            -c "\dt public.*" \
+            -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
