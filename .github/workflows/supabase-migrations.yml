@@ -9,6 +9,10 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    env:
+      PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Supabase transaction pooler accepts service_role JWT as password
+      DB_URL: "postgresql://postgres.ovmlmregvcekbvoctywe@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
     steps:
       - uses: actions/checkout@v4
 
@@ -16,42 +20,17 @@ jobs:
         run: sudo apt-get install -y postgresql-client
 
       - name: Run 001_user_profiles.sql
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          psql \
-            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
-            -f voyage-smart-travel/migrations/001_user_profiles.sql
+        run: psql "$DB_URL" -f voyage-smart-travel/migrations/001_user_profiles.sql
 
       - name: Run 002_user_dashboard.sql
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          psql \
-            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
-            -f voyage-smart-travel/migrations/002_user_dashboard.sql
+        run: psql "$DB_URL" -f voyage-smart-travel/migrations/002_user_dashboard.sql
 
       - name: Run 003_planner_memory.sql
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          psql \
-            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
-            -f voyage-smart-travel/migrations/003_planner_memory.sql
+        run: psql "$DB_URL" -f voyage-smart-travel/migrations/003_planner_memory.sql
 
       - name: Run 004_bookings.sql
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          psql \
-            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
-            -f voyage-smart-travel/migrations/004_bookings.sql
+        run: psql "$DB_URL" -f voyage-smart-travel/migrations/004_bookings.sql
 
       - name: Confirm tables created
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-          psql \
-            "postgresql://postgres@db.ovmlmregvcekbvoctywe.supabase.co:5432/postgres" \
-            -c "\dt public.*" \
-            -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
+          psql "$DB_URL" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
