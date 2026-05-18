@@ -2,6 +2,11 @@ name: Run Supabase Migrations (Task 2)
 
 on:
   workflow_dispatch:
+    inputs:
+      service_role_key:
+        description: 'Supabase service_role JWT (eyJ...) — paste from pain-system/ava/.env.local.vercel'
+        required: false
+        type: string
   push:
     branches:
       - claude/pain-system-setup-28Y4M
@@ -14,7 +19,7 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
     env:
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
       PROJECT_REF: ovmlmregvcekbvoctywe
     steps:
       - uses: actions/checkout@v4
@@ -22,20 +27,19 @@ jobs:
       - name: Check secret is configured
         run: |
           if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "::error::SUPABASE_SERVICE_ROLE_KEY is not set as a repository secret."
-            echo "Add it: repo Settings → Secrets and variables → Actions → New repository secret"
-            echo "Value: your Supabase service_role JWT (eyJ...)"
-            echo "Then re-run this workflow."
+            echo "::error::No service role key provided."
+            echo "Option A — paste key when triggering manually: Actions → Run Supabase Migrations → Run workflow → fill in 'service_role_key' input"
+            echo "Option B — add repo secret: Settings → Secrets and variables → Actions → New repository secret → SUPABASE_SERVICE_ROLE_KEY"
             exit 1
           fi
-          echo "Secret configured (${#SUPABASE_SERVICE_ROLE_KEY} chars)"
+          echo "Key configured (${#SUPABASE_SERVICE_ROLE_KEY} chars)"
 
       - name: Install psql client
         run: sudo apt-get install -y -q postgresql-client
 
       - name: Run 001_user_profiles.sql
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PGSSLMODE: require
         run: |
           psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
@@ -45,7 +49,7 @@ jobs:
 
       - name: Run 002_user_dashboard.sql
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PGSSLMODE: require
         run: |
           psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
@@ -55,7 +59,7 @@ jobs:
 
       - name: Run 003_planner_memory.sql
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PGSSLMODE: require
         run: |
           psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
@@ -65,7 +69,7 @@ jobs:
 
       - name: Run 004_bookings.sql
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PGSSLMODE: require
         run: |
           psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
@@ -76,7 +80,7 @@ jobs:
       - name: Confirm tables created
         id: tables
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PGSSLMODE: require
         run: |
           TABLE_LIST=$(psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
