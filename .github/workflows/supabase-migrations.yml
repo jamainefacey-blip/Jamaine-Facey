@@ -1,0 +1,109 @@
+name: Run Supabase Migrations (Task 2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_role_key:
+        description: 'Supabase service_role JWT (eyJ...) — paste from pain-system/ava/.env.local.vercel'
+        required: false
+        type: string
+  push:
+    branches:
+      - claude/pain-system-setup-28Y4M
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_SERVICE_ROLE_KEY: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PROJECT_REF: ovmlmregvcekbvoctywe
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secret is configured
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::No service role key provided."
+            echo "Option A — paste key when triggering manually: Actions → Run Supabase Migrations → Run workflow → fill in 'service_role_key' input"
+            echo "Option B — add repo secret: Settings → Secrets and variables → Actions → New repository secret → SUPABASE_SERVICE_ROLE_KEY"
+            exit 1
+          fi
+          echo "Key configured (${#SUPABASE_SERVICE_ROLE_KEY} chars)"
+
+      - name: Install psql client
+        run: sudo apt-get install -y -q postgresql-client
+
+      - name: Run 001_user_profiles.sql
+        env:
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/001_user_profiles.sql \
+          || psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-west-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/001_user_profiles.sql
+
+      - name: Run 002_user_dashboard.sql
+        env:
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/002_user_dashboard.sql \
+          || psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-west-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/002_user_dashboard.sql
+
+      - name: Run 003_planner_memory.sql
+        env:
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/003_planner_memory.sql \
+          || psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-west-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/003_planner_memory.sql
+
+      - name: Run 004_bookings.sql
+        env:
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/004_bookings.sql \
+          || psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-west-1.pooler.supabase.com:6543/postgres" \
+            -v ON_ERROR_STOP=1 -f voyage-smart-travel/migrations/004_bookings.sql
+
+      - name: Confirm tables created
+        id: tables
+        env:
+          PGPASSWORD: ${{ inputs.service_role_key || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PGSSLMODE: require
+        run: |
+          TABLE_LIST=$(psql "postgresql://postgres.${PROJECT_REF}@aws-0-us-east-1.pooler.supabase.com:6543/postgres" \
+            -t -c "SELECT string_agg(table_name, ', ' ORDER BY table_name) FROM information_schema.tables WHERE table_schema='public';")
+          echo "tables=$TABLE_LIST" >> $GITHUB_OUTPUT
+          echo "=== Tables created: $TABLE_LIST ==="
+
+      - name: Report success on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tables = '${{ steps.tables.outputs.tables }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 15,
+              body: `## ✅ Task 2 Complete — Supabase Migrations Applied\n\nAll 4 migrations ran successfully against project \`ovmlmregvcekbvoctywe\`.\n\n**Tables confirmed created:** ${tables}\n\n- 001_user_profiles.sql ✅\n- 002_user_dashboard.sql ✅\n- 003_planner_memory.sql ✅\n- 004_bookings.sql ✅`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 14,
+              state: 'closed',
+              state_reason: 'completed',
+              body: `## Task 2 confirmed complete ✅\n\nAll 4 Supabase migrations applied. Tables: ${tables}`
+            });
