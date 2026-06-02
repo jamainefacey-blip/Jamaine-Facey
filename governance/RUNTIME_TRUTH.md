@@ -106,6 +106,30 @@ RULE: Do not write what "should" be true — only what IS true.
 
 ---
 
+## CREDENTIAL LOCATION STATUS
+# Updated: 2026-06-02 (credential discovery trail audit)
+# Labels only — no secret values
+
+| Credential | Status | Platform confirmed present | Platform confirmed absent | Source of canonical value |
+|---|---|---|---|---|
+| SUPABASE_URL | VERIFIED_PRESENT (not secret) | Source code (hardcoded constant) | N/A | voyage-smart-travel/api/run-migrations.js line 7; git commit 179ed25 |
+| SUPABASE_ANON_KEY | PREVIOUSLY_EVIDENCED_NOT_IN_ENV | Git history (commit 179ed25, removed in 0f83114) | Vercel Lambda env, current source | Supabase dashboard: Settings → API → anon/public key |
+| SUPABASE_SERVICE_ROLE_KEY | NOT_RELOCATED_THIS_AUDIT | NOWHERE — never found in any accessible source | Vercel Lambda env (confirmed absent by envkeys probe) | Supabase dashboard: Settings → API → service_role key |
+| SUPABASE_ACCESS_TOKEN (PAT) | NOT_RELOCATED_THIS_AUDIT | NOWHERE found | All accessible environments | https://app.supabase.com/account/tokens |
+| DATABASE_URL | NOT_RELOCATED_THIS_AUDIT | NOWHERE found in accessible env | All accessible environments | Supabase: Settings → Database → Connection string → URI |
+| ANTHROPIC_API_KEY | VERIFIED_PRESENT | Vercel Lambda (voyage-smart-travel) | ps-os as of 2026-04-17, Netlify env (unverified) | Anthropic Console: console.anthropic.com |
+| JWT_SECRET | VERIFIED_PRESENT | Vercel Lambda (voyage-smart-travel) | — | VST user-auth HMAC key — NOT Supabase project JWT secret |
+| GITHUB_TOKEN | UNVERIFIED_THIS_SESSION | GitHub Actions auto-provides in workflow runs | ps-os .env.local as of 2026-04-17 | github.com/settings/tokens (PAT) or GitHub Actions auto |
+| VERCEL_TOKEN | NOT_REFERENCED_IN_CODE | Not referenced in any codebase file | — | Vercel dashboard (operator credentials) |
+
+### Critical architectural finding (2026-06-02):
+VST Lambda functions (v1-users-*.js, v1-bookings-*.js) use an IN-MEMORY user-store
+(voyage-smart-travel/server/user-store.js) — NOT Supabase. No Lambda function currently
+calls Supabase. The Supabase migrations are for a future real data layer that has not
+been wired to the Lambda API yet.
+
+---
+
 ## TECHNICAL DEBT REGISTER
 
 | Item | Location | Impact | Cleanup action |
