@@ -1,6 +1,7 @@
 {
   "framework": null,
   "functions": {
+    "api/run-migrations.js":         { "maxDuration": 60 },
     "api/ava-evaluate.js":           { "maxDuration": 30 },
     "api/planner-chat.js":           { "maxDuration": 40 },
     "api/fares-search.js":           { "maxDuration": 20 },
@@ -17,6 +18,7 @@
     "api/eco-calculate.js":          { "maxDuration": 10 }
   },
   "rewrites": [
+    { "source": "/api/run-migrations",                 "destination": "/api/run-migrations" },
     { "source": "/api/ava-evaluate",                  "destination": "/api/ava-evaluate" },
     { "source": "/api/planner-chat",                  "destination": "/api/planner-chat" },
     { "source": "/api/ava-itinerary",                 "destination": "/api/ava-itinerary" },
