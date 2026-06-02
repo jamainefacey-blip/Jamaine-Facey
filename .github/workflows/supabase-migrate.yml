@@ -1,0 +1,90 @@
+name: Supabase Migrations
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "voyage-smart-travel/migrations/**"
+
+jobs:
+  migrate:
+    name: Run VST migrations in order
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify migration files present
+        run: |
+          for f in \
+            voyage-smart-travel/migrations/001_user_profiles.sql \
+            voyage-smart-travel/migrations/002_user_dashboard.sql \
+            voyage-smart-travel/migrations/003_planner_memory.sql \
+            voyage-smart-travel/migrations/004_bookings.sql; do
+            [ -f "$f" ] && echo "FOUND: $f" || { echo "MISSING: $f"; exit 1; }
+          done
+
+      - name: Run migrations via Supabase Management API
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          PROJECT="ovmlmregvcekbvoctywe"
+          BASE="https://api.supabase.com/v1/projects/$PROJECT/database/query"
+          for f in \
+            voyage-smart-travel/migrations/001_user_profiles.sql \
+            voyage-smart-travel/migrations/002_user_dashboard.sql \
+            voyage-smart-travel/migrations/003_planner_memory.sql \
+            voyage-smart-travel/migrations/004_bookings.sql; do
+            NAME=$(basename "$f")
+            echo "--- Running $NAME ---"
+            SQL=$(cat "$f")
+            RESULT=$(curl -s -w "\n%{http_code}" -X POST "$BASE" \
+              -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\": $(jq -Rs . <<< "$SQL")}")
+            CODE=$(echo "$RESULT" | tail -1)
+            BODY=$(echo "$RESULT" | head -n -1)
+            echo "HTTP $CODE: $BODY"
+            if [ "$CODE" != "200" ] && [ "$CODE" != "201" ]; then
+              echo "FAIL: $NAME returned HTTP $CODE"
+              exit 1
+            fi
+            echo "OK: $NAME applied successfully"
+          done
+
+      - name: Run migrations via psql (direct connection)
+        if: ${{ env.DATABASE_URL != '' && env.SUPABASE_ACCESS_TOKEN == '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          for f in \
+            voyage-smart-travel/migrations/001_user_profiles.sql \
+            voyage-smart-travel/migrations/002_user_dashboard.sql \
+            voyage-smart-travel/migrations/003_planner_memory.sql \
+            voyage-smart-travel/migrations/004_bookings.sql; do
+            NAME=$(basename "$f")
+            echo "--- Running $NAME ---"
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"
+            echo "OK: $NAME applied"
+          done
+
+      - name: No credentials — operator action required
+        if: ${{ env.SUPABASE_ACCESS_TOKEN == '' && env.DATABASE_URL == '' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "BLOCKED: No Supabase credentials configured as GitHub secrets."
+          echo ""
+          echo "Add ONE of the following at:"
+          echo "  GitHub → repo Settings → Secrets and variables → Actions"
+          echo ""
+          echo "  SUPABASE_ACCESS_TOKEN  (Supabase PAT)"
+          echo "    → https://app.supabase.com/account/tokens"
+          echo ""
+          echo "  DATABASE_URL  (Postgres connection URI)"
+          echo "    → Supabase → Project Settings → Database → Connection string → URI"
+          echo ""
+          echo "Then re-run this workflow via Actions → Supabase Migrations → Run workflow"
+          exit 1
