@@ -245,9 +245,9 @@ async function tableExists(tableName, serviceRoleKey) {
 module.exports = async (req, res) => {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).json({ error: 'GET or POST only' });
 
-  const token           = req.headers['x-migration-token'];
+  const token           = req.headers['x-migration-token'] || (req.query && req.query.token);
   const pat             = process.env.SUPABASE_ACCESS_TOKEN;
   const serviceRoleKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
