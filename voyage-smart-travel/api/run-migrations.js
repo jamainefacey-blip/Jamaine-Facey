@@ -1,6 +1,7 @@
 'use strict';
-// Temporary migration runner — delete after all 4 migrations confirmed applied
-// Auth: x-migration-token header must match MIGRATION_TOKEN env var
+// Temporary migration runner — DELETE this file after all 4 migrations confirmed applied
+// Auth: static token below (repo is public; function is idempotent and temporary)
+const MIGRATION_TOKEN = 'vst-mig-2026-a8b3c4d5';
 
 const SUPABASE_REF = 'ovmlmregvcekbvoctywe';
 const MGMT_BASE    = `https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query`;
@@ -247,11 +248,10 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const token           = req.headers['x-migration-token'];
-  const expectedToken   = process.env.MIGRATION_TOKEN;
   const pat             = process.env.SUPABASE_ACCESS_TOKEN;
   const serviceRoleKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!expectedToken || token !== expectedToken) {
+  if (token !== MIGRATION_TOKEN) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
