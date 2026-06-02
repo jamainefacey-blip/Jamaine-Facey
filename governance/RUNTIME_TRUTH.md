@@ -130,13 +130,33 @@ been wired to the Lambda API yet.
 
 ---
 
+## BRANCH STATE (corrected by Agent B validation 2026-06-02)
+
+| Item | Feature branch (claude/add-llm-router-models-moa3U) | Main branch |
+|---|---|---|
+| Root api/run-migrations.js | ABSENT — does NOT exist | PRESENT (tech debt) |
+| Root vercel.json functions block | ABSENT — clean vercel.json | PRESENT (tech debt) |
+| Migration 001_user_profiles.sql | ABSENT as standalone file (in ALL_MIGRATIONS.sql) | PRESENT |
+| Migration 002_user_dashboard.sql | ABSENT as standalone file (in ALL_MIGRATIONS.sql) | PRESENT |
+| Migration 003_planner_memory.sql | PRESENT | ABSENT |
+| Migration 004_bookings.sql | PRESENT | ABSENT |
+| ALL_MIGRATIONS.sql | PRESENT | ABSENT |
+| AVACORE router (ai-lab/model-router.ts) | PRESENT (AVACORE extension) | ABSENT |
+| governance/ directory | PRESENT | ABSENT |
+| CONTROL_PLANE_ARCHITECTURE.md | PRESENT | ABSENT |
+
+CRITICAL: Neither branch has everything. Feature branch has AVACORE + ALL_MIGRATIONS + governance/.
+Main branch has 001+002 standalone migrations + tech debt that needs cleanup.
+A PR from feature branch → main is needed. No task existed for this until 2026-06-02.
+
 ## TECHNICAL DEBT REGISTER
 
 | Item | Location | Impact | Cleanup action |
 |---|---|---|---|
-| api/run-migrations.js (temp) | Root of repo (main branch) | Unnecessary Lambda function deployed | Delete after migrations confirmed applied |
-| vercel.json functions block | Root vercel.json (main branch) | Exposes migration endpoint in production | Remove functions block after cleanup |
-| run-migrations.js token | voyage-smart-travel/api/run-migrations.js | Static token 'vst-mig-2026-a8b3c4d5' in source | Remove entire file or replace with proper auth after migrations done |
+| api/run-migrations.js (temp) | Main branch root ONLY (not on feature branch) | Unnecessary Lambda deployed on main | Delete on main after migrations confirmed applied |
+| vercel.json functions block | Main branch root ONLY (not on feature branch) | Exposes migration endpoint on main | Remove on main after cleanup |
+| run-migrations.js token | voyage-smart-travel/api/run-migrations.js (main) | Static token 'vst-mig-2026-a8b3c4d5' in source | Remove after migrations done |
+| Branch divergence | main vs claude/add-llm-router-models-moa3U | Key work on feature branch unreachable from main | Raise PR, merge, resolve conflicts |
 
 ---
 

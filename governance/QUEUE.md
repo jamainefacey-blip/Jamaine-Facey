@@ -21,10 +21,11 @@ See governance/ACTIVE_TASK.md — TASK-001: VST Supabase Migrations
 
 ### TASK-002 — Connect AVACORE to Live Endpoint
 **Priority:** HIGH
-**Owner:** AGENT (after TASK-001 done)
+**Owner:** AGENT (independent of TASK-001)
 **Lane:** AI_LAB
 **Description:** Create a Vercel Lambda or Netlify Edge Function endpoint that receives a task description and calls `routeAvacore()` from `ai-lab/model-router.ts`. Return the routing decision as JSON. Wire endpoint to AI Lab UI or expose as `/ai-lab/route`.
-**Depends on:** TASK-001 (database must be working before wiring AI Lab to VST data paths)
+**Depends on:** NONE — dependency on TASK-001 removed (Agent B finding: AVACORE endpoint does not require Supabase)
+**NOTE:** AVACORE can route to 10 models but only ANTHROPIC_API_KEY is in Vercel env. 9 models are dark until provider API keys are added.
 **Acceptance criteria:**
 - Endpoint exists and returns valid AvacoreRouteResult JSON
 - TypeScript 0 errors
@@ -115,6 +116,60 @@ Operator must declare which is the canonical production project. Agent will docu
 
 ---
 
+### TASK-013 — Merge Feature Branch to Main (PR)
+**Priority:** HIGH
+**Owner:** AGENT
+**Lane:** GOVERNANCE
+**Description:** Feature branch `claude/add-llm-router-models-moa3U` contains AVACORE router,
+ALL_MIGRATIONS.sql, and governance/ directory — none of which are on main. Main contains
+001+002 standalone migrations and tech debt (root api/, vercel.json functions block) that
+feature branch does not. A PR is needed to reconcile both branches. Cleanup of main branch
+tech debt must happen as part of this PR.
+**Conflicts to resolve:** root vercel.json (main has functions block, feature has clean file),
+root api/run-migrations.js (main has it, feature does not), migration file differences.
+**Acceptance criteria:** Single unified main branch with all governance/, AVACORE, migrations,
+and no temp migration scaffolding.
+
+### TASK-014 — Add Anthropic Prompt Caching
+**Priority:** HIGH
+**Owner:** AGENT (after TASK-013)
+**Lane:** VST / AI_LAB
+**Description:** Add `cache_control` markers to static system prompts in:
+- voyage-smart-travel/api/ava-evaluate.js
+- voyage-smart-travel/api/planner-chat.js
+- voyage-smart-travel/api/ava-itinerary.js
+Expected impact: ~90% reduction in input token cost on repeated system prompt segments.
+**No infrastructure change required** — API-level change only.
+**Acceptance criteria:** cache_control added to system prompt in all 3 files, confirmed via Anthropic response headers showing cache hit.
+
+### TASK-015 — Add Vercel Edge Middleware (Auth Layer)
+**Priority:** HIGH
+**Owner:** AGENT (after TASK-013)
+**Lane:** VST
+**Description:** Zero authentication sits in front of 12 Lambda routes today. Add Vercel
+Edge Middleware that enforces API key validation before any Lambda cold start.
+Use `x-api-key` header pattern. Key stored as Vercel env var `VST_API_KEY`.
+**Acceptance criteria:** Requests without valid x-api-key header receive 401 before Lambda executes.
+
+### TASK-016 — Create governance/SESSION_BOOT.md (session boot checklist)
+**Priority:** HIGH
+**Owner:** AGENT (immediate, no dependencies)
+**Lane:** GOVERNANCE
+**Description:** (was TASK-007) Create the session boot checklist agents read on startup.
+Includes: read RUNTIME_TRUTH.md, verify branch state, check Supabase connectivity,
+confirm Vercel deployment, check AVACORE endpoint, load ACTIVE_TASK and QUEUE.
+Agent B finding: stop hook details not documented — include stop hook explanation.
+**Acceptance criteria:** File created with runnable verification steps.
+
+### TASK-017 — Create governance/SYSTEM_MAP.md
+**Priority:** MEDIUM
+**Owner:** AGENT (after TASK-016)
+**Lane:** GOVERNANCE
+**Description:** (was TASK-008) Quick-reference topology map for all 14 systems.
+**Acceptance criteria:** File created, all 14 systems listed with current status.
+
+---
+
 ## DONE
 
 (No tasks completed with shared state tracking before 2026-06-02 — this is the first session with a QUEUE.)
@@ -123,7 +178,8 @@ Operator must declare which is the canonical production project. Agent will docu
 
 ## DEFERRED / PARKED
 
-None at this time.
+TASK-007 → merged into TASK-016 (renumbered)
+TASK-008 → merged into TASK-017 (renumbered)
 
 ---
 
@@ -131,8 +187,8 @@ None at this time.
 
 | Status | Count |
 |---|---|
-| ACTIVE | 1 |
-| PENDING | 11 |
+| ACTIVE | 1 (TASK-001) |
+| PENDING | 16 |
 | DONE | 0 |
-| DEFERRED | 0 |
-| TOTAL | 12 |
+| DEFERRED | 2 (renumbered) |
+| TOTAL | 17 |
