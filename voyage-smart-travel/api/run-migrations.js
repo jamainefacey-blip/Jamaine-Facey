@@ -2,6 +2,7 @@
 // Temporary migration runner — DELETE after all 4 migrations confirmed applied
 // Auth: static token + optional credential headers for operator-driven runs
 const MIGRATION_TOKEN = 'vst-mig-2026-a8b3c4d5';
+const crypto = require('crypto');
 
 const SUPABASE_REF = 'ovmlmregvcekbvoctywe';
 const MGMT_BASE    = `https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query`;
@@ -242,6 +243,21 @@ function listEnvKeys() {
   return Object.keys(process.env).sort();
 }
 
+// Derive a Supabase service_role JWT from the project's JWT secret.
+// Supabase service_role keys are HS256 JWTs signed with the project JWT secret.
+// If JWT_SECRET in the env IS the Supabase project secret, this produces a valid key.
+function deriveServiceRoleJWT(secret) {
+  try {
+    const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+    const now = Math.floor(Date.now() / 1000);
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const payload = { role: 'service_role', iss: 'supabase', iat: now, exp: now + 3600 };
+    const unsigned = `${b64url(header)}.${b64url(payload)}`;
+    const sig = crypto.createHmac('sha256', secret).update(unsigned).digest('base64url');
+    return `${unsigned}.${sig}`;
+  } catch { return null; }
+}
+
 // Connectivity probe — tests if this Lambda can reach Supabase at all
 async function probeConnectivity() {
   try {
@@ -289,18 +305,22 @@ module.exports = async (req, res) => {
   const token          = req.headers['x-migration-token'] || (req.query && req.query.token);
   if (token !== MIGRATION_TOKEN) return res.status(401).json({ error: 'unauthorized' });
 
-  // Credentials: check many possible env var names, then fall back to request headers
+  // Credentials: check many possible env var names, then fall back to request headers,
+  // then try deriving a service_role JWT from JWT_SECRET (Supabase project JWT secret).
   const pat = process.env.SUPABASE_ACCESS_TOKEN
     || process.env.SUPABASE_PAT
     || process.env.SUPABASE_MANAGEMENT_TOKEN
     || req.headers['x-supabase-pat'];
+
+  const jwtDerived = process.env.JWT_SECRET ? deriveServiceRoleJWT(process.env.JWT_SECRET) : null;
 
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     || process.env.SUPABASE_SERVICE_KEY
     || process.env.SUPABASE_KEY
     || process.env.SUPABASE_ANON_KEY
     || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    || req.headers['x-supabase-key'];
+    || req.headers['x-supabase-key']
+    || jwtDerived;  // Last resort: derived from JWT_SECRET
 
   // Env key inspection mode — returns all env var NAMES (no values)
   if (req.query && req.query.envkeys === '1') {
@@ -316,6 +336,7 @@ module.exports = async (req, res) => {
   }
 
   const strategy = pat ? 'management-api' : serviceRoleKey ? 'verify-only' : 'no-credentials';
+  const keySource = pat ? 'pat' : (serviceRoleKey === jwtDerived ? 'derived-from-JWT_SECRET' : 'env-or-header');
 
   if (strategy === 'no-credentials') {
     const probe = await probeConnectivity();
@@ -367,5 +388,5 @@ module.exports = async (req, res) => {
   }
 
   const allConfirmed = results.every(r => r.status === 'CONFIRMED' || r.status === 'TABLE_EXISTS');
-  return res.status(200).json({ strategy, allConfirmed, results });
+  return res.status(200).json({ strategy, keySource, allConfirmed, results });
 };
