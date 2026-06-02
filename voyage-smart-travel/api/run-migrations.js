@@ -1,101 +1,145 @@
 'use strict';
-// Temporary migration runner — DELETE this file after all 4 migrations confirmed applied
-// Auth: static token below (repo is public; function is idempotent and temporary)
+// Temporary migration runner — DELETE after all 4 migrations confirmed applied
+// Auth: static token + optional credential headers for operator-driven runs
 const MIGRATION_TOKEN = 'vst-mig-2026-a8b3c4d5';
 
 const SUPABASE_REF = 'ovmlmregvcekbvoctywe';
 const MGMT_BASE    = `https://api.supabase.com/v1/projects/${SUPABASE_REF}/database/query`;
 const REST_BASE    = `https://${SUPABASE_REF}.supabase.co/rest/v1`;
 
-// First table created by each migration — used for existence checks
 const MIGRATIONS = [
   {
     name: '001_user_profiles.sql',
     checkTable: 'user_profiles',
-    sql: `CREATE TABLE IF NOT EXISTS public.user_profiles (
-  id            uuid        REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-  display_name  text,
-  bio           text,
-  avatar_url    text,
-  travel_preferences jsonb   DEFAULT '{}',
-  member_since  timestamptz DEFAULT now(),
-  updated_at    timestamptz DEFAULT now()
+    sql: `CREATE TABLE IF NOT EXISTS user_profiles (
+  id                    uuid        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  tier                  text        NOT NULL DEFAULT 'GUEST' CHECK (tier IN ('GUEST','PREMIUM','VOYAGE_ELITE')),
+  full_name             text        NOT NULL DEFAULT '',
+  preferred_name        text        NOT NULL DEFAULT '',
+  avatar_url            text,
+  date_of_birth         date,
+  nationality           char(2),
+  passport_number       text,
+  passport_expiry       date,
+  kyc_status            text        NOT NULL DEFAULT 'NOT_STARTED' CHECK (kyc_status IN ('NOT_STARTED','PENDING','VERIFIED','REJECTED')),
+  phone                 text,
+  phone_verified        boolean     NOT NULL DEFAULT false,
+  email_verified        boolean     NOT NULL DEFAULT false,
+  locale                text        NOT NULL DEFAULT 'en-GB',
+  timezone              text        NOT NULL DEFAULT 'Europe/London',
+  currency              char(3)     NOT NULL DEFAULT 'GBP',
+  home_airport          char(3),
+  cabin_class           text        NOT NULL DEFAULT 'ECONOMY' CHECK (cabin_class IN ('ECONOMY','PREMIUM_ECONOMY','BUSINESS','FIRST')),
+  seat_preference       text        NOT NULL DEFAULT 'NO_PREFERENCE',
+  meal_preference       text        NOT NULL DEFAULT 'STANDARD',
+  loyalty_programs      jsonb       NOT NULL DEFAULT '[]',
+  mobility              text        NOT NULL DEFAULT 'NONE',
+  wheelchair_type       text        NOT NULL DEFAULT 'NOT_APPLICABLE',
+  vision                text        NOT NULL DEFAULT 'NONE',
+  hearing               text        NOT NULL DEFAULT 'NONE',
+  cognitive             boolean     NOT NULL DEFAULT false,
+  dietary_medical       jsonb       NOT NULL DEFAULT '[]',
+  requires_carer        boolean     NOT NULL DEFAULT false,
+  accessibility_notes   text        NOT NULL DEFAULT '',
+  sos_contacts          jsonb       NOT NULL DEFAULT '[]',
+  total_trips           int         NOT NULL DEFAULT 0,
+  total_nights          int         NOT NULL DEFAULT 0,
+  countries_visited     jsonb       NOT NULL DEFAULT '[]',
+  total_spend_gbp       numeric(12,2) NOT NULL DEFAULT 0,
+  carbon_kg_total       numeric(10,2) NOT NULL DEFAULT 0,
+  carbon_kg_offset      numeric(10,2) NOT NULL DEFAULT 0,
+  last_trip_at          timestamptz,
+  email_verified_at     timestamptz,
+  phone_verified_at     timestamptz,
+  kyc_verified_at       timestamptz,
+  kyc_provider          text,
+  two_factor_enabled    boolean     NOT NULL DEFAULT false,
+  two_factor_method     text        NOT NULL DEFAULT 'NONE',
+  notification_prefs    jsonb       NOT NULL DEFAULT '{"channels":{"push":true,"in_app":true,"sms":true,"whatsapp":false,"voice":false},"domains":{"booking":true,"eco":true,"community":true,"pain_guard":true},"quiet_hours":{"enabled":false,"window_start":"22:00","window_end":"08:00"}}',
+  gdpr                  jsonb       NOT NULL DEFAULT '{}',
+  pain_guard_enrolled       boolean     NOT NULL DEFAULT false,
+  pain_guard_enrolled_at    timestamptz,
+  pain_guard_active_tasks   int         NOT NULL DEFAULT 0,
+  pain_guard_handoff_req    boolean     NOT NULL DEFAULT false,
+  onesignal_player_id   text,
+  created_at            timestamptz NOT NULL DEFAULT now(),
+  updated_at            timestamptz NOT NULL DEFAULT now(),
+  last_login_at         timestamptz,
+  deleted_at            timestamptz
 );
-ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='user_profiles' AND policyname='Users can view own profile') THEN
-    CREATE POLICY "Users can view own profile" ON public.user_profiles FOR SELECT USING (auth.uid() = id);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='user_profiles' AND policyname='Users can insert own profile') THEN
-    CREATE POLICY "Users can insert own profile" ON public.user_profiles FOR INSERT WITH CHECK (auth.uid() = id);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='user_profiles' AND policyname='Users can update own profile') THEN
-    CREATE POLICY "Users can update own profile" ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
-  END IF;
-END $$;
-CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS trigger AS $$ BEGIN INSERT INTO public.user_profiles (id, display_name) VALUES (new.id, COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1))) ON CONFLICT (id) DO NOTHING; RETURN new; END; $$ LANGUAGE plpgsql SECURITY DEFINER;
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-CREATE OR REPLACE FUNCTION public.update_updated_at() RETURNS trigger AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS set_updated_at ON public.user_profiles;
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();`,
+CREATE INDEX IF NOT EXISTS idx_user_profiles_tier ON user_profiles(tier);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_deleted ON user_profiles(deleted_at) WHERE deleted_at IS NULL;
+CREATE OR REPLACE FUNCTION set_updated_at() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
+DROP TRIGGER IF EXISTS trg_user_profiles_updated_at ON user_profiles;
+CREATE TRIGGER trg_user_profiles_updated_at BEFORE UPDATE ON user_profiles FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE FUNCTION handle_new_user() RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN INSERT INTO user_profiles (id, full_name, email_verified) VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name',''), COALESCE(NEW.email_confirmed_at IS NOT NULL, false)) ON CONFLICT (id) DO NOTHING; RETURN NEW; END; $$;
+CREATE OR REPLACE TRIGGER trg_on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN CREATE POLICY "profiles_owner_select" ON user_profiles FOR SELECT USING (auth.uid() = id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "profiles_owner_update" ON user_profiles FOR UPDATE USING (auth.uid() = id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "profiles_service_all" ON user_profiles FOR ALL USING (auth.role() = 'service_role'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
   },
   {
     name: '002_user_dashboard.sql',
-    checkTable: 'saved_trips',
-    sql: `CREATE TABLE IF NOT EXISTS public.saved_trips (
-  id            uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id       uuid        REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  destination   text        NOT NULL,
-  start_date    date,
-  end_date      date,
-  itinerary     jsonb       DEFAULT '{}',
-  eco_score     integer     DEFAULT 0 CHECK (eco_score BETWEEN 0 AND 100),
-  cover_url     text,
-  created_at    timestamptz DEFAULT now()
+    checkTable: 'booking_history',
+    sql: `CREATE TABLE IF NOT EXISTS booking_history (
+  booking_id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  tier                text        NOT NULL DEFAULT 'GUEST',
+  origin              text,
+  destination         text        NOT NULL,
+  departure_date      date        NOT NULL,
+  return_date         date,
+  carrier             text,
+  flight_number       text,
+  price               numeric(10,2) NOT NULL DEFAULT 0,
+  currency            char(3)     NOT NULL DEFAULT 'GBP',
+  status              text        NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','CONFIRMED','CANCELLED')),
+  confirmation_ref    text        UNIQUE,
+  co2_kg              numeric(10,2),
+  co2_per_person_kg   numeric(10,2),
+  eco_grade           char(1)     CHECK (eco_grade IN ('A','B','C','D','E')),
+  distance_km         numeric(10,2),
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  updated_at          timestamptz NOT NULL DEFAULT now()
 );
-ALTER TABLE public.saved_trips ENABLE ROW LEVEL SECURITY;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='saved_trips' AND policyname='Users can manage own saved trips') THEN
-    CREATE POLICY "Users can manage own saved trips" ON public.saved_trips FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  END IF;
-END $$;
-CREATE INDEX IF NOT EXISTS saved_trips_user_id_idx ON public.saved_trips (user_id);
-CREATE TABLE IF NOT EXISTS public.booking_history (
-  id            uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id       uuid        REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  trip_id       uuid        REFERENCES public.saved_trips(id) ON DELETE SET NULL,
-  destination   text,
-  status        text        DEFAULT 'confirmed' CHECK (status IN ('pending','confirmed','cancelled','completed')),
-  total_cost    numeric(10,2),
-  currency      text        DEFAULT 'USD',
-  booked_at     timestamptz DEFAULT now()
+CREATE TABLE IF NOT EXISTS dashboard_widgets (
+  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  widget_key  text        NOT NULL,
+  position    int         NOT NULL DEFAULT 0,
+  visible     boolean     NOT NULL DEFAULT true,
+  config      jsonb       NOT NULL DEFAULT '{}',
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, widget_key)
 );
-ALTER TABLE public.booking_history ENABLE ROW LEVEL SECURITY;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='booking_history' AND policyname='Users can manage own bookings') THEN
-    CREATE POLICY "Users can manage own bookings" ON public.booking_history FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  END IF;
-END $$;
-CREATE INDEX IF NOT EXISTS booking_history_user_id_idx ON public.booking_history (user_id);
-CREATE TABLE IF NOT EXISTS public.travel_stats (
-  id                uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id           uuid        REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
-  total_trips       integer     DEFAULT 0,
-  countries_visited integer     DEFAULT 0,
-  co2_saved_kg      numeric(10,2) DEFAULT 0,
-  eco_grade         text        DEFAULT 'C' CHECK (eco_grade IN ('A+','A','B','C','D','F')),
-  updated_at        timestamptz DEFAULT now()
+CREATE TABLE IF NOT EXISTS eco_milestones (
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  milestone_key text        NOT NULL,
+  carbon_kg     numeric(10,2) NOT NULL DEFAULT 0,
+  awarded_at    timestamptz NOT NULL DEFAULT now(),
+  notified      boolean     NOT NULL DEFAULT false,
+  UNIQUE (user_id, milestone_key)
 );
-ALTER TABLE public.travel_stats ENABLE ROW LEVEL SECURITY;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='travel_stats' AND policyname='Users can manage own stats') THEN
-    CREATE POLICY "Users can manage own stats" ON public.travel_stats FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  END IF;
-END $$;
-CREATE OR REPLACE FUNCTION public.handle_new_user_stats() RETURNS trigger AS $$ BEGIN INSERT INTO public.travel_stats (user_id) VALUES (new.id) ON CONFLICT (user_id) DO NOTHING; RETURN new; END; $$ LANGUAGE plpgsql SECURITY DEFINER;
-DROP TRIGGER IF EXISTS on_auth_user_created_stats ON auth.users;
-CREATE TRIGGER on_auth_user_created_stats AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_stats();`,
+CREATE INDEX IF NOT EXISTS idx_booking_history_user_created ON booking_history(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_booking_history_status ON booking_history(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_user ON dashboard_widgets(user_id, position);
+CREATE INDEX IF NOT EXISTS idx_eco_milestones_user ON eco_milestones(user_id);
+DROP TRIGGER IF EXISTS trg_booking_history_updated_at ON booking_history;
+CREATE TRIGGER trg_booking_history_updated_at BEFORE UPDATE ON booking_history FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS trg_dashboard_widgets_updated_at ON dashboard_widgets;
+CREATE TRIGGER trg_dashboard_widgets_updated_at BEFORE UPDATE ON dashboard_widgets FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+ALTER TABLE booking_history    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dashboard_widgets  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE eco_milestones     ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN CREATE POLICY "bookings_owner_select" ON booking_history FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "bookings_owner_insert" ON booking_history FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "bookings_service_all" ON booking_history FOR ALL USING (auth.role() = 'service_role'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "widgets_owner" ON dashboard_widgets FOR ALL USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "eco_milestones_owner_select" ON eco_milestones FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "eco_milestones_service_all" ON eco_milestones FOR ALL USING (auth.role() = 'service_role'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
   },
   {
     name: '003_planner_memory.sql',
@@ -114,47 +158,38 @@ CREATE TRIGGER on_auth_user_created_stats AFTER INSERT ON auth.users FOR EACH RO
 CREATE TABLE IF NOT EXISTS planner_messages (
   id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id uuid        NOT NULL REFERENCES planner_sessions(id) ON DELETE CASCADE,
-  role       text        NOT NULL CHECK (role IN ('user', 'assistant')),
+  role       text        NOT NULL CHECK (role IN ('user','assistant')),
   content    text        NOT NULL,
   metadata   jsonb       NOT NULL DEFAULT '{}',
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE IF NOT EXISTS planner_itineraries (
-  id                 uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id         uuid        NOT NULL REFERENCES planner_sessions(id) ON DELETE CASCADE,
-  user_id            uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  destination        text,
-  days               jsonb       NOT NULL DEFAULT '[]',
-  eco_score          int         CHECK (eco_score BETWEEN 0 AND 100),
-  total_budget       jsonb       NOT NULL DEFAULT '{}',
+  id                  uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id          uuid        NOT NULL REFERENCES planner_sessions(id) ON DELETE CASCADE,
+  user_id             uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  destination         text,
+  days                jsonb       NOT NULL DEFAULT '[]',
+  eco_score           int         CHECK (eco_score BETWEEN 0 AND 100),
+  total_budget        jsonb       NOT NULL DEFAULT '{}',
   accessibility_notes text,
-  status             text        NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'confirmed', 'booked')),
-  created_at         timestamptz NOT NULL DEFAULT now(),
-  updated_at         timestamptz NOT NULL DEFAULT now()
+  status              text        NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','confirmed','booked')),
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  updated_at          timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user_created ON planner_sessions(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_session_created ON planner_messages(session_id, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_itineraries_session ON planner_itineraries(session_id);
 CREATE INDEX IF NOT EXISTS idx_itineraries_user_created ON planner_itineraries(user_id, created_at DESC);
-CREATE OR REPLACE FUNCTION set_updated_at() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
 DROP TRIGGER IF EXISTS trg_sessions_updated_at ON planner_sessions;
 CREATE TRIGGER trg_sessions_updated_at BEFORE UPDATE ON planner_sessions FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 DROP TRIGGER IF EXISTS trg_itineraries_updated_at ON planner_itineraries;
 CREATE TRIGGER trg_itineraries_updated_at BEFORE UPDATE ON planner_itineraries FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-ALTER TABLE planner_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE planner_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE planner_sessions    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE planner_messages    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE planner_itineraries ENABLE ROW LEVEL SECURITY;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='planner_sessions' AND policyname='sessions_owner') THEN
-    CREATE POLICY "sessions_owner" ON planner_sessions FOR ALL USING (auth.uid() = user_id);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='planner_messages' AND policyname='messages_owner') THEN
-    CREATE POLICY "messages_owner" ON planner_messages FOR ALL USING (session_id IN (SELECT id FROM planner_sessions WHERE user_id = auth.uid()));
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='planner_itineraries' AND policyname='itineraries_owner') THEN
-    CREATE POLICY "itineraries_owner" ON planner_itineraries FOR ALL USING (auth.uid() = user_id);
-  END IF;
-END $$;`,
+DO $$ BEGIN CREATE POLICY "sessions_owner" ON planner_sessions FOR ALL USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "messages_owner" ON planner_messages FOR ALL USING (session_id IN (SELECT id FROM planner_sessions WHERE user_id = auth.uid())); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "itineraries_owner" ON planner_itineraries FOR ALL USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
   },
   {
     name: '004_bookings.sql',
@@ -186,21 +221,11 @@ ALTER TABLE booking_history ADD COLUMN IF NOT EXISTS booking_type TEXT DEFAULT '
 ALTER TABLE booking_history ADD COLUMN IF NOT EXISTS provider_ref TEXT;
 ALTER TABLE booking_history ADD COLUMN IF NOT EXISTS details JSONB DEFAULT '{}'::jsonb;
 ALTER TABLE flight_searches ENABLE ROW LEVEL SECURITY;
-ALTER TABLE hotel_searches ENABLE ROW LEVEL SECURITY;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='flight_searches' AND policyname='Users can view own flight searches') THEN
-    CREATE POLICY "Users can view own flight searches" ON flight_searches FOR SELECT USING (auth.uid() = user_id);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='flight_searches' AND policyname='Users can insert own flight searches') THEN
-    CREATE POLICY "Users can insert own flight searches" ON flight_searches FOR INSERT WITH CHECK (auth.uid() = user_id);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='hotel_searches' AND policyname='Users can view own hotel searches') THEN
-    CREATE POLICY "Users can view own hotel searches" ON hotel_searches FOR SELECT USING (auth.uid() = user_id);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='hotel_searches' AND policyname='Users can insert own hotel searches') THEN
-    CREATE POLICY "Users can insert own hotel searches" ON hotel_searches FOR INSERT WITH CHECK (auth.uid() = user_id);
-  END IF;
-END $$;
+ALTER TABLE hotel_searches  ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN CREATE POLICY "Users can view own flight searches" ON flight_searches FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "Users can insert own flight searches" ON flight_searches FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "Users can view own hotel searches" ON hotel_searches FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "Users can insert own hotel searches" ON hotel_searches FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE INDEX IF NOT EXISTS flight_searches_user_idx ON flight_searches(user_id);
 CREATE INDEX IF NOT EXISTS hotel_searches_user_idx ON hotel_searches(user_id);`,
   },
@@ -208,33 +233,42 @@ CREATE INDEX IF NOT EXISTS hotel_searches_user_idx ON hotel_searches(user_id);`,
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, x-migration-token',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-migration-token, x-supabase-pat, x-supabase-key',
 };
 
-// Run SQL via Supabase Management API (requires PAT, not service role key)
+// Connectivity probe — tests if this Lambda can reach Supabase at all
+async function probeConnectivity() {
+  try {
+    const r = await fetch(`${REST_BASE}/`, {
+      headers: { apikey: 'probe', Authorization: 'Bearer probe' },
+      signal: AbortSignal.timeout(8000),
+    });
+    const body = await r.text();
+    return { reachable: !body.includes('not in allowlist'), httpStatus: r.status, body: body.slice(0, 120) };
+  } catch (e) {
+    return { reachable: false, error: e.message };
+  }
+}
+
+// Run SQL via Management API (PAT required)
 async function runViaMgmtAPI(sql, pat) {
   const resp = await fetch(MGMT_BASE, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${pat}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: sql }),
+    signal: AbortSignal.timeout(30000),
   });
   const body = await resp.text();
   return { httpStatus: resp.status, body: body.slice(0, 400) };
 }
 
-// Check table existence via PostgREST with service role key (read-only)
-async function tableExists(tableName, serviceRoleKey) {
+// Check table existence via PostgREST (service role key)
+async function tableExists(tableName, key) {
   try {
     const resp = await fetch(`${REST_BASE}/${tableName}?select=count&limit=0`, {
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        Prefer: 'count=exact',
-      },
+      headers: { apikey: key, Authorization: `Bearer ${key}`, Prefer: 'count=exact' },
+      signal: AbortSignal.timeout(8000),
     });
     return { exists: resp.status === 200 || resp.status === 206, httpStatus: resp.status };
   } catch (e) {
@@ -247,22 +281,33 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).json({ error: 'GET or POST only' });
 
-  const token           = req.headers['x-migration-token'] || (req.query && req.query.token);
-  const pat             = process.env.SUPABASE_ACCESS_TOKEN;
-  const serviceRoleKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const token          = req.headers['x-migration-token'] || (req.query && req.query.token);
+  if (token !== MIGRATION_TOKEN) return res.status(401).json({ error: 'unauthorized' });
 
-  if (token !== MIGRATION_TOKEN) {
-    return res.status(401).json({ error: 'unauthorized' });
+  // Credentials: env vars take priority; headers allow operator override at runtime
+  const pat            = process.env.SUPABASE_ACCESS_TOKEN  || req.headers['x-supabase-pat'];
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || req.headers['x-supabase-key'];
+
+  // Connectivity probe mode
+  if ((req.query && req.query.probe === '1') || req.headers['x-probe'] === '1') {
+    const probe = await probeConnectivity();
+    return res.status(200).json({ mode: 'connectivity-probe', supabase_ref: SUPABASE_REF, ...probe });
   }
 
-  // Determine strategy
   const strategy = pat ? 'management-api' : serviceRoleKey ? 'verify-only' : 'no-credentials';
 
   if (strategy === 'no-credentials') {
+    const probe = await probeConnectivity();
     return res.status(400).json({
       error: 'No Supabase credentials configured',
-      required: 'Set SUPABASE_ACCESS_TOKEN (Supabase PAT) in Vercel env vars to apply migrations',
-      hint: 'Get a PAT at https://supabase.com/dashboard/account/tokens',
+      supabase_reachable_from_vercel: probe.reachable,
+      connectivity_probe: probe,
+      options: {
+        A: 'Add SUPABASE_ACCESS_TOKEN (PAT) to Vercel env vars — enables DDL via Management API',
+        B: 'Add SUPABASE_SERVICE_ROLE_KEY to Vercel env vars — enables table existence verification',
+        C: 'Pass x-supabase-pat header with your PAT (DDL) or x-supabase-key header with service role key (verify)',
+        D: 'Paste voyage-smart-travel/migrations/ALL_MIGRATIONS.sql into Supabase SQL Editor',
+      },
     });
   }
 
@@ -272,17 +317,13 @@ module.exports = async (req, res) => {
     const check = await tableExists(migration.checkTable, serviceRoleKey || pat);
 
     if (strategy === 'management-api') {
-      // Apply migration then verify
       let applyResult;
       try {
         applyResult = await runViaMgmtAPI(migration.sql, pat);
       } catch (e) {
         applyResult = { error: e.message };
       }
-
-      // Re-verify after apply
       const postCheck = await tableExists(migration.checkTable, serviceRoleKey || pat);
-
       results.push({
         migration: migration.name,
         strategy: 'management-api',
@@ -293,23 +334,17 @@ module.exports = async (req, res) => {
         status: postCheck.exists ? 'CONFIRMED' : 'UNCERTAIN',
       });
     } else {
-      // verify-only: can check but not apply
       results.push({
         migration: migration.name,
         strategy: 'verify-only',
         tableExists: check.exists,
         httpStatus: check.httpStatus,
         status: check.exists ? 'TABLE_EXISTS' : 'TABLE_MISSING',
-        note: 'Set SUPABASE_ACCESS_TOKEN to apply. Service role key cannot run DDL.',
+        note: 'Provide x-supabase-pat header (PAT) to apply DDL. Service role key can only verify.',
       });
     }
   }
 
   const allConfirmed = results.every(r => r.status === 'CONFIRMED' || r.status === 'TABLE_EXISTS');
-
-  return res.status(200).json({
-    strategy,
-    allConfirmed,
-    results,
-  });
+  return res.status(200).json({ strategy, allConfirmed, results });
 };
