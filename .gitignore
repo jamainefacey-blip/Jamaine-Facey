@@ -12,4 +12,9 @@ node_modules
 */.DS_Store
 
 .vscode
-tsconfig.tsbuildinfo
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Platform monorepo (tracked on vst-platform-core branch, not this one)
+vst-platform/
