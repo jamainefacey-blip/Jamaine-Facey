@@ -330,6 +330,77 @@ export interface ModelSelection {
   reason: string;
 }
 
+// ── AVACORE Multi-LLM Router ──────────────────
+// Types for the 10-model task-type router (LLM_ROUTER_SPEC.md v2.0.0).
+// Additive — does not modify existing ModelTier / RouterInput / ModelSelection.
+
+/** Canonical model identifiers for the AVACORE registry */
+export type AvaModelId =
+  | "claude"
+  | "gpt4o"
+  | "gemini"
+  | "grok"
+  | "mistral"
+  | "hermes3"
+  | "mixtral"
+  | "qwen"
+  | "deepseek"
+  | "llama";
+
+/** Task category used for AVACORE primary-model selection */
+export type TaskType =
+  | "orchestration"
+  | "agent-routing"
+  | "code-generation"
+  | "reasoning"
+  | "fast-throughput"
+  | "long-context"
+  | "multimodal"
+  | "realtime"
+  | "multilingual"
+  | "general";
+
+/** Input to the AVACORE multi-model router */
+export interface AvacoreInput {
+  lane: string;
+  priority: "low" | "medium" | "high";
+  skill: string;
+  /** Current retry attempt — 0 = first attempt, n = nth retry */
+  retryAttempt?: number;
+  sourceCharCount?: number;
+  /** Explicit task type — skips inference when set */
+  taskType?: TaskType;
+  /** True for batch / high-throughput runs */
+  isBatch?: boolean;
+}
+
+/** Per-model failure logged during a chain run */
+export interface AvacoreFailureEntry {
+  model: AvaModelId;
+  error: string;
+  at: string;
+}
+
+/** Result returned by routeAvacore */
+export interface AvacoreRouteResult {
+  runId: string;
+  taskType: TaskType;
+  primaryModel: AvaModelId;
+  /** Null only when the full chain is exhausted */
+  resolvedModel: AvaModelId | null;
+  /** Canonical API model string for the resolved model */
+  resolvedModelId: string | null;
+  /** Models tried in this routing call */
+  chainTried: AvaModelId[];
+  /** Complete ordered chain for this task type (primary + fallbacks) */
+  fullChain: AvaModelId[];
+  status: "success" | "blocked";
+  failureReasons: AvacoreFailureEntry[];
+  resolvedAt: string;
+  lane: string;
+  skill: string;
+}
+
 // ── Orchestrator ──────────────────────────────
 
 export interface OrchestratorConfig {

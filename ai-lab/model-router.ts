@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────
 
 import { promises as fs } from "fs";
-import type { ModelTier, RouterInput, ModelSelection } from "./types.ts";
+import type { ModelTier, RouterInput, ModelSelection, AvaModelId, AvacoreInput, AvacoreRouteResult, TaskType } from "./types.ts";
 
 // ── Model registry ────────────────────────────
 
@@ -125,4 +125,133 @@ function buildReason(input: RouterInput, tier: ModelTier): string {
   if ((input.sourceCharCount ?? 0) > HIGH_COMPLEXITY_CHAR_THRESHOLD)
     return `sourceCharCount=${input.sourceCharCount} > threshold → external`;
   return `skill=${input.skill} complexity=${complexity} → local`;
+}
+
+// ─────────────────────────────────────────────
+// AVACORE — MULTI-LLM ROUTER (v2.0.0)
+// Extends the Claude-tier router above.
+// Does not modify selectTier / routeModel / auditModelRouting.
+// Spec: LLM_ROUTER_SPEC.md
+// ─────────────────────────────────────────────
+
+// ── Model registry ────────────────────────────
+
+export const AVACORE_REGISTRY: Record<AvaModelId, string> = {
+  claude:   "claude-sonnet-4-6",
+  gpt4o:    "gpt-4o",
+  gemini:   "gemini-1.5-pro",
+  grok:     "grok-beta",
+  mistral:  "mistral-large-latest",
+  hermes3:  "nous-hermes-3",
+  mixtral:  "open-mixtral-8x7b",
+  qwen:     "qwen2.5-72b-instruct",
+  deepseek: "deepseek-chat",
+  llama:    "meta-llama/llama-3.3-70b-instruct",
+};
+
+// ── Task-type assignments ─────────────────────
+
+interface TaskAssignment {
+  primary: AvaModelId;
+  fallbackChain: AvaModelId[];
+}
+
+export const TASK_TYPE_ASSIGNMENTS: Record<TaskType, TaskAssignment> = {
+  "orchestration":   { primary: "claude",   fallbackChain: ["gpt4o", "gemini", "llama"] },
+  "agent-routing":   { primary: "hermes3",  fallbackChain: ["claude", "gpt4o", "qwen"] },
+  "code-generation": { primary: "deepseek", fallbackChain: ["claude", "gpt4o", "llama"] },
+  "reasoning":       { primary: "qwen",     fallbackChain: ["claude", "gpt4o", "hermes3"] },
+  "fast-throughput": { primary: "mixtral",  fallbackChain: ["llama", "mistral", "claude"] },
+  "long-context":    { primary: "gemini",   fallbackChain: ["claude", "gpt4o", "llama"] },
+  "multimodal":      { primary: "gpt4o",    fallbackChain: ["claude", "gemini", "llama"] },
+  "realtime":        { primary: "grok",     fallbackChain: ["gpt4o", "claude", "llama"] },
+  "multilingual":    { primary: "mistral",  fallbackChain: ["gpt4o", "claude", "llama"] },
+  "general":         { primary: "llama",    fallbackChain: ["mistral", "mixtral", "claude"] },
+};
+
+// ── Task-type inference ───────────────────────
+// Decision rules evaluated in priority order per LLM_ROUTER_SPEC.md §Router Decision Rules.
+
+const AVACORE_CODE_SKILLS = new Set(["asset-reconstruction", "build-output"]);
+const AVACORE_AGENT_SKILLS = new Set(["agent-routing", "multi-step"]);
+const AVACORE_LONG_CONTEXT_THRESHOLD = 100_000;
+
+function inferTaskType(input: AvacoreInput): TaskType {
+  if (input.taskType) return input.taskType;
+
+  const { priority, skill, sourceCharCount = 0, isBatch = false } = input;
+
+  if (priority === "high") {
+    if (AVACORE_CODE_SKILLS.has(skill))  return "code-generation";
+    if (AVACORE_AGENT_SKILLS.has(skill)) return "agent-routing";
+    return "orchestration";
+  }
+
+  if (sourceCharCount > AVACORE_LONG_CONTEXT_THRESHOLD) return "long-context";
+  if (priority === "low" || isBatch) return "fast-throughput";
+
+  return "orchestration";
+}
+
+// ── AVACORE router ────────────────────────────
+
+/**
+ * Route a task through the AVACORE 10-model registry.
+ *
+ * Returns the resolved model for the current attempt. On retries, advances
+ * through the fallback chain by one position per attempt. When the chain is
+ * exhausted, status is "blocked" and resolvedModel is null.
+ *
+ * Callers should:
+ *   1. Call routeAvacore({ ..., retryAttempt: 0 }) to get the primary model.
+ *   2. Attempt the API call with result.resolvedModelId.
+ *   3. On failure, call again with retryAttempt incremented and the failure
+ *      appended to failureReasons passed back in.
+ *   4. Stop when status === "blocked".
+ *
+ * Logs each routing decision to execution_log.json.
+ */
+export async function routeAvacore(
+  input: AvacoreInput,
+  priorFailures: Array<{ model: AvaModelId; error: string }> = [],
+): Promise<AvacoreRouteResult> {
+  const runId = crypto.randomUUID();
+  const resolvedAt = new Date().toISOString();
+  const attempt = input.retryAttempt ?? 0;
+
+  const taskType = inferTaskType(input);
+  const assignment = TASK_TYPE_ASSIGNMENTS[taskType];
+  const fullChain: AvaModelId[] = [assignment.primary, ...assignment.fallbackChain];
+
+  const failureReasons = priorFailures.map((f) => ({
+    model: f.model,
+    error: f.error,
+    at: resolvedAt,
+  }));
+
+  let resolvedModel: AvaModelId | null = null;
+  const chainTried: AvaModelId[] = [];
+
+  if (attempt < fullChain.length) {
+    resolvedModel = fullChain[attempt];
+    chainTried.push(resolvedModel);
+  }
+
+  const result: AvacoreRouteResult = {
+    runId,
+    taskType,
+    primaryModel: assignment.primary,
+    resolvedModel,
+    resolvedModelId: resolvedModel ? AVACORE_REGISTRY[resolvedModel] : null,
+    chainTried,
+    fullChain,
+    status: resolvedModel ? "success" : "blocked",
+    failureReasons,
+    resolvedAt,
+    lane: input.lane,
+    skill: input.skill,
+  };
+
+  await appendToLog("ai-lab/execution_log.json", result);
+  return result;
 }
