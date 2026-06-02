@@ -1,5 +1,8 @@
 {
   "outputDirectory": "voyage-smart-travel",
+  "functions": {
+    "api/run-migrations.js": { "maxDuration": 60 }
+  },
   "rewrites": [
     { "source": "/accessibility", "destination": "/accessibility.html" },
     { "source": "/bookings",      "destination": "/bookings.html" },
