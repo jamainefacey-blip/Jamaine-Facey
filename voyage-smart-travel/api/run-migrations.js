@@ -237,6 +237,11 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type, x-migration-token, x-supabase-pat, x-supabase-key',
 };
 
+// Return all env var NAMES (not values) — reveals if a Supabase key exists under any name
+function listEnvKeys() {
+  return Object.keys(process.env).sort();
+}
+
 // Connectivity probe — tests if this Lambda can reach Supabase at all
 async function probeConnectivity() {
   try {
@@ -284,9 +289,25 @@ module.exports = async (req, res) => {
   const token          = req.headers['x-migration-token'] || (req.query && req.query.token);
   if (token !== MIGRATION_TOKEN) return res.status(401).json({ error: 'unauthorized' });
 
-  // Credentials: env vars take priority; headers allow operator override at runtime
-  const pat            = process.env.SUPABASE_ACCESS_TOKEN  || req.headers['x-supabase-pat'];
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || req.headers['x-supabase-key'];
+  // Credentials: check many possible env var names, then fall back to request headers
+  const pat = process.env.SUPABASE_ACCESS_TOKEN
+    || process.env.SUPABASE_PAT
+    || process.env.SUPABASE_MANAGEMENT_TOKEN
+    || req.headers['x-supabase-pat'];
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    || process.env.SUPABASE_SERVICE_KEY
+    || process.env.SUPABASE_KEY
+    || process.env.SUPABASE_ANON_KEY
+    || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    || req.headers['x-supabase-key'];
+
+  // Env key inspection mode — returns all env var NAMES (no values)
+  if (req.query && req.query.envkeys === '1') {
+    const keys = listEnvKeys();
+    const supabaseKeys = keys.filter(k => /supa|postgres|pg_|database|service_role|anon|jwt|api_key/i.test(k));
+    return res.status(200).json({ mode: 'env-inspection', all_keys: keys, supabase_related: supabaseKeys });
+  }
 
   // Connectivity probe mode
   if ((req.query && req.query.probe === '1') || req.headers['x-probe'] === '1') {
