@@ -1,17 +1,27 @@
 name: Supabase Migrations
 
+# Operator-controlled migration path for VST (see voyage-smart-travel/migrations/RUNBOOK.md).
+# Manual dispatch only — production DDL must never run as a side effect of a merge.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "voyage-smart-travel/migrations/**"
+    inputs:
+      confirm:
+        description: 'Type APPLY-PRODUCTION to confirm founder approval and independent review are recorded'
+        required: true
 
 jobs:
   migrate:
     name: Run VST migrations in order
     runs-on: ubuntu-latest
     steps:
+      - name: Verify explicit production approval
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "APPLY-PRODUCTION" ]; then
+            echo "BLOCKED: confirmation phrase not provided. No migrations were run."
+            exit 1
+          fi
+          echo "AUDIT RECEIPT: migration run approved by @${{ github.actor }} at $(date -u +%FT%TZ) — run ${{ github.run_id }}"
+
       - uses: actions/checkout@v4
 
       - name: Verify migration files present
