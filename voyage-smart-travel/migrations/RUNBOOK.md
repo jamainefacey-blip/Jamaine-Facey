@@ -34,10 +34,12 @@ Production DDL runs only when **all** of the following are recorded first:
    - `SUPABASE_ACCESS_TOKEN` — a Supabase personal access token, **or**
    - `DATABASE_URL` — the Postgres connection URI.
    Secrets live only in GitHub's secret store — never in source, never in request headers.
-2. Actions → **Supabase Migrations** → *Run workflow* → type `APPLY-PRODUCTION` in the
-   confirmation field.
-3. The run log is the audit receipt (approver, UTC timestamp, run id). Link it in the
-   tracking issue/PR. The workflow is manual-dispatch only; merges never trigger it.
+2. Actions → **Supabase Migrations** → *Run workflow* → select branch `main` → type
+   `APPLY-PRODUCTION` in the confirmation field. Dispatches from any other ref are
+   rejected, so only reviewed SQL on `main` can ever be applied.
+3. The run log is the audit receipt (approver, UTC timestamp, run id, ref + commit SHA).
+   Link it in the tracking issue/PR. The workflow is manual-dispatch only; merges never
+   trigger it.
 
 ### Option B — Supabase SQL Editor (manual)
 
