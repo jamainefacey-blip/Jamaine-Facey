@@ -370,6 +370,21 @@ window.VSTBookings = (function () {
     // acquisition funnel before a traveller can see verified fare data.
     bindEvents();
     switchTab('flights');
+
+    // Homepage route ideas hand off directly into this real supplier search.
+    // Query values only prefill inputs; the traveller still chooses dates and
+    // submits the request, so no stale static card is presented as availability.
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      var origin = params.get('origin');
+      var destination = params.get('destination');
+      if (origin && $('fl-origin')) $('fl-origin').value = origin.toUpperCase();
+      if (destination && $('fl-destination')) $('fl-destination').value = destination.toUpperCase();
+      if (origin || destination) {
+        var depart = $('fl-depart');
+        if (depart) depart.focus();
+      }
+    } catch (e) {}
   }
 
   /* Run on DOM ready */
