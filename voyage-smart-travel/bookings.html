@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0f1a" />
-  <meta name="description" content="Search and book flights, hotels, and experiences — eco-scored and curated by AVA." />
+  <meta name="description" content="Search verified live flight fares and continue planning with AVA. Hotel and experience supplier feeds are added only when live and evidenced." />
   <link rel="canonical" href="https://voyagesmarttravel.com/bookings" />
-  <title>Book — Voyage Smart Travel</title>
+  <title>Live Fares — Voyage Smart Travel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" />
@@ -327,7 +327,7 @@
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/destinations">Destinations</a>
         <a class="nav-link" href="/planner">AVA Planner</a>
-        <a class="nav-link active" href="/bookings">Book</a>
+        <a class="nav-link active" href="/bookings">Live Fares</a>
         <a class="nav-link" href="/accessibility">Accessibility</a>
         <a class="nav-link" href="/about">About</a>
         <a class="nav-link" href="/safety">Safety</a>
@@ -343,7 +343,7 @@
     <a class="nav-mobile-link" href="/">Home</a>
     <a class="nav-mobile-link" href="/destinations">Destinations</a>
     <a class="nav-mobile-link" href="/planner">AVA Planner</a>
-    <a class="nav-mobile-link" href="/bookings">Book</a>
+    <a class="nav-mobile-link" href="/bookings">Live Fares</a>
     <a class="nav-mobile-link" href="/accessibility">Accessibility</a>
     <a class="nav-mobile-link" href="/about">About</a>
     <a class="nav-mobile-link" href="/safety">Safety</a>
@@ -352,11 +352,11 @@
 
   <!-- ── Hero ───────────────────────────────────────────────────── -->
   <header class="bookings-hero page-enter" aria-label="Bookings header">
-    <p class="section-label">Search · Compare · Book</p>
+    <p class="section-label">Search · Compare · Plan</p>
     <h1 class="section-title" style="font-size:clamp(2.25rem,6vw,4.5rem);">
       Find your next<br><em style="color:var(--gold);">journey.</em>
     </h1>
-    <p class="section-sub" style="margin-top:1rem;">Flights, hotels, and experiences — each one eco-scored so you travel with intention.</p>
+    <p class="section-sub" style="margin-top:1rem;">Search the live flight supplier feed. Prices can change until supplier checkout. Hotel and experience inventory is never shown as live until its provider connection is verified.</p>
   </header>
 
   <!-- ── Tab bar ────────────────────────────────────────────────── -->
@@ -409,15 +409,6 @@
               <option value="6">6</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="fl-cabin">Cabin</label>
-            <select id="fl-cabin">
-              <option value="economy">Economy</option>
-              <option value="premium_economy">Premium Economy</option>
-              <option value="business">Business</option>
-              <option value="first">First</option>
-            </select>
-          </div>
           <div class="form-group" style="justify-content:flex-end;">
             <button type="submit" class="search-btn">Search flights</button>
           </div>
@@ -427,42 +418,11 @@
 
     <!-- Hotels panel -->
     <div class="booking-panel" data-panel="hotels">
-      <form id="hotel-search-form" autocomplete="off">
-        <div class="search-grid">
-          <div class="form-group">
-            <label for="ht-destination">Destination</label>
-            <input type="text" id="ht-destination" placeholder="Paris" />
-          </div>
-          <div class="form-group">
-            <label for="ht-checkin">Check-in</label>
-            <input type="date" id="ht-checkin" />
-          </div>
-          <div class="form-group">
-            <label for="ht-checkout">Check-out</label>
-            <input type="date" id="ht-checkout" />
-          </div>
-          <div class="form-group">
-            <label for="ht-guests">Guests</label>
-            <select id="ht-guests">
-              <option value="1">1</option>
-              <option value="2" selected>2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="ht-rooms">Rooms</label>
-            <select id="ht-rooms">
-              <option value="1" selected>1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </div>
-          <div class="form-group" style="justify-content:flex-end;">
-            <button type="submit" class="search-btn">Search hotels</button>
-          </div>
-        </div>
-      </form>
+      <div class="coming-soon">
+        <h3>Verified hotel search — connection pending</h3>
+        <p>The previous hotel results were generated demo data. They are disabled so no traveller sees invented names, ratings, accessibility claims or prices as live inventory.</p>
+        <p><a class="trip-book" href="/planner">Plan accommodation with AVA →</a></p>
+      </div>
     </div>
 
     <!-- Experiences panel -->
@@ -488,7 +448,7 @@
     <div class="footer-inner">
       <div>
         <div class="footer-brand-mark">VST</div>
-        <p class="footer-tagline">Travel with intention. AI-powered planning, transparent eco scores, seamless booking.</p>
+        <p class="footer-tagline">Travel with intention. AI-powered planning and verified fare discovery, with supplier checkout added only when commercially activated.</p>
         <div class="footer-socials" aria-label="Social media">
           <a class="footer-social" href="https://twitter.com" aria-label="Twitter" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>

@@ -132,18 +132,22 @@ window.VSTBookings = (function () {
     if (errors.length) { showErrors(errors); return; }
 
     var body = {
-      origin:      $('fl-origin').value.trim().toUpperCase(),
-      destination: $('fl-destination').value.trim().toUpperCase(),
-      departDate:  $('fl-depart').value,
-      returnDate:  $('fl-return') ? $('fl-return').value : null,
-      passengers:  parseInt($('fl-passengers') ? $('fl-passengers').value : '1', 10),
-      cabinClass:  $('fl-cabin') ? $('fl-cabin').value : 'economy'
+      origin:          $('fl-origin').value.trim().toUpperCase(),
+      destination:     $('fl-destination').value.trim().toUpperCase(),
+      departureDate:   $('fl-depart').value,
+      returnDate:      $('fl-return') ? $('fl-return').value : null,
+      tripType:        $('fl-return') && $('fl-return').value ? 'return' : 'one_way',
+      travellerCount:  parseInt($('fl-passengers') ? $('fl-passengers').value : '1', 10),
+      currency:        'GBP'
     };
 
     isLoading = true;
     showSkeletons(6);
 
-    fetch('/api/flights-search', {
+    // Use the existing real Amadeus-backed FareRouter. The legacy
+    // /api/flights-search endpoint produces random mock inventory and must not
+    // be presented to customers as live availability.
+    fetch('/api/fares/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -156,40 +160,22 @@ window.VSTBookings = (function () {
     })
     .catch(function (err) {
       isLoading = false;
-      showErrors(['Search failed — please try again. ' + (err.message || '')]);
+      showErrors(['Live fare search is temporarily unavailable. ' + (err.message || '')]);
     });
   }
 
   function searchHotels() {
-    var errors = validateHotelForm();
-    if (errors.length) { showErrors(errors); return; }
-
-    var body = {
-      destination: $('ht-destination').value.trim(),
-      checkIn:     $('ht-checkin').value,
-      checkOut:    $('ht-checkout') ? $('ht-checkout').value : null,
-      guests:      parseInt($('ht-guests') ? $('ht-guests').value : '2', 10),
-      rooms:       parseInt($('ht-rooms') ? $('ht-rooms').value : '1', 10)
-    };
-
-    isLoading = true;
-    showSkeletons(6);
-
-    fetch('/api/hotels-search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      isLoading = false;
-      lastResults.hotels = data;
-      renderHotelResults(data, body);
-    })
-    .catch(function (err) {
-      isLoading = false;
-      showErrors(['Search failed — please try again. ' + (err.message || '')]);
-    });
+    // The existing /api/hotels-search endpoint is mock-generated inventory.
+    // Never present synthetic hotel names, ratings or prices as live stock.
+    lastResults.hotels = null;
+    var rc = $('booking-results');
+    if (!rc) return;
+    rc.innerHTML =
+      '<div class="no-results">' +
+        '<h3>Live hotel comparison is being connected.</h3>' +
+        '<p>We are not showing invented hotel prices or availability. Use AVA Planner to shape the trip while the verified supplier feed is completed.</p>' +
+        '<p><a class="trip-book" href="/planner">Continue in AVA Planner →</a></p>' +
+      '</div>';
   }
 
   /* ── Render: Flights ──────────────────────────────────────────────────────── */
@@ -197,52 +183,94 @@ window.VSTBookings = (function () {
     var rc = $('booking-results');
     if (!rc) return;
 
-    if (!data.flights || !data.flights.length) {
-      rc.innerHTML = '<div class="no-results"><p>No flights found for this route. Try different dates or airports.</p></div>';
+    var offers = Array.isArray(data.offers) ? data.offers : [];
+    if (data.error) {
+      rc.innerHTML = '<div class="no-results"><p>' + data.error + '</p></div>';
+      return;
+    }
+    if (!offers.length) {
+      rc.innerHTML = '<div class="no-results"><p>No live fares were returned for this route. Try different dates or airports.</p></div>';
       return;
     }
 
-    var header = '<div class="results-header"><h3 class="results-title">' + data.total + ' flights found</h3><p class="results-sub">' + params.origin + ' → ' + params.destination + ' · ' + formatDate(params.departDate) + '</p></div>';
+    var providerLabel = data.provider === 'amadeus' ? 'Live fare data via Amadeus' : 'Fare results';
+    var header =
+      '<div class="results-header">' +
+        '<h3 class="results-title">' + offers.length + ' live fare option' + (offers.length === 1 ? '' : 's') + '</h3>' +
+        '<p class="results-sub">' + params.origin + ' → ' + params.destination + ' · ' +
+          formatDate(params.departureDate) + ' · ' + providerLabel +
+          ' · prices can change until supplier checkout</p>' +
+      '</div>';
 
-    var cards = data.flights.map(function (fl) {
-      var stopsLabel = fl.stops === 0 ? 'Direct' : fl.stops + ' stop' + (fl.stops > 1 ? 's' : '');
-      var seatsClass = fl.seatsLeft <= 3 ? 'seats-low' : '';
+    function timeFromIso(value) {
+      if (!value) return '—';
+      var d = new Date(value);
+      return isNaN(d.getTime()) ? '—' : d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+    function durationLabel(minutes) {
+      minutes = Number(minutes || 0);
+      if (!minutes) return '—';
+      return Math.floor(minutes / 60) + 'h ' + (minutes % 60) + 'm';
+    }
+
+    var cards = offers.map(function (offer) {
+      var itinerary = offer.itineraries && offer.itineraries[0] ? offer.itineraries[0] : {};
+      var segments = itinerary.segments || [];
+      var first = segments[0] || {};
+      var last = segments[segments.length - 1] || first;
+      var stops = typeof itinerary.stops === 'number' ? itinerary.stops : Math.max(0, segments.length - 1);
+      var stopsLabel = stops === 0 ? 'Direct' : stops + ' stop' + (stops > 1 ? 's' : '');
+      var carrier = first.carrier || 'Airline';
+      var price = offer.price && Number(offer.price.total);
+      var currency = offer.price && offer.price.currency ? offer.price.currency : 'GBP';
+      var priceText = Number.isFinite(price)
+        ? (currency === 'GBP' ? '£' : currency + ' ') + price.toLocaleString('en-GB', { maximumFractionDigits: 2 })
+        : 'Price unavailable';
+      var planQuery = encodeURIComponent(
+        'Help me assess this live fare: ' + params.origin + ' to ' + params.destination +
+        ' on ' + params.departureDate + ', ' + carrier + ', ' + priceText +
+        ', ' + stopsLabel + '. Compare suitability, accessibility and total trip impact before I book.'
+      );
 
       return '<article class="result-card flight-card">' +
         '<div class="rc-top">' +
           '<div class="rc-airline">' +
-            '<span class="rc-airline-code">' + fl.airlineCode + '</span>' +
-            '<span class="rc-airline-name">' + fl.airline + '</span>' +
+            '<span class="rc-airline-code">' + carrier + '</span>' +
+            '<span class="rc-airline-name">Live supplier fare</span>' +
           '</div>' +
-          '<div class="rc-eco-badge ' + ecoGradeClass(fl.ecoRating) + '">' +
-            '<svg viewBox="0 0 20 20" class="eco-leaf"><path d="M17 3c-3 0-6 1-8 4-1.5 2.2-2 5-2 8 0 0 3-1 5-3s3-5 3-5c1-2 2-4 2-4z" fill="currentColor"/></svg>' +
-            '<span>' + fl.ecoRating + '</span>' +
+          '<div class="rc-eco-badge">' +
+            '<span>' + (offer.carbon_estimate_kg == null ? 'CO₂ pending' : offer.carbon_estimate_kg + ' kg CO₂') + '</span>' +
           '</div>' +
         '</div>' +
         '<div class="rc-route">' +
           '<div class="rc-time-block">' +
-            '<span class="rc-time">' + fl.departTime + '</span>' +
-            '<span class="rc-code">' + fl.origin + '</span>' +
+            '<span class="rc-time">' + timeFromIso(first.departure_at) + '</span>' +
+            '<span class="rc-code">' + (first.origin || params.origin) + '</span>' +
           '</div>' +
           '<div class="rc-duration">' +
-            '<span class="rc-dur-label">' + fl.duration + '</span>' +
-            '<div class="rc-dur-line"><div class="rc-dur-dot"></div>' + (fl.stops > 0 ? '<div class="rc-dur-stop"></div>' : '') + '<div class="rc-dur-dot"></div></div>' +
+            '<span class="rc-dur-label">' + durationLabel(itinerary.duration_minutes) + '</span>' +
+            '<div class="rc-dur-line"><div class="rc-dur-dot"></div>' +
+              (stops > 0 ? '<div class="rc-dur-stop"></div>' : '') +
+              '<div class="rc-dur-dot"></div></div>' +
             '<span class="rc-stops-label">' + stopsLabel + '</span>' +
           '</div>' +
           '<div class="rc-time-block">' +
-            '<span class="rc-time">' + fl.arriveTime + '</span>' +
-            '<span class="rc-code">' + fl.destination + '</span>' +
+            '<span class="rc-time">' + timeFromIso(last.arrival_at) + '</span>' +
+            '<span class="rc-code">' + (last.destination || params.destination) + '</span>' +
           '</div>' +
         '</div>' +
         '<div class="rc-bottom">' +
           '<div class="rc-meta">' +
-            '<span class="rc-co2">' + fl.co2Kg + ' kg CO₂</span>' +
-            '<span class="rc-seats ' + seatsClass + '">' + fl.seatsLeft + ' seat' + (fl.seatsLeft > 1 ? 's' : '') + ' left</span>' +
+            '<span class="rc-co2">Offer ID ' + String(offer.offer_id || '').replace(/^amadeus_/, '') + '</span>' +
           '</div>' +
           '<div class="rc-price-block">' +
-            '<span class="rc-price">£' + fl.price.toLocaleString() + '</span>' +
-            '<span class="rc-cabin">' + (fl.cabinClass || 'economy').replace('_', ' ') + '</span>' +
+            '<span class="rc-price">' + priceText + '</span>' +
+            '<span class="rc-cabin">live search result</span>' +
           '</div>' +
+        '</div>' +
+        '<div class="rc-bottom">' +
+          '<div class="rc-meta"><span>Supplier checkout is not yet activated in VST.</span></div>' +
+          '<a class="trip-book" href="/planner?q=' + planQuery + '">Plan this fare →</a>' +
         '</div>' +
       '</article>';
     }).join('');
@@ -337,14 +365,26 @@ window.VSTBookings = (function () {
 
   /* ── Init ──────────────────────────────────────────────────────────────────── */
   function init() {
-    /* Auth guard — redirect if not logged in */
-    if (!checkAuth()) {
-      var loginUrl = '/planner'; /* planner has auth flow */
-      window.location.href = loginUrl;
-      return;
-    }
+    // Fare discovery is public. Authentication is required only when a
+    // future customer action genuinely needs an account; do not block the
+    // acquisition funnel before a traveller can see verified fare data.
     bindEvents();
     switchTab('flights');
+
+    // Homepage route ideas hand off directly into this real supplier search.
+    // Query values only prefill inputs; the traveller still chooses dates and
+    // submits the request, so no stale static card is presented as availability.
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      var origin = params.get('origin');
+      var destination = params.get('destination');
+      if (origin && $('fl-origin')) $('fl-origin').value = origin.toUpperCase();
+      if (destination && $('fl-destination')) $('fl-destination').value = destination.toUpperCase();
+      if (origin || destination) {
+        var depart = $('fl-depart');
+        if (depart) depart.focus();
+      }
+    } catch (e) {}
   }
 
   /* Run on DOM ready */
